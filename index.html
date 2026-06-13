@@ -697,6 +697,7 @@
     <button class="close" onclick="closeCook()">×</button>
     <h2 id="cookTitle">Recipe</h2>
     <div class="cook-cal" id="cookCal"></div>
+    <div class="alarm-bar" id="alarmBar" onclick="stopAlarm()">🔔 Timer done — tap to silence</div>
     <div class="cook-serv" id="cookServ" style="display:none">
       <span class="lbl">Servings</span>
       <button onclick="cookServings(-1)">−</button>
@@ -725,6 +726,25 @@
       <div><label>Fat (g)</label><input type="number" id="laFat" inputmode="decimal" placeholder="0"></div>
     </div>
     <button class="btn primary" style="width:100%;margin-top:18px" onclick="saveLogAdd()">Add to log</button>
+  </div>
+</div>
+
+<div class="overlay" id="portionOverlay">
+  <div class="sheet">
+    <button class="close" onclick="document.getElementById('portionOverlay').classList.remove('show')">×</button>
+    <h2 id="portionTitle">Log item</h2>
+    <p class="hint" id="portionServing"></p>
+    <label>Portion</label>
+    <div class="portion-row">
+      <button class="pstep" onclick="portionStep(-0.5)">−</button>
+      <input type="number" id="portionAmt" inputmode="decimal" step="0.5" value="1" oninput="portionRecalc()">
+      <button class="pstep" onclick="portionStep(0.5)">＋</button>
+      <span class="portion-x">× serving</span>
+    </div>
+    <div class="portion-tot" id="portionTot"></div>
+    <label>Add to</label>
+    <div class="slot-pick" id="portionSlots"></div>
+    <button class="btn primary" style="width:100%;margin-top:18px" onclick="savePortionLog()">Add to log</button>
   </div>
 </div>
 
@@ -813,6 +833,24 @@ function showTab(name){
   .timer.done{ background:var(--orange-soft); border-color:var(--orange); }
   .timer.done .tt{ color:var(--orange); }
   .timer button{ border:none; background:var(--today); color:#fff; border-radius:999px; width:28px; height:28px; font-size:12px; cursor:pointer; }
+  .timer.done{ animation:timerpulse 1s ease-in-out infinite; }
+  @keyframes timerpulse{ 0%,100%{ box-shadow:0 0 0 0 rgba(194,65,12,0.0); } 50%{ box-shadow:0 0 0 4px rgba(194,65,12,0.25); } }
+  .alarm-bar{ display:none; align-items:center; justify-content:center; gap:8px; margin:12px 0 4px; background:var(--orange); color:#fff; border-radius:13px; padding:14px 16px; font-weight:800; font-size:14px; letter-spacing:0.02em; text-align:center; cursor:pointer; animation:alarmpulse 0.85s ease-in-out infinite; }
+  .alarm-bar.show{ display:flex; }
+  @keyframes alarmpulse{ 0%,100%{ transform:scale(1); opacity:1; } 50%{ transform:scale(0.985); opacity:0.6; } }
+  .portion-row{ display:flex; align-items:center; gap:10px; margin-top:6px; }
+  .portion-row input{ width:88px; text-align:center; font-weight:800; font-size:18px; }
+  .pstep{ width:42px; height:42px; border-radius:11px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); font-size:20px; font-weight:700; line-height:1; cursor:pointer; flex:0 0 auto; }
+  .pstep:active{ transform:scale(0.92); }
+  .portion-x{ color:var(--ink-faded); font-size:13px; font-weight:600; }
+  .portion-tot{ margin-top:13px; font-family:'Fraunces',serif; font-size:21px; color:var(--green); }
+  .portion-tot b{ font-weight:900; }
+  .slot-pick{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px; }
+  .slot-btn{ background:var(--card); border:1px solid var(--rule); border-radius:11px; padding:11px 9px; font-size:13px; font-weight:700; color:var(--ink-soft); cursor:pointer; text-align:left; }
+  .slot-btn.on{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .slot-btn:active{ transform:scale(0.97); }
+  #screen-pantry .logbtn{ background:var(--today); color:#fff; border:none; border-radius:8px; font-size:16px; font-weight:800; width:30px; height:28px; line-height:1; cursor:pointer; }
+  #screen-pantry .logbtn:active{ transform:scale(0.9); }
   .cook-log{ width:100%; margin-top:22px; }
   .cook-note{ font-size:12px; color:var(--ink-faded); margin-top:14px; line-height:1.5; font-style:italic; }
   .ing-flag{ display:inline-block; margin-left:8px; font-size:9.5px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; color:var(--orange); background:var(--orange-soft); border:1px solid var(--orange); border-radius:999px; padding:2px 7px; vertical-align:middle; }
@@ -1259,6 +1297,7 @@ function itemHTML(it){
   const chk = selectMode ? `<div class="chk">${selected[it.id]?"✓":""}</div>` : "";
   const star = `<button class="star" onclick="event.stopPropagation();toggleFav('${it.id}')">${it.fav?"⭐":"☆"}</button>`;
   const del = `<button class="del" onclick="event.stopPropagation();removeItem('${it.id}')">🗑</button>`;
+  const logb = `<button class="logbtn" title="Log to today" onclick="event.stopPropagation();openPortion('${it.id}')">＋</button>`;
   const macros = `<div class="macros">
       <span class="macro cal">🔥 <b>${it.cal||0}</b> cal</span>
       <span class="macro pro">💪 <b>${it.pro||0}g</b> protein</span>
@@ -1280,7 +1319,7 @@ function itemHTML(it){
       ${note}
       ${stepper}
     </div>
-    ${selectMode?"":`<div class="item-actions">${star}${del}</div>`}
+    ${selectMode?"":`<div class="item-actions">${logb}${star}${del}</div>`}
   </div>`;
 }
 function render(){
@@ -1572,9 +1611,12 @@ const ENERGY=[
 ];
 const SLOTS=[
   {k:"breakfast", e:"🌅", n:"Breakfast"},
-  {k:"lunch", e:"🥗", n:"Lunch"},
-  {k:"dinner", e:"🍽", n:"Dinner"},
-  {k:"snacks", e:"🍎", n:"Snacks"}
+  {k:"bsnack",    e:"🥨", n:"Breakfast snack"},
+  {k:"lunch",     e:"🥗", n:"Lunch"},
+  {k:"lsnack",    e:"🍎", n:"Lunch snack"},
+  {k:"dinner",    e:"🍽", n:"Dinner"},
+  {k:"dsnack",    e:"🍫", n:"Dinner snack"},
+  {k:"dessert",   e:"🍰", n:"Dessert"}
 ];
 const SLOT_MAP={ b:"breakfast", l:"lunch", d:"dinner", any:"snacks" };
 
@@ -1655,21 +1697,27 @@ function renderWeightGoal(target){
 
 function renderLog(){
   const box=$("t-log");
+  const known=new Set(SLOTS.map(s=>s.k));
   const bySlot={}; SLOTS.forEach(s=>bySlot[s.k]=[]);
-  dayState.log.forEach((it,idx)=>{ (bySlot[it.slot]=bySlot[it.slot]||[]).push({it,idx}); });
-  let html="";
-  SLOTS.forEach(s=>{
-    const items=bySlot[s.k]||[]; const cal=items.reduce((a,b)=>a+(b.it.cal||0),0);
-    html+=`<div class="log-slot">
-      <div class="log-head" onclick="openLogAdd('${s.k}')">
-        <div class="lname">${s.e} ${s.n}<span class="cnt">${items.length?items.length+(items.length===1?" item":" items"):"add"}</span></div>
-        <div class="lcal">${cal} cal <button class="log-add" onclick="event.stopPropagation();openLogAdd('${s.k}')">＋</button></div>
+  const extra={};
+  dayState.log.forEach((it,idx)=>{
+    if(known.has(it.slot)) bySlot[it.slot].push({it,idx});
+    else (extra[it.slot]=extra[it.slot]||[]).push({it,idx});
+  });
+  const slotBlock=(e,n,k,items)=>{
+    let h=`<div class="log-slot">
+      <div class="log-head" onclick="openLogAdd('${k}')">
+        <div class="lname">${e} ${n}<span class="cnt">${items.length?items.length+(items.length===1?" item":" items"):"add"}</span></div>
+        <div class="lcal">${items.reduce((a,b)=>a+(b.it.cal||0),0)} cal <button class="log-add" onclick="event.stopPropagation();openLogAdd('${k}')">＋</button></div>
       </div>`;
     if(items.length){
-      html+=`<div class="log-items">`+items.map(o=>`<div class="log-item"><span>${esc(o.it.name)} · ${o.it.cal||0} cal${o.it.pro?` · ${o.it.pro}g P`:""}</span><button class="li-del" onclick="deleteLogItem(${o.idx})">✕</button></div>`).join("")+`</div>`;
+      h+=`<div class="log-items">`+items.map(o=>`<div class="log-item"><span>${esc(o.it.name)} · ${o.it.cal||0} cal${o.it.pro?` · ${o.it.pro}g P`:""}</span><button class="li-del" onclick="deleteLogItem(${o.idx})">✕</button></div>`).join("")+`</div>`;
     }
-    html+=`</div>`;
-  });
+    return h+`</div>`;
+  };
+  let html="";
+  SLOTS.forEach(s=>{ html+=slotBlock(s.e,s.n,s.k,bySlot[s.k]); });
+  Object.keys(extra).forEach(k=>{ const lbl=k.charAt(0).toUpperCase()+k.slice(1); html+=slotBlock("🍎",lbl,k,extra[k]); });
   box.innerHTML=html;
 }
 
@@ -2023,7 +2071,7 @@ function openCook(which){
 }
 function closeCook(){ clearCookTimers(); $("cookOverlay").classList.remove("show"); }
 function cookServings(d){ cook.servings=Math.max(1,cook.servings+d); renderCook(); }
-function clearCookTimers(){ for(const k in cook.timers){ if(cook.timers[k]&&cook.timers[k].iv) clearInterval(cook.timers[k].iv); } cook.timers={}; }
+function clearCookTimers(){ stopAlarm(); for(const k in cook.timers){ if(cook.timers[k]&&cook.timers[k].iv) clearInterval(cook.timers[k].iv); } cook.timers={}; }
 function cookLog(){ if(cook.which) logTodayMeal(cook.which); closeCook(); }
 
 function renderCook(){
@@ -2054,32 +2102,95 @@ function renderCook(){
   }).join("");
   $("cookNote").textContent = r.parsed ? "Steps auto-pulled from the plan. Ask Claude to fully flesh this one out with exact amounts." : "";
 }
+/* ===== audible alarm (Web Audio — works on iOS once unlocked by a tap) ===== */
+let audioCtx=null;
+function ensureAudio(){
+  try{
+    if(!audioCtx){ const AC=window.AudioContext||window.webkitAudioContext; if(AC) audioCtx=new AC(); }
+    if(audioCtx && audioCtx.state==="suspended") audioCtx.resume();
+  }catch(e){ audioCtx=null; }
+  return audioCtx;
+}
+function beep(ctx,at,freq,dur,vol){
+  const o=ctx.createOscillator(), g=ctx.createGain();
+  o.type="sine"; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination);
+  g.gain.setValueAtTime(0.0001,at);
+  g.gain.exponentialRampToValueAtTime(vol||0.5,at+0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001,at+dur);
+  o.start(at); o.stop(at+dur+0.03);
+}
+let alarm={active:false, ivs:[]};
+function alarmStart(){
+  if(alarm.active) return;
+  alarm.active=true;
+  const bar=$("alarmBar"); if(bar) bar.classList.add("show");
+  const ctx=ensureAudio();
+  const burst=()=>{
+    if(!alarm.active) return;
+    if(ctx){ const t=ctx.currentTime; beep(ctx,t,880,0.16); beep(ctx,t+0.24,880,0.16); beep(ctx,t+0.48,1175,0.28); }
+    try{ if(navigator.vibrate) navigator.vibrate([300,150,300]); }catch(e){}
+  };
+  burst();
+  alarm.ivs.push(setInterval(burst,1300));
+  alarm.ivs.push(setTimeout(stopAlarm,30000)); // don't ring forever
+}
+function stopAlarm(){
+  alarm.active=false;
+  alarm.ivs.forEach(t=>{ clearInterval(t); clearTimeout(t); });
+  alarm.ivs=[];
+  const bar=$("alarmBar"); if(bar) bar.classList.remove("show");
+  try{ if(navigator.vibrate) navigator.vibrate(0); }catch(e){}
+}
+
+/* ===== timers: wall-clock based so they stay accurate if you switch apps ===== */
 function setPP(i,sym){ const b=$("tmr-pp-"+i); if(b) b.textContent=sym; }
+function timerRemain(i){
+  const st=cook.timers[i]; if(!st) return 0;
+  if(st.endAt) return Math.max(0,Math.round((st.endAt-Date.now())/1000));
+  return st.remain||0;
+}
+function fireTimerDone(i){
+  const st=cook.timers[i]; if(!st) return;
+  if(st.iv){ clearInterval(st.iv); st.iv=null; }
+  st.endAt=null; st.remain=0; st.done=true;
+  const e=$("tmr-"+i); if(e) e.classList.add("done");
+  const tt=$("tmr-tt-"+i); if(tt) tt.textContent="Done!";
+  setPP(i,"\u25B6");
+  alarmStart();
+}
+function tickTimer(i){
+  const st=cook.timers[i]; if(!st) return;
+  if(st.done){ const tt=$("tmr-tt-"+i); if(tt) tt.textContent="Done!"; return; }
+  const rr=timerRemain(i);
+  const tt=$("tmr-tt-"+i); if(tt) tt.textContent=fmtTime(rr);
+  if(rr<=0 && st.endAt) fireTimerDone(i);
+}
 function toggleTimer(i,dur){
+  ensureAudio(); // unlock audio on this user tap so the alarm can sound later
   const st=cook.timers[i];
-  if(st && st.iv){ clearInterval(st.iv); st.iv=null; setPP(i,"\u25B6"); return; }
-  let remain=(st && st.remain>0)?st.remain:dur;
+  if(st && st.iv){ // running -> pause
+    clearInterval(st.iv); st.iv=null; st.remain=timerRemain(i); st.endAt=null;
+    setPP(i,"\u25B6"); return;
+  }
+  stopAlarm();
+  const remain=(st && st.remain>0 && !st.done)?st.remain:dur;
   const el=$("tmr-"+i); if(el) el.classList.remove("done");
-  cook.timers[i]={remain:remain, iv:null};
+  cook.timers[i]={remain:remain, endAt:Date.now()+remain*1000, iv:null, done:false};
+  const tt=$("tmr-tt-"+i); if(tt) tt.textContent=fmtTime(remain);
   setPP(i,"\u23F8");
-  cook.timers[i].iv=setInterval(function(){
-    let rr=cook.timers[i].remain-1; cook.timers[i].remain=rr;
-    const tt=$("tmr-tt-"+i); if(tt) tt.textContent=fmtTime(Math.max(0,rr));
-    if(rr<=0){
-      clearInterval(cook.timers[i].iv); cook.timers[i].iv=null;
-      const e=$("tmr-"+i); if(e) e.classList.add("done"); if(tt) tt.textContent="Done!";
-      try{ if(navigator.vibrate) navigator.vibrate([200,100,200]); }catch(e2){}
-      setPP(i,"\u25B6");
-    }
-  },1000);
+  cook.timers[i].iv=setInterval(()=>tickTimer(i),250);
 }
 function resetTimer(i,dur){
   const st=cook.timers[i]; if(st && st.iv) clearInterval(st.iv);
-  cook.timers[i]={remain:dur, iv:null};
+  stopAlarm();
+  cook.timers[i]={remain:dur, endAt:null, iv:null, done:false};
   const tt=$("tmr-tt-"+i); if(tt) tt.textContent=fmtTime(dur);
   const e=$("tmr-"+i); if(e) e.classList.remove("done");
   setPP(i,"\u25B6");
 }
+/* when returning to the app, snap every timer to real elapsed time */
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ for(const k in cook.timers) tickTimer(k); } });
+window.addEventListener("focus",()=>{ for(const k in cook.timers) tickTimer(k); });
 
 function renderActivity(consumed){
   $("t-act-eyebrow").textContent=`BASED ON ${consumed} CAL LOGGED TODAY`;
@@ -2117,6 +2228,51 @@ function saveLogAdd(){
   showToast("Logged");
 }
 function deleteLogItem(idx){ dayState.log.splice(idx,1); saveDay(todayStr,dayState); renderToday(); renderCalendar(); showToast("Removed from log"); }
+
+/* ----- log a pantry item with a portion + meal section ----- */
+let portionItem=null, portionSlot="breakfast";
+function defaultSlotByTime(){
+  const h=new Date().getHours();
+  if(h<10) return "breakfast";
+  if(h<12) return "bsnack";
+  if(h<14) return "lunch";
+  if(h<17) return "lsnack";
+  if(h<20) return "dinner";
+  if(h<22) return "dsnack";
+  return "dessert";
+}
+function openPortion(id){
+  const it=pantry.find(i=>i.id===id); if(!it) return;
+  portionItem=it; portionSlot=defaultSlotByTime();
+  $("portionTitle").textContent="Log "+it.name;
+  $("portionServing").textContent=(it.serving?"1 serving = "+it.serving+" · ":"1 serving = ")+(it.cal||0)+" cal · "+(it.pro||0)+"g protein";
+  $("portionAmt").value=1;
+  $("portionSlots").innerHTML=SLOTS.map(s=>`<button class="slot-btn ${s.k===portionSlot?'on':''}" data-k="${s.k}" onclick="pickPortionSlot('${s.k}')">${s.e} ${s.n}</button>`).join("");
+  portionRecalc();
+  $("portionOverlay").classList.add("show");
+}
+function pickPortionSlot(k){ portionSlot=k; document.querySelectorAll('#portionSlots .slot-btn').forEach(b=>b.classList.toggle('on',b.dataset.k===k)); }
+function portionStep(d){ const el=$("portionAmt"); let v=parseFloat(el.value)||0; v=Math.max(0.5,Math.round((v+d)*2)/2); el.value=v; portionRecalc(); }
+function portionRecalc(){
+  const it=portionItem; if(!it) return;
+  const amt=parseFloat($("portionAmt").value)||0;
+  const c=Math.round((it.cal||0)*amt), p=Math.round((it.pro||0)*amt*10)/10;
+  $("portionTot").innerHTML=`<b>${c}</b> cal · <b>${p}g</b> protein`;
+}
+function savePortionLog(){
+  const it=portionItem; if(!it) return;
+  const amt=parseFloat($("portionAmt").value)||0;
+  if(amt<=0){ showToast("Pick a portion first"); return; }
+  const nm = amt===1 ? it.name : it.name+" ×"+fmtAmt(amt);
+  dayState.log.push({id:uid(), slot:portionSlot, name:nm,
+    cal:Math.round((it.cal||0)*amt), pro:Math.round((it.pro||0)*amt*10)/10,
+    carb:Math.round((it.carb||0)*amt*10)/10, fat:Math.round((it.fat||0)*amt*10)/10});
+  saveDay(todayStr,dayState);
+  $("portionOverlay").classList.remove("show");
+  renderToday(); renderCalendar();
+  const sName=(SLOTS.find(s=>s.k===portionSlot)||{}).n||"today";
+  showToast("Logged to "+sName);
+}
 function logMealToToday(slot,meal){
   const s=SLOT_MAP[slot]||"snacks";
   const nut=mealNutrition(meal);
