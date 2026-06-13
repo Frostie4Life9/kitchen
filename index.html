@@ -816,6 +816,10 @@ function showTab(name){
   .cook-log{ width:100%; margin-top:22px; }
   .cook-note{ font-size:12px; color:var(--ink-faded); margin-top:14px; line-height:1.5; font-style:italic; }
   .ing-flag{ display:inline-block; margin-left:8px; font-size:9.5px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; color:var(--orange); background:var(--orange-soft); border:1px solid var(--orange); border-radius:999px; padding:2px 7px; vertical-align:middle; }
+  .ing-nm{ flex:1 1 auto; }
+  .ing-cal{ flex:0 0 auto; font-size:12px; font-weight:700; color:var(--ink-faded); white-space:nowrap; }
+  .lbl-badge{ display:inline-block; margin-left:8px; font-size:9.5px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; color:var(--ink-faded); background:var(--paper-warm); border:1px solid var(--rule); border-radius:999px; padding:2px 7px; vertical-align:middle; }
+  .lbl-badge.ok{ color:var(--today); background:var(--today-soft); border-color:var(--today); }
   .step-x b{ color:var(--ink); }
 </style>
 <script>
@@ -1153,7 +1157,7 @@ function savePrefs(){ try{ localStorage.setItem(PREFS_KEY,JSON.stringify(prefs))
 function loadPantry(){
   try{ const raw=localStorage.getItem(PANTRY_KEY); if(raw){ pantry=JSON.parse(raw)||[]; } }catch(e){ pantry=[]; }
   if(!Array.isArray(pantry)) pantry=[];
-  if(pantry.length===0 && !localStorage.getItem(PANTRY_KEY)){ pantry=seedPantry(); savePantry(); }
+  // pantry starts empty and only holds what you scan/add — no auto-seeded defaults
   buildCatUI(); render();
 }
 function savePantry(){ try{ localStorage.setItem(PANTRY_KEY,JSON.stringify(pantry)); }catch(e){} }
@@ -1739,10 +1743,11 @@ function renderTodayMeals(){
       html+=`<div class="tmeal note parents"><div class="nt"><b>${sn}:</b> Parents cook tonight \u2014 no plan needed.</div></div>`;
       return;
     }
-    const pro=parseProtein(meal.r), cal=meal.c||0;
+    const nut=mealNutrition(meal);
+    const cal=nut.cal||meal.c||0, pro=nut.pro||parseProtein(meal.r);
     const isJM=/JM tub/i.test(meal.n||"");
     const logged=dayState.log.some(x=>x.name===meal.n && x.slot===slotKey[which]);
-    const calLine=`${cal?cal+' cal':''}${cal&&pro?' \u00b7 ':''}${pro?pro+'g P':''}`;
+    const calLine=`${cal?cal+' cal':''}${cal&&pro?' \u00b7 ':''}${pro?pro+'g P':''}${nut.fromLabels?' \u2713':''}`;
     if(isJM){
       html+=`<div class="tmeal note"><div class="nt"><b>${sn}:</b> ${esc(meal.n)}<br><span style="color:var(--ink-faded);font-size:12px">${calLine}</span></div><button class="tmeal-log ${logged?'done':''}" onclick="logTodayMeal('${which}')">${logged?'Logged \u2713':'\uFF0B Log'}</button></div>`;
     } else {
@@ -1755,7 +1760,8 @@ function logTodayMeal(which){
   const m=meals[todayStr]; if(!m||!m[which]) return;
   const meal=m[which], slot={b:"breakfast",l:"lunch",d:"dinner"}[which];
   if(dayState.log.some(x=>x.name===meal.n && x.slot===slot)){ showToast("Already logged"); return; }
-  dayState.log.push({id:uid(), slot, name:meal.n, cal:meal.c||0, pro:parseProtein(meal.r), carb:0, fat:0});
+  const nut=mealNutrition(meal);
+  dayState.log.push({id:uid(), slot, name:meal.n, cal:nut.cal||meal.c||0, pro:nut.pro||parseProtein(meal.r), carb:nut.carb||0, fat:nut.fat||0});
   saveDay(todayStr,dayState); renderToday(); if(typeof renderCalendar==="function") renderCalendar(); showToast("Logged "+meal.n);
 }
 
@@ -1872,18 +1878,94 @@ function livePantry(){
   try{ const raw=localStorage.getItem("pantryItems_v2"); if(raw){ const a=JSON.parse(raw); if(Array.isArray(a)) return a; } }catch(e){}
   return (typeof pantry!=="undefined" && Array.isArray(pantry))?pantry:[];
 }
-function ingHasData(name){
+function matchPantryItem(name){
   const toks=ingTokens(name);
-  if(toks.length===0 || toks.every(w=>NEGLIGIBLE_ING.has(w))) return true; // nothing to log
+  if(toks.length===0 || toks.every(w=>NEGLIGIBLE_ING.has(w))) return null;
   const ln=(name||"").toLowerCase();
   const items=livePantry();
   for(const it of items){
     if(typeof it.cal!=="number") continue;
     const pn=(it.name||"").toLowerCase();
-    for(const w of toks){ if(w.length>=4 && pn.indexOf(w)>=0) return true; }
-    for(const w of ingTokens(pn)){ if(w.length>=4 && ln.indexOf(w)>=0) return true; }
+    for(const w of toks){ if(w.length>=4 && pn.indexOf(w)>=0) return it; }
+    for(const w of ingTokens(pn)){ if(w.length>=4 && ln.indexOf(w)>=0) return it; }
   }
-  return false;
+  return null;
+}
+function ingHasData(name){
+  const toks=ingTokens(name);
+  if(toks.length===0 || toks.every(w=>NEGLIGIBLE_ING.has(w))) return true; // nothing to log
+  return !!matchPantryItem(name);
+}
+
+/* ---- dynamic nutrition from scanned labels ----
+   Each meal ingredient ({amt, unit, name}) is matched to a scanned pantry item.
+   We read that item's per-serving numbers, work out how the ingredient amount
+   compares to the serving basis, and scale. When EVERY non-negligible ingredient
+   has a matching label we can confidently convert, the meal total is rebuilt
+   from real numbers; otherwise we keep the planned estimate. */
+const UNI_FRAC={"\u00BC":0.25,"\u00BD":0.5,"\u00BE":0.75,"\u2153":1/3,"\u2154":2/3,"\u215B":0.125,"\u215C":0.375,"\u215D":0.625,"\u215E":0.875};
+function parseQtyStr(str){
+  if(!str) return null; str=(""+str).trim();
+  let m=str.match(/^([\d.]+)?\s*([\u00BC\u00BD\u00BE\u2153\u2154\u215B\u215C\u215D\u215E])/);
+  if(m){ return (m[1]?parseFloat(m[1]):0)+UNI_FRAC[m[2]]; }
+  m=str.match(/^(\d+)\s+(\d+)\s*\/\s*(\d+)/); if(m) return parseInt(m[1],10)+parseInt(m[2],10)/parseInt(m[3],10);
+  m=str.match(/^(\d+)\s*\/\s*(\d+)/); if(m) return parseInt(m[1],10)/parseInt(m[2],10);
+  m=str.match(/^([\d.]+)/); if(m) return parseFloat(m[1]);
+  return null;
+}
+function unitClassOf(str){
+  const s=(""+(str||"")).toLowerCase();
+  if(/\b(tbsp|tablespoon)/.test(s)) return "tbsp";
+  if(/\b(tsp|teaspoon)/.test(s)) return "tsp";
+  if(/\bcup/.test(s)) return "cup";
+  return "ea"; // count-based: eggs, patties, slices, tortillas, etc.
+}
+function servingBasis(item){
+  let q=parseQtyStr(item.serving); if(q==null||q<=0) q=1;
+  return { qty:q, unit:unitClassOf(item.serving) };
+}
+function ingClass(ing){
+  const u=(ing.unit||"").toLowerCase();
+  if(u==="tbsp"||u==="tsp"||u==="cup"||u==="pinch"||u==="handful") return u;
+  return "ea";
+}
+/* nutrition contribution of ONE ingredient at a given serving scale, or null
+   if it can't be confidently computed from labels */
+function ingScaledNutrition(ing, scale){
+  scale=scale||1;
+  const toks=ingTokens(ing.name);
+  if(toks.length===0 || toks.every(w=>NEGLIGIBLE_ING.has(w))) return null;
+  const it=matchPantryItem(ing.name); if(!it) return null;
+  const sb=servingBasis(it), ic=ingClass(ing);
+  if(ic!==sb.unit) return null;            // can't convert e.g. "1 slice" vs a "¼ cup" label
+  const factor=((ing.amt||0)*scale)/sb.qty;
+  return { cal:Math.round((it.cal||0)*factor), pro:Math.round((it.pro||0)*factor*10)/10,
+           carb:(it.carb||0)*factor, fat:(it.fat||0)*factor, item:it };
+}
+function mealNutrition(meal){
+  const planned={ cal:(meal&&meal.c)||0, pro:meal?parseProtein(meal.r):0, carb:0, fat:0,
+                  fromLabels:false, total:0, covered:0 };
+  if(!meal||!meal.n) return planned;
+  const lib=RECIPE_LIB[meal.n];
+  const ings=(lib&&Array.isArray(lib.ingredients))?lib.ingredients:null;
+  if(!ings||!ings.length) return planned;
+  let cal=0,pro=0,carb=0,fat=0, total=0, covered=0, allConvertible=true;
+  for(const ing of ings){
+    const toks=ingTokens(ing.name);
+    if(toks.length===0 || toks.every(w=>NEGLIGIBLE_ING.has(w))) continue; // negligible
+    total++;
+    if(!matchPantryItem(ing.name)){ allConvertible=false; continue; }   // no label scanned
+    covered++;
+    const n=ingScaledNutrition(ing,1);
+    if(!n){ allConvertible=false; continue; }                          // label found but can't convert
+    cal+=n.cal; pro+=n.pro; carb+=n.carb; fat+=n.fat;
+  }
+  if(total>0 && covered===total && allConvertible){
+    return { cal:Math.round(cal), pro:Math.round(pro), carb:Math.round(carb), fat:Math.round(fat),
+             fromLabels:true, total, covered };
+  }
+  planned.total=total; planned.covered=covered;
+  return planned;
 }
 
 const cook={ which:null, recipe:null, servings:1, base:1, timers:{} };
@@ -1910,7 +1992,8 @@ function parseRecipe(rHtml,name){
 function getRecipe(meal){
   const lib=RECIPE_LIB[meal.n];
   const rec = lib ? JSON.parse(JSON.stringify(lib)) : parseRecipe(meal.r, meal.n);
-  rec.name=meal.n; rec.cal=meal.c||0; rec.pro=parseProtein(meal.r);
+  const nut=mealNutrition(meal);
+  rec.name=meal.n; rec.cal=nut.cal||meal.c||0; rec.pro=nut.pro||parseProtein(meal.r); rec.nut=nut;
   rec.servings=rec.servings||1; rec.base=rec.servings;
   return rec;
 }
@@ -1946,7 +2029,12 @@ function cookLog(){ if(cook.which) logTodayMeal(cook.which); closeCook(); }
 function renderCook(){
   const r=cook.recipe; if(!r) return;
   $("cookTitle").textContent=r.name;
-  $("cookCal").textContent=(r.cal?r.cal+" cal":"")+(r.cal&&r.pro?" \u00b7 ":"")+(r.pro?r.pro+"g protein":"");
+  const baseCal=(r.cal?r.cal+" cal":"")+(r.cal&&r.pro?" \u00b7 ":"")+(r.pro?r.pro+"g protein":"");
+  const nut=r.nut||{};
+  const badge = nut.fromLabels
+    ? ' <span class="lbl-badge ok">\u2713 from your labels</span>'
+    : (nut.total ? ' <span class="lbl-badge">estimate \u00b7 '+nut.covered+'/'+nut.total+' labeled</span>' : "");
+  $("cookCal").innerHTML=esc(baseCal)+badge;
   const hasIng=r.ingredients && r.ingredients.length;
   $("cookServ").style.display=hasIng?"flex":"none";
   $("cookServN").textContent=cook.servings;
@@ -1954,7 +2042,9 @@ function renderCook(){
   const map={}; if(hasIng) r.ingredients.forEach(i=>{ if(i.id) map[i.id]=i; });
   $("cookIng").innerHTML = hasIng ? '<div class="cook-h">Ingredients</div><ul class="ing-list">'+r.ingredients.map(function(i){
     const flag = ingHasData(i.name) ? "" : '<span class="ing-flag">\u26A0 no label yet</span>';
-    return '<li><span class="ing-amt">'+esc(amtUnit(i,scale))+'</span><span>'+esc(i.name)+flag+'</span></li>';
+    const sc=ingScaledNutrition(i,scale);
+    const calTag = sc ? '<span class="ing-cal">'+sc.cal+' cal</span>' : '';
+    return '<li><span class="ing-amt">'+esc(amtUnit(i,scale))+'</span><span class="ing-nm">'+esc(i.name)+flag+'</span>'+calTag+'</li>';
   }).join("")+'</ul>' : "";
   $("cookSteps").innerHTML='<div class="cook-h">Steps</div>'+r.steps.map(function(s,i){
     let txt=esc(s.text).replace(/\{(\w+)\}/g,function(mm,id){ const ing=map[id]; return ing?('<b>'+esc(amtUnit(ing,scale))+'</b> '+esc(ing.name)):mm; });
@@ -2029,7 +2119,8 @@ function saveLogAdd(){
 function deleteLogItem(idx){ dayState.log.splice(idx,1); saveDay(todayStr,dayState); renderToday(); renderCalendar(); showToast("Removed from log"); }
 function logMealToToday(slot,meal){
   const s=SLOT_MAP[slot]||"snacks";
-  dayState.log.push({id:uid(),slot:s,name:meal.n,cal:meal.c||0,pro:meal.p||0,carb:meal.carb||0,fat:meal.fat||0});
+  const nut=mealNutrition(meal);
+  dayState.log.push({id:uid(),slot:s,name:meal.n,cal:nut.cal||meal.c||0,pro:nut.pro||meal.p||0,carb:nut.carb||meal.carb||0,fat:nut.fat||meal.fat||0});
   saveDay(todayStr,dayState); renderCalendar();
   if(activeTab==="today") renderToday();
   showToast(`Logged "${shorten(meal.n,28)}" to today`);
