@@ -395,6 +395,7 @@
     <button class="pill-btn" id="t-weight-btn">⚖️ Log weight</button>
   </div>
 
+  <div class="digest-badge" id="digestBadge"></div>
   <div class="sec-label">Today's meals</div>
   <div id="t-meals"></div>
 
@@ -530,6 +531,7 @@
         <option value="fat">Fat</option>
         <option value="pd">Protein density</option>
         <option value="cat">Food category</option>
+        <option value="rest">Restaurant</option>
       </select>
       <button class="dir-btn" id="dirBtn" onclick="toggleDir()" title="Sort direction">↓</button>
       <button class="dir-btn" id="groupBtn" onclick="toggleGroup()" title="Group by category">▦</button>
@@ -622,6 +624,9 @@
     <div class="sanity-box" id="sanityBox"></div>
     <label>Food category</label>
     <select id="mCat"><option value="">Auto-detect</option></select>
+    <label>Restaurant <span style="text-transform:none;font-weight:400">(if eating out)</span></label>
+    <input type="text" id="mRest" placeholder="e.g. Jersey Mike's" oninput="restHint()">
+    <p class="hint" id="restHint" style="display:none;margin-top:4px">Filed under 📍 Eating out · sortable by restaurant</p>
     <label>Note <span style="text-transform:none;font-weight:400">(optional)</span></label>
     <input type="text" id="mNote" placeholder="e.g. fridge door · for Tuesday meals">
     <button class="btn primary" style="width:100%;margin-top:18px" onclick="saveItem()">Add to Pantry</button>
@@ -748,6 +753,8 @@
   </div>
 </div>
 
+<div id="timerChip" onclick="timerChipTap()"></div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -852,6 +859,19 @@ function showTab(name){
   #screen-pantry .logbtn{ background:var(--today); color:#fff; border:none; border-radius:8px; font-size:16px; font-weight:800; width:30px; height:28px; line-height:1; cursor:pointer; }
   #screen-pantry .logbtn:active{ transform:scale(0.9); }
   .cook-log{ width:100%; margin-top:22px; }
+  .rest-tag{ display:inline-block; margin:1px 0 5px; font-size:11px; font-weight:800; letter-spacing:0.03em; color:var(--orange); background:var(--orange-soft); border:1px solid var(--orange); border-radius:999px; padding:2px 9px; }
+  #timerChip{ position:fixed; left:50%; transform:translateX(-50%); bottom:74px; z-index:90; display:none; align-items:center; gap:9px; background:var(--ink); color:var(--paper); border-radius:999px; padding:9px 15px; font-weight:800; font-size:14px; box-shadow:0 6px 22px rgba(0,0,0,0.28); cursor:pointer; max-width:90vw; }
+  #timerChip.show{ display:flex; }
+  #timerChip.ringing{ background:var(--orange); animation:alarmpulse 0.85s ease-in-out infinite; }
+  #timerChip .tc-ico{ font-size:15px; }
+  .digest-badge{ display:none; align-items:center; gap:12px; margin:0 0 16px; padding:13px 15px; border-radius:15px; background:linear-gradient(135deg,var(--today-soft),var(--paper-warm)); border:1px solid var(--today); }
+  .digest-badge.show{ display:flex; }
+  .digest-badge.ready{ background:linear-gradient(135deg,var(--green-soft,#e8f3ea),var(--paper-warm)); border-color:var(--green); }
+  .digest-badge .dg-ico{ font-size:24px; flex:0 0 auto; }
+  .digest-badge .dg-tx{ font-size:14px; color:var(--ink-soft); line-height:1.35; }
+  .digest-badge .dg-tx b{ font-family:'Fraunces',serif; font-size:18px; color:var(--ink); font-variant-numeric:tabular-nums; }
+  .digest-badge.ready .dg-tx b{ color:var(--green); }
+  .digest-badge .dg-sub{ font-size:11.5px; color:var(--ink-faded); font-weight:600; }
   .cook-note{ font-size:12px; color:var(--ink-faded); margin-top:14px; line-height:1.5; font-style:italic; }
   .ing-flag{ display:inline-block; margin-left:8px; font-size:9.5px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; color:var(--orange); background:var(--orange-soft); border:1px solid var(--orange); border-radius:999px; padding:2px 7px; vertical-align:middle; }
   .ing-nm{ flex:1 1 auto; }
@@ -1173,7 +1193,7 @@ let lastDeleted=null, toastT=null;
 const CATS=[
   ["protein","🍗 Protein"],["dairy","🧀 Dairy & eggs"],["produce","🥦 Produce"],
   ["grains","🌾 Grains & carbs"],["frozen","🧊 Frozen"],["condiment","🫙 Condiments"],
-  ["snack","🍫 Snacks"],["pantry","🥫 Pantry"],["other","📦 Other"]
+  ["snack","🍫 Snacks"],["pantry","🥫 Pantry"],["eatingout","📍 Eating out"],["other","📦 Other"]
 ];
 function catLabel(c){ const f=CATS.find(x=>x[0]===c); return f?f[1]:"📦 Other"; }
 function categorize(name){
@@ -1287,6 +1307,7 @@ function visibleItems(){
       case "fat": av=a.fat||0; bv=b.fat||0; break;
       case "pd": av=(a.cal>0?a.pro/a.cal:0); bv=(b.cal>0?b.pro/b.cal:0); break;
       case "cat": return mult*(a.cat||"").localeCompare(b.cat||"");
+      case "rest": { const ar=a.restaurant||"\uffff", br=b.restaurant||"\uffff"; return mult*ar.localeCompare(br); }
       default: av=a.added||0; bv=b.added||0;
     }
     return mult*(av-bv);
@@ -1312,6 +1333,7 @@ function itemHTML(it){
     ${chk}
     <div class="body">
       <div class="name">${nb}${esc(it.name)}</div>
+      ${it.restaurant?`<div class="rest-tag">📍 ${esc(it.restaurant)}</div>`:""}
       ${macros}
       ${macroSplit(it)}
       ${healthBadges(it)}
@@ -1441,8 +1463,8 @@ function offSearch(q){
 let editingId=null;
 function openAdd(){
   editingId=null; $("addTitle").textContent="Add an ingredient";
-  ["mBarcode","mName","mServing","mCal","mPro","mCarb","mFat","mNote"].forEach(id=>$(id).value="");
-  $("mCat").value=""; $("lookupResult").classList.remove("show"); $("sanityBox").classList.remove("show");
+  ["mBarcode","mName","mServing","mCal","mPro","mCarb","mFat","mNote","mRest"].forEach(id=>$(id).value="");
+  $("mCat").value=""; $("restHint").style.display="none"; $("lookupResult").classList.remove("show"); $("sanityBox").classList.remove("show");
   $("addOverlay").classList.add("show");
 }
 function openEdit(id){
@@ -1450,17 +1472,19 @@ function openEdit(id){
   editingId=id; $("addTitle").textContent="Edit ingredient";
   $("mBarcode").value=it.barcode||""; $("mName").value=it.name||""; $("mServing").value=it.serving||"";
   $("mCal").value=it.cal||""; $("mPro").value=it.pro||""; $("mCarb").value=it.carb??""; $("mFat").value=it.fat??"";
-  $("mNote").value=it.note||""; $("mCat").value=it.cat||"";
+  $("mNote").value=it.note||""; $("mCat").value=it.cat||""; $("mRest").value=it.restaurant||""; restHint();
   $("lookupResult").classList.remove("show"); checkSanity();
   $("addOverlay").classList.add("show");
 }
 function closeAdd(){ $("addOverlay").classList.remove("show"); }
 function num(id){ const v=parseFloat($(id).value); return isNaN(v)?null:v; }
+function restHint(){ const has=($("mRest").value||"").trim()!==""; $("restHint").style.display=has?"block":"none"; }
 function saveItem(){
   const name=($("mName").value||"").trim(); if(!name){ showToast("Give it a name first"); return; }
-  const cat=$("mCat").value||categorize(name);
+  const restaurant=($("mRest").value||"").trim();
+  const cat = restaurant ? "eatingout" : ($("mCat").value||categorize(name));
   const data={ name, serving:($("mServing").value||"").trim(), cal:num("mCal")||0, pro:num("mPro")||0,
-    carb:num("mCarb"), fat:num("mFat"), cat, note:($("mNote").value||"").trim(), barcode:($("mBarcode").value||"").trim() };
+    carb:num("mCarb"), fat:num("mFat"), cat, restaurant, note:($("mNote").value||"").trim(), barcode:($("mBarcode").value||"").trim() };
   if(editingId){ const it=pantry.find(i=>i.id===editingId); Object.assign(it,data); }
   else { pantry.push(Object.assign({id:uid(),fav:false,needBuy:false,qty:1,scanned:!!data.barcode,added:Date.now()},data)); }
   savePantry(); buildCatUI(); render(); closeAdd();
@@ -1625,7 +1649,14 @@ function loadWg(){ try{ const w=JSON.parse(localStorage.getItem(WG_KEY)); if(w) 
 function saveWg(){ try{ localStorage.setItem(WG_KEY,JSON.stringify(wgoal)); }catch(e){} }
 function dayKey(date){ return DAY_PREFIX+date; }
 function getDay(date){ try{ const d=JSON.parse(localStorage.getItem(dayKey(date))); if(d) return Object.assign({daytype:"rest",misc:0,water:0,energy:"",notes:"",log:[],target:1450},d); }catch(e){} return {daytype:"rest",misc:0,water:0,energy:"",notes:"",log:[],target:1450}; }
-function saveDay(date,d){ try{ localStorage.setItem(dayKey(date),JSON.stringify(d)); }catch(e){} }
+function saveDay(date,d){
+  if(date===todayStr && d && Array.isArray(d.log)){
+    const hasB=d.log.some(i=>i.slot==="breakfast");
+    if(hasB && !d.bfastAt) d.bfastAt=Date.now();
+    if(!hasB) d.bfastAt=null;
+  }
+  try{ localStorage.setItem(dayKey(date),JSON.stringify(d)); }catch(e){}
+}
 function loggedCalsFor(date){ try{ const d=JSON.parse(localStorage.getItem(dayKey(date))); if(d&&d.log) return d.log.reduce((s,i)=>s+(i.cal||0),0); }catch(e){} return 0; }
 
 /* ----- targets / macros ----- */
@@ -1639,6 +1670,7 @@ function renderToday(){
   const months=["Jan","Feb","Mar","Apr","May","June","July","Aug","Sept","Oct","Nov","Dec"];
   $("t-dow").textContent=dows[dt.getDay()]+", "+months[dt.getMonth()].toUpperCase()+" "+dt.getDate();
   $("t-date").textContent="Today";
+  if(typeof updateDigestBadge==="function") updateDigestBadge();
 
   // day chip + today's meals + target chips
   renderDayChip();
@@ -2067,11 +2099,10 @@ function fmtTime(sec){ sec=Math.max(0,Math.round(sec)); const m=Math.floor(sec/6
 function openCook(which){
   const m=meals[todayStr]; if(!m||!m[which]||m[which].parents) return;
   cook.which=which; cook.recipe=getRecipe(m[which]); cook.base=cook.recipe.base; cook.servings=cook.recipe.servings;
-  clearCookTimers(); renderCook(); $("cookOverlay").classList.add("show");
+  renderCook(); $("cookOverlay").classList.add("show"); globalTick();
 }
-function closeCook(){ clearCookTimers(); $("cookOverlay").classList.remove("show"); }
+function closeCook(){ $("cookOverlay").classList.remove("show"); }
 function cookServings(d){ cook.servings=Math.max(1,cook.servings+d); renderCook(); }
-function clearCookTimers(){ stopAlarm(); for(const k in cook.timers){ if(cook.timers[k]&&cook.timers[k].iv) clearInterval(cook.timers[k].iv); } cook.timers={}; }
 function cookLog(){ if(cook.which) logTodayMeal(cook.which); closeCook(); }
 
 function renderCook(){
@@ -2097,7 +2128,14 @@ function renderCook(){
   $("cookSteps").innerHTML='<div class="cook-h">Steps</div>'+r.steps.map(function(s,i){
     let txt=esc(s.text).replace(/\{(\w+)\}/g,function(mm,id){ const ing=map[id]; return ing?('<b>'+esc(amtUnit(ing,scale))+'</b> '+esc(ing.name)):mm; });
     const t=s.timer||0;
-    const timerHtml = t>0 ? '<div class="timer" id="tmr-'+i+'"><span class="tt" id="tmr-tt-'+i+'">'+fmtTime(t)+'</span><button id="tmr-pp-'+i+'" onclick="toggleTimer('+i+','+t+')">\u25B6</button><button title="Reset" onclick="resetTimer('+i+','+t+')">\u21BA</button></div>' : "";
+    let timerHtml="";
+    if(t>0){
+      const ts=activeTimers[(r.name||"")+"#"+i];
+      const disp=ts?(ts.done?"Done!":fmtTime(remainOf(ts))):fmtTime(t);
+      const running=ts&&ts.endAt&&!ts.done;
+      const doneCls=ts&&ts.done?" done":"";
+      timerHtml='<div class="timer'+doneCls+'" id="tmr-'+i+'"><span class="tt" id="tmr-tt-'+i+'">'+disp+'</span><button id="tmr-pp-'+i+'" onclick="toggleTimer('+i+','+t+')">'+(running?"\u23F8":"\u25B6")+'</button><button title="Reset" onclick="resetTimer('+i+','+t+')">\u21BA</button></div>';
+    }
     return '<div class="step"><div class="step-num">'+(i+1)+'</div><div class="step-main">'+(s.title?'<div class="step-t">'+esc(s.title)+'</div>':"")+'<div class="step-x">'+txt+'</div>'+timerHtml+'</div></div>';
   }).join("");
   $("cookNote").textContent = r.parsed ? "Steps auto-pulled from the plan. Ask Claude to fully flesh this one out with exact amounts." : "";
@@ -2142,55 +2180,101 @@ function stopAlarm(){
   try{ if(navigator.vibrate) navigator.vibrate(0); }catch(e){}
 }
 
-/* ===== timers: wall-clock based so they stay accurate if you switch apps ===== */
+/* ===== persistent timers — survive closing the recipe, switching tabs, even a reload ===== */
+const TIMERS_KEY="cookTimers_v1";
+let activeTimers={};
+function loadTimers(){ try{ activeTimers=JSON.parse(localStorage.getItem(TIMERS_KEY))||{}; }catch(e){ activeTimers={}; } }
+function saveTimers(){ try{ localStorage.setItem(TIMERS_KEY,JSON.stringify(activeTimers)); }catch(e){} }
+function timerKey(i){ return (cook.recipe?cook.recipe.name:"")+"#"+i; }
+function remainOf(t){ if(!t||t.done) return 0; if(t.endAt) return Math.max(0,Math.round((t.endAt-Date.now())/1000)); return t.remain||0; }
 function setPP(i,sym){ const b=$("tmr-pp-"+i); if(b) b.textContent=sym; }
-function timerRemain(i){
-  const st=cook.timers[i]; if(!st) return 0;
-  if(st.endAt) return Math.max(0,Math.round((st.endAt-Date.now())/1000));
-  return st.remain||0;
-}
-function fireTimerDone(i){
-  const st=cook.timers[i]; if(!st) return;
-  if(st.iv){ clearInterval(st.iv); st.iv=null; }
-  st.endAt=null; st.remain=0; st.done=true;
-  const e=$("tmr-"+i); if(e) e.classList.add("done");
-  const tt=$("tmr-tt-"+i); if(tt) tt.textContent="Done!";
-  setPP(i,"\u25B6");
-  alarmStart();
-}
-function tickTimer(i){
-  const st=cook.timers[i]; if(!st) return;
-  if(st.done){ const tt=$("tmr-tt-"+i); if(tt) tt.textContent="Done!"; return; }
-  const rr=timerRemain(i);
-  const tt=$("tmr-tt-"+i); if(tt) tt.textContent=fmtTime(rr);
-  if(rr<=0 && st.endAt) fireTimerDone(i);
-}
 function toggleTimer(i,dur){
-  ensureAudio(); // unlock audio on this user tap so the alarm can sound later
-  const st=cook.timers[i];
-  if(st && st.iv){ // running -> pause
-    clearInterval(st.iv); st.iv=null; st.remain=timerRemain(i); st.endAt=null;
-    setPP(i,"\u25B6"); return;
+  ensureAudio(); // unlock audio on this tap so the alarm can sound later
+  const key=timerKey(i); let t=activeTimers[key];
+  if(t && t.endAt && !t.done){ // running -> pause
+    t.remain=remainOf(t); t.endAt=null; saveTimers(); setPP(i,"\u25B6"); updateTimerChip(); return;
   }
   stopAlarm();
-  const remain=(st && st.remain>0 && !st.done)?st.remain:dur;
+  const remain=(t && t.remain>0 && !t.done)?t.remain:dur;
+  activeTimers[key]={endAt:Date.now()+remain*1000, remain:remain, done:false, recipe:(cook.recipe?cook.recipe.name:""), step:i, total:dur};
+  saveTimers();
   const el=$("tmr-"+i); if(el) el.classList.remove("done");
-  cook.timers[i]={remain:remain, endAt:Date.now()+remain*1000, iv:null, done:false};
-  const tt=$("tmr-tt-"+i); if(tt) tt.textContent=fmtTime(remain);
   setPP(i,"\u23F8");
-  cook.timers[i].iv=setInterval(()=>tickTimer(i),250);
+  const tt=$("tmr-tt-"+i); if(tt) tt.textContent=fmtTime(remain);
+  globalTick();
 }
 function resetTimer(i,dur){
-  const st=cook.timers[i]; if(st && st.iv) clearInterval(st.iv);
-  stopAlarm();
-  cook.timers[i]={remain:dur, endAt:null, iv:null, done:false};
+  delete activeTimers[timerKey(i)]; saveTimers(); stopAlarm();
   const tt=$("tmr-tt-"+i); if(tt) tt.textContent=fmtTime(dur);
   const e=$("tmr-"+i); if(e) e.classList.remove("done");
-  setPP(i,"\u25B6");
+  setPP(i,"\u25B6"); updateTimerChip();
 }
-/* when returning to the app, snap every timer to real elapsed time */
-document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ for(const k in cook.timers) tickTimer(k); } });
-window.addEventListener("focus",()=>{ for(const k in cook.timers) tickTimer(k); });
+function syncCookTimerDOM(){
+  if(!cook.recipe || !($("cookOverlay")&&$("cookOverlay").classList.contains("show"))) return;
+  for(const key in activeTimers){
+    const t=activeTimers[key]; if(t.recipe!==cook.recipe.name) continue;
+    const i=t.step, tt=$("tmr-tt-"+i);
+    if(tt) tt.textContent=t.done?"Done!":fmtTime(remainOf(t));
+    const e=$("tmr-"+i); if(e) e.classList.toggle("done",!!t.done);
+    setPP(i,(t.endAt&&!t.done)?"\u23F8":"\u25B6");
+  }
+}
+function updateTimerChip(){
+  const chip=$("timerChip"); if(!chip) return;
+  const keys=Object.keys(activeTimers);
+  if(!keys.length){ chip.classList.remove("show","ringing"); return; }
+  if(keys.some(k=>activeTimers[k].done)){
+    chip.classList.add("show","ringing");
+    chip.innerHTML='<span class="tc-ico">🔔</span> Timer done — tap to stop';
+    return;
+  }
+  let soonest=null;
+  keys.forEach(k=>{ const t=activeTimers[k]; if(t.endAt&&!t.done){ const r=remainOf(t); if(soonest==null||r<soonest) soonest=r; } });
+  if(soonest==null){ chip.classList.remove("show","ringing"); return; }
+  chip.classList.add("show"); chip.classList.remove("ringing");
+  chip.innerHTML='<span class="tc-ico">⏱️</span> '+fmtTime(soonest)+' · tap to open recipe';
+}
+function timerChipTap(){
+  if(Object.keys(activeTimers).some(k=>activeTimers[k].done)){
+    stopAlarm();
+    for(const k in activeTimers){ if(activeTimers[k].done) delete activeTimers[k]; }
+    saveTimers(); updateTimerChip(); syncCookTimerDOM(); return;
+  }
+  let rec=null; for(const k in activeTimers){ if(activeTimers[k].endAt){ rec=activeTimers[k].recipe; break; } }
+  if(rec) openCookByName(rec);
+}
+function openCookByName(name){
+  showTab('today');
+  const m=meals[todayStr]; if(!m) return;
+  for(const w of ["b","l","d"]){ if(m[w] && m[w].n===name){ openCook(w); return; } }
+}
+
+/* ===== digest countdown after breakfast (not Sundays) ===== */
+const DIGEST_MIN=45;
+function updateDigestBadge(){
+  const el=$("digestBadge"); if(!el) return;
+  if(todayDate.getDay()===0 || !dayState.bfastAt){ el.classList.remove("show","ready"); return; }
+  const remMs=(dayState.bfastAt+DIGEST_MIN*60000)-Date.now();
+  if(remMs>0){
+    const m=Math.floor(remMs/60000), s=Math.floor((remMs%60000)/1000);
+    el.classList.add("show"); el.classList.remove("ready");
+    el.innerHTML='<span class="dg-ico">⏳</span><div class="dg-tx"><b>'+m+':'+String(s).padStart(2,"0")+'</b> until your breakfast settles<br><span class="dg-sub">give it about '+DIGEST_MIN+' min before training</span></div>';
+  }else{
+    el.classList.add("show","ready");
+    el.innerHTML='<span class="dg-ico">💪</span><div class="dg-tx"><b>Ready to train</b><br><span class="dg-sub">breakfast has had time to settle</span></div>';
+  }
+}
+
+/* ===== one heartbeat drives everything time-based ===== */
+function globalTick(){
+  const now=Date.now(); let fired=false;
+  for(const k in activeTimers){ const t=activeTimers[k]; if(!t.done && t.endAt && (t.endAt-now)<=0){ t.done=true; t.endAt=null; t.remain=0; fired=true; } }
+  if(fired){ saveTimers(); alarmStart(); }
+  syncCookTimerDOM(); updateTimerChip(); updateDigestBadge();
+}
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) globalTick(); });
+window.addEventListener("focus",globalTick);
+setInterval(globalTick,1000);
 
 function renderActivity(consumed){
   $("t-act-eyebrow").textContent=`BASED ON ${consumed} CAL LOGGED TODAY`;
@@ -2341,10 +2425,12 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
   dayState=getDay(todayStr);
   loadPrefs();
   loadPantry();
+  loadTimers();
   renderCalendar();
   renderDetail();
   renderToday();
   showTab('today');
+  globalTick();
 })();
 </script>
 </body>
