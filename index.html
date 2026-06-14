@@ -1965,6 +1965,7 @@ function prepChicken(method,breasts,portions,temp,mins,flavors,forNote,ounces){
   const oven=method==="oven", steps=[];
   const amtText = ounces ? `about ${ounces} oz of raw chicken — any size breasts, just match the weight on the package (roughly ${Math.round(ounces/portions)} oz per portion)` : `${breasts} chicken breast${breasts>1?"s":""}`;
   steps.push({title:"This week's batch", text:`Cook ${amtText} and split into ${portions} portion${portions>1?"s":""}.`+(forNote?` Set aside ${forNote}.`:"")+(flavors.length?` Flavors this week: ${flavors.join(", ")}.`:""), timer:0});
+  steps.push({title:"Thaw if frozen", text:"Grabbing it frozen? Thaw it first — never on the counter. Best: move it to the fridge the night before (give jumbo/thick breasts a full 24 hr). Same-day: seal it in a bag and sink it in a bowl of cold water, swapping the water every 30 min until it's pliable — about 1–2 hr. Pat it dry before seasoning, and cook it this session rather than refreezing raw.", timer:0});
   steps.push(oven
     ? {title:"Heat the oven", text:`Preheat to ${temp}°F with a rack in the center. Line a sheet pan with foil or parchment for easy cleanup.`, timer:0}
     : {title:"Preheat the air fryer", text:`Set the air fryer to ${temp}°F and run it empty for 3 min so the chicken sears on contact instead of steaming.`, timer:0});
@@ -1995,6 +1996,7 @@ function prepChicken(method,breasts,portions,temp,mins,flavors,forNote,ounces){
 function prepSteak(count,temp,mins,forNote){
   const steps=[
     {title:"This batch", text:`Cube ${count} chuck eye steak${count>1?"s":""} into steak bites.`+(forNote?` For ${forNote}.`:""), timer:0},
+    {title:"Thaw if frozen", text:"If the steak's frozen, thaw before cubing — never on the counter. Fridge overnight is easiest; same-day, seal it in a bag and submerge in cold water, swapping the water every 30 min (about 1 hr for one steak). It actually cubes cleanest when just barely thawed and still cold.", timer:0},
     {title:"Cut into cubes", text:"Pat the steak very dry, then cut into even 1-inch cubes so they cook at the same rate. Drier meat browns much better.", timer:0},
     {title:"Season", text:"Toss the cubes with 1 tsp olive oil, a pinch of salt, black pepper, and ¼ tsp garlic powder.", timer:0},
     {title:"Preheat the air fryer", text:`Run the air fryer empty at ${temp}°F for 3 min so the bites sear instead of steam.`, timer:0},
