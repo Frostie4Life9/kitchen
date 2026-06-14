@@ -399,6 +399,11 @@
   <div class="sec-label">Today's meals</div>
   <div id="t-meals"></div>
 
+  <div id="t-prep-wrap" style="display:none">
+    <div class="sec-label">Today's prep</div>
+    <div id="t-prep"></div>
+  </div>
+
   <div class="sec-label">Calorie budget</div>
   <div class="card">
     <div class="budget-row">
@@ -507,6 +512,7 @@
   <div class="seg">
     <button id="seg-ing" class="on" onclick="setPantryView('ing')">🧂 Ingredients</button>
     <button id="seg-rec" onclick="setPantryView('rec')">📖 Recipes</button>
+    <button id="seg-eat" onclick="setPantryView('eat')">📍 Eating out</button>
   </div>
 
   <div id="pantry-ingredients">
@@ -531,7 +537,6 @@
         <option value="fat">Fat</option>
         <option value="pd">Protein density</option>
         <option value="cat">Food category</option>
-        <option value="rest">Restaurant</option>
       </select>
       <button class="dir-btn" id="dirBtn" onclick="toggleDir()" title="Sort direction">↓</button>
       <button class="dir-btn" id="groupBtn" onclick="toggleGroup()" title="Group by category">▦</button>
@@ -553,6 +558,15 @@
       </select>
     </div>
     <div id="recipeList"></div>
+  </div>
+
+  <div id="pantry-eatingout" style="display:none">
+    <p class="hint" style="margin-bottom:4px">Save meals you eat out — your Jersey Mike's tub, restaurant orders — with their real calories, then log them to any day with the ＋ button. Grouped by restaurant.</p>
+    <div class="actions" style="margin-top:10px">
+      <button class="act-btn primary" onclick="openAddEatingOut()">＋ Add restaurant meal</button>
+    </div>
+    <input type="text" id="eoSearch" placeholder="🔍 Search meals or restaurants…" oninput="renderEatingOut()">
+    <div id="eoList"></div>
   </div>
 </div>
 
@@ -622,11 +636,16 @@
       <div><label>Fat (g)</label><input type="number" id="mFat" inputmode="decimal" placeholder="0" oninput="checkSanity()"></div>
     </div>
     <div class="sanity-box" id="sanityBox"></div>
-    <label>Food category</label>
-    <select id="mCat"><option value="">Auto-detect</option></select>
-    <label>Restaurant <span style="text-transform:none;font-weight:400">(if eating out)</span></label>
-    <input type="text" id="mRest" placeholder="e.g. Jersey Mike's" oninput="restHint()">
-    <p class="hint" id="restHint" style="display:none;margin-top:4px">Filed under 📍 Eating out · sortable by restaurant</p>
+    <div id="catRow">
+      <label>Food category</label>
+      <select id="mCat"><option value="">Auto-detect</option></select>
+    </div>
+    <div id="restRow" style="display:none">
+      <label>Restaurant</label>
+      <input type="text" id="mRest" placeholder="e.g. Jersey Mike's">
+      <button class="btn ghost" style="width:100%;margin-top:8px" onclick="lookupNutrition()">🔎 Look up nutritional info</button>
+      <p class="hint" style="margin-top:6px">Copies a prompt to find this item's exact calories &amp; macros — paste it to Claude, then type the numbers in above.</p>
+    </div>
     <label>Note <span style="text-transform:none;font-weight:400">(optional)</span></label>
     <input type="text" id="mNote" placeholder="e.g. fridge door · for Tuesday meals">
     <button class="btn primary" style="width:100%;margin-top:18px" onclick="saveItem()">Add to Pantry</button>
@@ -711,7 +730,7 @@
     </div>
     <div id="cookIng"></div>
     <div id="cookSteps"></div>
-    <button class="btn primary cook-log" onclick="cookLog()">＋ Log this meal</button>
+    <button class="btn primary cook-log" id="cookLogBtn" onclick="cookLog()">＋ Log this meal</button>
     <div class="cook-note" id="cookNote"></div>
   </div>
 </div>
@@ -774,6 +793,7 @@ function showTab(name){
   window.scrollTo(0,0);
   if(name==='today') renderToday();
   if(name==='pantry' && pantryView==='rec') renderRecipes();
+  if(name==='pantry' && pantryView==='eat') renderEatingOut();
   if(name==='rules') renderRules();
 }
 </script>
@@ -860,6 +880,10 @@ function showTab(name){
   #screen-pantry .logbtn:active{ transform:scale(0.9); }
   .cook-log{ width:100%; margin-top:22px; }
   .rest-tag{ display:inline-block; margin:1px 0 5px; font-size:11px; font-weight:800; letter-spacing:0.03em; color:var(--orange); background:var(--orange-soft); border:1px solid var(--orange); border-radius:999px; padding:2px 9px; }
+  .eo-group{ margin-bottom:16px; }
+  .eo-head{ font-family:'Fraunces',serif; font-size:16px; font-weight:700; color:var(--orange); margin:6px 2px 9px; padding-bottom:5px; border-bottom:1px solid var(--rule); }
+  .btn.ghost{ background:var(--today-soft); color:var(--today); border:1px solid var(--today); border-radius:11px; padding:11px; font-family:'Manrope',sans-serif; font-weight:800; font-size:13.5px; cursor:pointer; }
+  .btn.ghost:active{ transform:scale(0.98); }
   #timerChip{ position:fixed; left:50%; transform:translateX(-50%); bottom:74px; z-index:90; display:none; align-items:center; gap:9px; background:var(--ink); color:var(--paper); border-radius:999px; padding:9px 15px; font-weight:800; font-size:14px; box-shadow:0 6px 22px rgba(0,0,0,0.28); cursor:pointer; max-width:90vw; }
   #timerChip.show{ display:flex; }
   #timerChip.ringing{ background:var(--orange); animation:alarmpulse 0.85s ease-in-out infinite; }
@@ -1461,34 +1485,52 @@ function offSearch(q){
 
 /* ----- add / edit ----- */
 let editingId=null;
+let addMode='ing';
+function applyAddMode(){
+  $("restRow").style.display = addMode==='eat' ? 'block':'none';
+  $("catRow").style.display  = addMode==='eat' ? 'none':'block';
+}
 function openAdd(){
-  editingId=null; $("addTitle").textContent="Add an ingredient";
+  editingId=null; addMode='ing'; $("addTitle").textContent="Add an ingredient";
   ["mBarcode","mName","mServing","mCal","mPro","mCarb","mFat","mNote","mRest"].forEach(id=>$(id).value="");
-  $("mCat").value=""; $("restHint").style.display="none"; $("lookupResult").classList.remove("show"); $("sanityBox").classList.remove("show");
+  $("mCat").value=""; applyAddMode(); $("lookupResult").classList.remove("show"); $("sanityBox").classList.remove("show");
   $("addOverlay").classList.add("show");
+}
+function openAddEatingOut(){
+  editingId=null; addMode='eat'; $("addTitle").textContent="Add a restaurant meal";
+  ["mBarcode","mName","mServing","mCal","mPro","mCarb","mFat","mNote","mRest"].forEach(id=>$(id).value="");
+  $("mCat").value="eatingout"; applyAddMode(); $("lookupResult").classList.remove("show"); $("sanityBox").classList.remove("show");
+  $("addOverlay").classList.add("show");
+}
+function lookupNutrition(){
+  const name=($("mName").value||"").trim(); const rest=($("mRest").value||"").trim();
+  if(!name){ showToast("Enter the meal name first"); return; }
+  const where = rest ? (" from "+rest) : "";
+  const prompt=`Find the full nutrition facts for "${name}"${where}. I need serving size, calories, protein (g), carbs (g), and fat (g) for one standard order the way I'd actually get it. Use the official ${rest||"restaurant"} nutrition info or menu if available, and give me the exact numbers.`;
+  copyText(prompt); showToast("Prompt copied — paste it to Claude");
 }
 function openEdit(id){
   const it=pantry.find(i=>i.id===id); if(!it) return;
-  editingId=id; $("addTitle").textContent="Edit ingredient";
+  editingId=id; addMode = it.cat==='eatingout' ? 'eat' : 'ing';
+  $("addTitle").textContent = addMode==='eat' ? "Edit restaurant meal" : "Edit ingredient";
   $("mBarcode").value=it.barcode||""; $("mName").value=it.name||""; $("mServing").value=it.serving||"";
   $("mCal").value=it.cal||""; $("mPro").value=it.pro||""; $("mCarb").value=it.carb??""; $("mFat").value=it.fat??"";
-  $("mNote").value=it.note||""; $("mCat").value=it.cat||""; $("mRest").value=it.restaurant||""; restHint();
+  $("mNote").value=it.note||""; $("mCat").value=it.cat||""; $("mRest").value=it.restaurant||""; applyAddMode();
   $("lookupResult").classList.remove("show"); checkSanity();
   $("addOverlay").classList.add("show");
 }
 function closeAdd(){ $("addOverlay").classList.remove("show"); }
 function num(id){ const v=parseFloat($(id).value); return isNaN(v)?null:v; }
-function restHint(){ const has=($("mRest").value||"").trim()!==""; $("restHint").style.display=has?"block":"none"; }
 function saveItem(){
   const name=($("mName").value||"").trim(); if(!name){ showToast("Give it a name first"); return; }
   const restaurant=($("mRest").value||"").trim();
-  const cat = restaurant ? "eatingout" : ($("mCat").value||categorize(name));
+  const cat = (addMode==='eat') ? "eatingout" : ($("mCat").value||categorize(name));
   const data={ name, serving:($("mServing").value||"").trim(), cal:num("mCal")||0, pro:num("mPro")||0,
     carb:num("mCarb"), fat:num("mFat"), cat, restaurant, note:($("mNote").value||"").trim(), barcode:($("mBarcode").value||"").trim() };
   if(editingId){ const it=pantry.find(i=>i.id===editingId); Object.assign(it,data); }
   else { pantry.push(Object.assign({id:uid(),fav:false,needBuy:false,qty:1,scanned:!!data.barcode,added:Date.now()},data)); }
-  savePantry(); buildCatUI(); render(); closeAdd();
-  showToast(editingId?"Updated":"Added to pantry");
+  savePantry(); buildCatUI(); render(); if(typeof renderEatingOut==="function") renderEatingOut(); closeAdd();
+  showToast(editingId?"Updated":(addMode==='eat'?"Saved restaurant meal":"Added to pantry"));
 }
 function checkSanity(){
   const box=$("sanityBox"); const cal=num("mCal"), p=num("mPro"), c=num("mCarb"), f=num("mFat");
@@ -1561,10 +1603,27 @@ function setPantryView(v){
   pantryView=v;
   $("seg-ing").classList.toggle("on",v==="ing");
   $("seg-rec").classList.toggle("on",v==="rec");
+  $("seg-eat").classList.toggle("on",v==="eat");
   $("pantry-ingredients").style.display = v==="ing"?"block":"none";
   $("pantry-recipes").style.display = v==="rec"?"block":"none";
+  $("pantry-eatingout").style.display = v==="eat"?"block":"none";
   $("selbar").classList.toggle("show", v==="ing" && selectMode && activeTab==="pantry");
   if(v==="rec") renderRecipes();
+  if(v==="eat") renderEatingOut();
+}
+function renderEatingOut(){
+  const host=$("eoList"); if(!host) return;
+  const q=($("eoSearch").value||"").trim().toLowerCase();
+  let items=pantry.filter(i=>i.cat==="eatingout");
+  if(q) items=items.filter(i=>(i.name||"").toLowerCase().includes(q)||(i.restaurant||"").toLowerCase().includes(q));
+  if(!items.length){ host.innerHTML=`<div class="empty"><span class="big">No restaurant meals yet</span>Tap <b>＋ Add restaurant meal</b> to save a go-to order like your Jersey Mike's tub, then log it any day with the ＋ button.</div>`; return; }
+  const groups={};
+  items.forEach(i=>{ const r=(i.restaurant||"").trim()||"Other"; (groups[r]=groups[r]||[]).push(i); });
+  const names=Object.keys(groups).sort((a,b)=>a.localeCompare(b));
+  host.innerHTML=names.map(r=>{
+    const list=groups[r].sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(itemHTML).join("");
+    return `<div class="eo-group"><div class="eo-head">📍 ${esc(r)}</div>${list}</div>`;
+  }).join("");
 }
 function pantryNames(){ return pantry.map(i=>(i.name||"").toLowerCase()); }
 function dishKeywords(name){
@@ -1675,6 +1734,7 @@ function renderToday(){
   // day chip + today's meals + target chips
   renderDayChip();
   renderTodayMeals();
+  renderTodayPrep();
   renderTargetChips();
 
   // budget
@@ -1811,9 +1871,6 @@ function renderTodayMeals(){
   const m=meals[todayStr];
   if(!m){ host.innerHTML='<div class="tmeal"><div class="tmeal-body">No meal plan saved for today. Open the <b>Calendar</b> tab to browse, or ask Claude for today\'s cards.</div></div>'; return; }
   let html="";
-  if(m.isPrep && Array.isArray(m.prep) && m.prep.length){
-    html+=`<div class="tmeal"><div class="tmeal-eyebrow">\uD83C\uDF73 Sunday prep</div><div class="tmeal-body"><ul style="margin:0;padding-left:18px">`+m.prep.map(p=>`<li style="margin-bottom:5px">${esc(p)}</li>`).join("")+`</ul></div></div>`;
-  }
   const slotName={b:"Breakfast",l:"Lunch",d:"Dinner"};
   const slotKey={b:"breakfast",l:"lunch",d:"dinner"};
   ["b","l","d"].forEach(which=>{
@@ -1835,6 +1892,147 @@ function renderTodayMeals(){
     }
   });
   host.innerHTML=html;
+}
+function prepTitle(txt){
+  txt=(txt||"").trim();
+  const colon=txt.indexOf(":");
+  if(colon>0 && colon<=42) return txt.slice(0,colon).trim();
+  const dash=txt.search(/\s[\u2014\u2013-]\s/);
+  if(dash>0 && dash<=42) return txt.slice(0,dash).trim();
+  const words=txt.split(/\s+/);
+  return words.slice(0,5).join(" ")+(words.length>5?"\u2026":"");
+}
+function renderTodayPrep(){
+  const wrap=$("t-prep-wrap"), host=$("t-prep"); if(!wrap||!host) return;
+  const m=meals[todayStr];
+  if(!m || !m.isPrep || !Array.isArray(m.prep) || !m.prep.length){ wrap.style.display="none"; host.innerHTML=""; return; }
+  wrap.style.display="block";
+  host.innerHTML=m.prep.map((p,idx)=>
+    `<div class="tmeal"><div class="tmeal-eyebrow"><span>🍳 ${esc(prepTitle(p))}</span></div><div class="tmeal-body">${esc(p)}</div><div style="margin-top:11px"><button class="tmeal-log" style="background:var(--accent);color:#fff;border-color:var(--accent)" onclick="openPrep(${idx})">⏱️ Steps &amp; timers</button></div></div>`
+  ).join("");
+}
+/* ===== detailed Sunday-prep method recipes ===== */
+const PREP_FLAVORS={
+  "honey-garlic":"Honey-garlic glaze: stir together 1 tbsp honey + 1 tsp soy sauce + ¼ tsp garlic powder. Brush it on during the last 5 min of cooking so it caramelizes without burning.",
+  "garlic-parmesan":"Garlic-parmesan: season with ¼ tsp garlic powder + a pinch of salt before cooking, then sprinkle 2 tbsp grated parmesan over the top for the last 5 min until it melts.",
+  "lemon-herb":"Lemon-herb: rub with ½ tsp dried Italian herbs + ¼ tsp garlic powder + a pinch of salt. Squeeze ½ a lemon over it the moment it comes out.",
+  "lemon-pepper":"Lemon-pepper: season with ½ tsp black pepper + a pinch of salt, then squeeze ½ a lemon over it right after cooking.",
+  "bbq":"BBQ: season with a pinch of salt + ¼ tsp garlic powder, then brush about 1 tbsp BBQ sauce over the portion for just the last 5 min.",
+  "teriyaki":"Teriyaki: brush with 1 tbsp teriyaki sauce (or mix 1 tsp soy + 1 tsp honey + a pinch of garlic powder) during the last 5 min.",
+  "greek":"Greek: season with ½ tsp dried oregano + ¼ tsp garlic powder + a pinch of salt, and finish with a squeeze of ½ a lemon.",
+  "italian":"Italian: ½ tsp dried Italian seasoning + ¼ tsp garlic powder + a pinch of salt before cooking.",
+  "garlic-herb":"Garlic-herb: ¼ tsp garlic powder + ½ tsp dried parsley or Italian herbs + a pinch of salt.",
+  "curry":"Curry (mild): ½ tsp mild curry powder + ¼ tsp garlic powder + a pinch of salt. Curry powder is warm, not spicy.",
+  "pesto":"Pesto: cook it plain, then toss the warm portion with about 1 tbsp jarred pesto.",
+  "fajita":"Fajita: ¼ tsp cumin + ¼ tsp garlic powder + a pinch of salt. Add ¼ tsp mild chili powder only if you want — leave it out to keep it gentle.",
+  "taco":"Taco: ¼ tsp cumin + ¼ tsp garlic powder + a pinch of salt. Skip chili powder to keep it mild."
+};
+function capWords(s){ return (s||"").replace(/\b\w/g,c=>c.toUpperCase()); }
+function flavorText(ph){
+  const low=(ph||"").toLowerCase();
+  let key=Object.keys(PREP_FLAVORS).find(k=>low.includes(k));
+  if(!key) key=Object.keys(PREP_FLAVORS).find(k=>low.includes(k.split("-")[0]));
+  return key ? PREP_FLAVORS[key] : (capWords(ph)+": season to taste, or keep it plain and sauce it the day you eat it.");
+}
+function prepNum(re,txt,def){ const m=re.exec(txt); return m?parseInt(m[1],10):def; }
+function buildPrepRecipe(txt){
+  const t=txt||"", low=t.toLowerCase();
+  const tempM=/(\d{3})\s*°?\s*f/i.exec(t), temp=tempM?parseInt(tempM[1],10):null;
+  const timeM=/(\d+)\s*min/i.exec(t), mins=timeM?parseInt(timeM[1],10):null;
+  const forM=/[—\-–]\s*for\s+([^.]+)/i.exec(t); const forNote=forM?forM[1].trim().replace(/\.$/,""):"";
+  const parenM=/\(([^)]+)\)/.exec(t);
+  const flavors=parenM?parenM[1].split(/,\s*/).map(s=>s.trim()).filter(Boolean):[];
+  if(/hard.?boil/.test(low)) return prepEggs(prepNum(/(\d+)\s*eggs?/i,t,6),forNote);
+  if(/sheet\s*pan\s*chicken/.test(low)){ const br=prepNum(/(\d+)\s*breasts?/i,t,4); return prepChicken("oven",br,prepNum(/(\d+)\s*portions?/i,t,br),temp||400,mins||22,flavors,forNote); }
+  if(/(batch|shred)/.test(low) && /chicken/.test(low)){ const br=prepNum(/(\d+)\s*breasts?/i,t,4); return prepChicken("airfry",br,prepNum(/(\d+)\s*portions?/i,t,br),temp||380,mins||22,flavors,forNote); }
+  if(/steak/.test(low)) return prepSteak(prepNum(/(\d+)\s*(?:chuck|steak|omaha)/i,t,1),temp||400,mins||8,forNote);
+  if(/wash|chop|romaine|lettuce|cucumber|apple|produce/.test(low)) return prepProduce(low);
+  return null;
+}
+function prepEggs(count,forNote){
+  const steps=[
+    {title:"Set the pot", text:`Place ${count} egg${count>1?"s":""} in a single layer in a saucepan — don't stack them. Cover with cold water until it sits about 1 inch above the eggs.`, timer:0},
+    {title:"Bring to a boil", text:"Set over high heat, uncovered, and bring it to a full rolling boil.", timer:0},
+    {title:"Off heat, covered — 10 min", text:"The second it hits a rolling boil, turn the heat off, cover the pot, and leave it on the burner. This gentle carry-over cook sets firm yolks without the gray-green ring.", timer:600},
+    {title:"Ice bath — 5 min", text:"Move the eggs straight into a bowl of ice water. Cooling them fast stops the cooking and makes the shells slip off cleanly.", timer:300},
+    {title:"Peel or store", text:"Tap the wide (air-pocket) end, roll to crackle the shell, and peel under running water — or keep them unpeeled in the fridge up to 1 week and peel the day you eat them.", timer:0}
+  ];
+  const r={ servings:1, base:1, ingredients:[{id:"e",amt:count,name:"large eggs"}], steps, parsed:false };
+  r.yieldText=`Makes ${count} hard-boiled eggs`+(forNote?` · ${forNote}`:"");
+  return r;
+}
+function prepChicken(method,breasts,portions,temp,mins,flavors,forNote){
+  const oven=method==="oven", steps=[];
+  steps.push({title:"This week's batch", text:`Cook ${breasts} chicken breast${breasts>1?"s":""} and split into ${portions} portion${portions>1?"s":""}.`+(forNote?` Set aside ${forNote}.`:"")+(flavors.length?` Flavors this week: ${flavors.join(", ")}.`:""), timer:0});
+  steps.push(oven
+    ? {title:"Heat the oven", text:`Preheat to ${temp}°F with a rack in the center. Line a sheet pan with foil or parchment for easy cleanup.`, timer:0}
+    : {title:"Preheat the air fryer", text:`Set the air fryer to ${temp}°F and run it empty for 3 min so the chicken sears on contact instead of steaming.`, timer:0});
+  steps.push({title:"Even out the thickness", text:"Pat the breasts very dry with paper towels. Slice any thick ones horizontally into even cutlets (or pound to about ¾ inch) so every piece finishes at the same time.", timer:0});
+  steps.push({title:"Oil & base season", text:"Rub everything lightly with olive oil so the seasoning sticks, then hit all of it with a pinch of salt, black pepper, and ¼ tsp garlic powder as a base.", timer:0});
+  if(flavors.length){ flavors.forEach(ph=>steps.push({title:"Flavor — "+capWords(ph), text:flavorText(ph), timer:0})); }
+  else steps.push({title:"Season", text:"Season to taste, or keep it plain and sauce each portion the day you eat it.", timer:0});
+  steps.push(oven
+    ? {title:`Bake — ${mins} min`, text:`Spread the pieces out so they aren't touching. Bake at ${temp}°F for about ${mins} min. Brush any honey-garlic, BBQ, or teriyaki glaze (and sprinkle parmesan) on for just the last 5 min so it doesn't burn.`, timer:mins*60}
+    : {title:`Air fry — ${mins} min`, text:`Lay the pieces in a single layer — work in batches if your basket is small. Air fry at ${temp}°F for about ${mins} min, flipping halfway. Add any glaze for the last 3–4 min only.`, timer:mins*60});
+  steps.push({title:"Check it's done — 165°F", text:"Check the thickest piece with a thermometer: it needs to read 165°F and the juices should run clear. Give it a few more minutes if it's not there yet.", timer:0});
+  steps.push({title:"Rest — 5 min", text:"Let it rest 5 min before cutting so the juices stay in the meat instead of running out onto the board.", timer:300});
+  steps.push(oven
+    ? {title:"Slice or cube", text:"Slice across the grain for wraps and salads, or cube for bowls.", timer:0}
+    : {title:"Shred or slice", text:"Shred with two forks while it's still warm (it pulls apart easiest warm), or slice for bowls and wraps.", timer:0});
+  steps.push({title:"Portion & store", text:`Divide into ${portions} equal portion${portions>1?"s":""} in containers. Keeps about 4 days in the fridge. If you left portions plain, sauce them the day you eat them so nothing goes soggy.`, timer:0});
+  const ingredients=[
+    {id:"c",amt:breasts,name:"chicken breasts"},
+    {id:"o",amt:1,unit:"tbsp",name:"olive oil"},
+    {id:"s",amt:1,unit:"pinch",name:"salt"},
+    {id:"p",amt:1,unit:"pinch",name:"black pepper"},
+    {id:"g",amt:0.25,unit:"tsp",name:"garlic powder"}
+  ];
+  const r={ servings:1, base:1, ingredients, steps, parsed:false };
+  r.yieldText=`Makes ${portions} portion${portions>1?"s":""}`+(forNote?` · ${forNote}`:"");
+  return r;
+}
+function prepSteak(count,temp,mins,forNote){
+  const steps=[
+    {title:"This batch", text:`Cube ${count} chuck eye steak${count>1?"s":""} into steak bites.`+(forNote?` For ${forNote}.`:""), timer:0},
+    {title:"Cut into cubes", text:"Pat the steak very dry, then cut into even 1-inch cubes so they cook at the same rate. Drier meat browns much better.", timer:0},
+    {title:"Season", text:"Toss the cubes with 1 tsp olive oil, a pinch of salt, black pepper, and ¼ tsp garlic powder.", timer:0},
+    {title:"Preheat the air fryer", text:`Run the air fryer empty at ${temp}°F for 3 min so the bites sear instead of steam.`, timer:0},
+    {title:`Air fry — ${mins} min`, text:`Add the cubes in a single layer with space between them (batch it if needed). Air fry at ${temp}°F for about ${mins} min, shaking the basket halfway. That's roughly medium — pull around 135°F, or 145°F for medium-well.`, timer:mins*60},
+    {title:"Rest — 3 min", text:"Let the bites rest a few minutes so they stay juicy.", timer:180},
+    {title:"Cool & store", text:"Cool, then store in a container — best within 3 days. Reheat briefly so they don't overcook.", timer:0}
+  ];
+  const ingredients=[
+    {id:"st",amt:count,name:"chuck eye steak"},
+    {id:"o",amt:1,unit:"tsp",name:"olive oil"},
+    {id:"s",amt:1,unit:"pinch",name:"salt"},
+    {id:"p",amt:1,unit:"pinch",name:"black pepper"},
+    {id:"g",amt:0.25,unit:"tsp",name:"garlic powder"}
+  ];
+  const r={ servings:1, base:1, ingredients, steps, parsed:false };
+  r.yieldText="Steak bites"+(forNote?` · ${forNote}`:"");
+  return r;
+}
+function prepProduce(low){
+  const steps=[];
+  if(/romaine|lettuce/.test(low)) steps.push({title:"Romaine", text:"Rinse the leaves and dry them really well — a salad spinner or a clean towel; wet greens wilt fast. Chop, then store in a container lined with a paper towel to soak up moisture. Keeps 4–5 days.", timer:0});
+  if(/cucumber/.test(low)) steps.push({title:"Cucumber", text:"Rinse and slice. Store in its own container and don't salt it ahead, or it'll go watery. Good for 3–4 days.", timer:0});
+  if(/apple/.test(low)) steps.push({title:"Apples", text:"Slice fresh if you can. To pre-slice without browning, toss the slices with a splash of water and a tiny squeeze of lemon, then seal in a container.", timer:0});
+  if(/tomato/.test(low)) steps.push({title:"Tomatoes", text:"Rinse and keep them whole at room temp until you cook them — they're used cooked here, not raw.", timer:0});
+  if(!steps.length) steps.push({title:"Wash & chop", text:"Rinse, dry well, and chop. Store each item in its own container so nothing goes soggy.", timer:0});
+  steps.push({title:"Label everything", text:"Label each container with what's inside and the date so the week runs on autopilot.", timer:0});
+  const r={ servings:1, base:1, ingredients:[], steps, parsed:false };
+  r.yieldText="Produce prep for the week";
+  return r;
+}
+function openPrep(idx){
+  const m=meals[todayStr]; if(!m||!Array.isArray(m.prep)||!m.prep[idx]) return;
+  const txt=m.prep[idx], title=prepTitle(txt);
+  cook.which=null; cook.isPrep=true;
+  const built=buildPrepRecipe(txt);
+  cook.recipe = built || parseRecipe(txt,title);
+  cook.recipe.name=title; cook.recipe.cal=0; cook.recipe.pro=0; cook.recipe.nut={};
+  cook.base=cook.recipe.base||1; cook.servings=1;
+  renderCook(); $("cookOverlay").classList.add("show"); globalTick();
 }
 function logTodayMeal(which){
   const m=meals[todayStr]; if(!m||!m[which]) return;
@@ -2048,7 +2246,7 @@ function mealNutrition(meal){
   return planned;
 }
 
-const cook={ which:null, recipe:null, servings:1, base:1, timers:{} };
+const cook={ which:null, recipe:null, servings:1, base:1, timers:{}, isPrep:false };
 
 function stripHtml(s){ return (s||"").replace(/<[^>]+>/g,"").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">"); }
 function detectTimer(s){
@@ -2098,7 +2296,7 @@ function fmtTime(sec){ sec=Math.max(0,Math.round(sec)); const m=Math.floor(sec/6
 
 function openCook(which){
   const m=meals[todayStr]; if(!m||!m[which]||m[which].parents) return;
-  cook.which=which; cook.recipe=getRecipe(m[which]); cook.base=cook.recipe.base; cook.servings=cook.recipe.servings;
+  cook.which=which; cook.isPrep=false; cook.recipe=getRecipe(m[which]); cook.base=cook.recipe.base; cook.servings=cook.recipe.servings;
   renderCook(); $("cookOverlay").classList.add("show"); globalTick();
 }
 function closeCook(){ $("cookOverlay").classList.remove("show"); }
@@ -2108,18 +2306,23 @@ function cookLog(){ if(cook.which) logTodayMeal(cook.which); closeCook(); }
 function renderCook(){
   const r=cook.recipe; if(!r) return;
   $("cookTitle").textContent=r.name;
-  const baseCal=(r.cal?r.cal+" cal":"")+(r.cal&&r.pro?" \u00b7 ":"")+(r.pro?r.pro+"g protein":"");
-  const nut=r.nut||{};
-  const badge = nut.fromLabels
-    ? ' <span class="lbl-badge ok">\u2713 from your labels</span>'
-    : (nut.total ? ' <span class="lbl-badge">estimate \u00b7 '+nut.covered+'/'+nut.total+' labeled</span>' : "");
-  $("cookCal").innerHTML=esc(baseCal)+badge;
+  if(cook.isPrep){
+    $("cookCal").textContent = r.yieldText || "";
+  } else {
+    const baseCal=(r.cal?r.cal+" cal":"")+(r.cal&&r.pro?" \u00b7 ":"")+(r.pro?r.pro+"g protein":"");
+    const nut=r.nut||{};
+    const badge = nut.fromLabels
+      ? ' <span class="lbl-badge ok">\u2713 from your labels</span>'
+      : (nut.total ? ' <span class="lbl-badge">estimate \u00b7 '+nut.covered+'/'+nut.total+' labeled</span>' : "");
+    $("cookCal").innerHTML=esc(baseCal)+badge;
+  }
   const hasIng=r.ingredients && r.ingredients.length;
-  $("cookServ").style.display=hasIng?"flex":"none";
+  $("cookServ").style.display=(hasIng && !cook.isPrep)?"flex":"none";
   $("cookServN").textContent=cook.servings;
-  const scale=cook.base?cook.servings/cook.base:1;
+  const scale=(cook.base && !cook.isPrep)?cook.servings/cook.base:1;
   const map={}; if(hasIng) r.ingredients.forEach(i=>{ if(i.id) map[i.id]=i; });
-  $("cookIng").innerHTML = hasIng ? '<div class="cook-h">Ingredients</div><ul class="ing-list">'+r.ingredients.map(function(i){
+  $("cookIng").innerHTML = hasIng ? '<div class="cook-h">'+(cook.isPrep?'You\'ll need':'Ingredients')+'</div><ul class="ing-list">'+r.ingredients.map(function(i){
+    if(cook.isPrep) return '<li><span class="ing-amt">'+esc(amtUnit(i,1))+'</span><span class="ing-nm">'+esc(i.name)+'</span></li>';
     const flag = ingHasData(i.name) ? "" : '<span class="ing-flag">\u26A0 no label yet</span>';
     const sc=ingScaledNutrition(i,scale);
     const calTag = sc ? '<span class="ing-cal">'+sc.cal+' cal</span>' : '';
@@ -2138,7 +2341,8 @@ function renderCook(){
     }
     return '<div class="step"><div class="step-num">'+(i+1)+'</div><div class="step-main">'+(s.title?'<div class="step-t">'+esc(s.title)+'</div>':"")+'<div class="step-x">'+txt+'</div>'+timerHtml+'</div></div>';
   }).join("");
-  $("cookNote").textContent = r.parsed ? "Steps auto-pulled from the plan. Ask Claude to fully flesh this one out with exact amounts." : "";
+  $("cookNote").textContent = (!cook.isPrep && r.parsed) ? "Steps auto-pulled from the plan. Ask Claude to fully flesh this one out with exact amounts." : "";
+  const lb=$("cookLogBtn"); if(lb) lb.style.display=cook.isPrep?"none":"block";
 }
 /* ===== audible alarm (Web Audio — works on iOS once unlocked by a tap) ===== */
 let audioCtx=null;
