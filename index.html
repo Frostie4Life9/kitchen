@@ -903,6 +903,8 @@ function showTab(name){
   .ing-cal{ flex:0 0 auto; font-size:12px; font-weight:700; color:var(--ink-faded); white-space:nowrap; }
   .lbl-badge{ display:inline-block; margin-left:8px; font-size:9.5px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; color:var(--ink-faded); background:var(--paper-warm); border:1px solid var(--rule); border-radius:999px; padding:2px 7px; vertical-align:middle; }
   .lbl-badge.ok{ color:var(--today); background:var(--today-soft); border-color:var(--today); }
+  .lbl-hint{ margin-top:8px; font-size:12px; line-height:1.5; color:var(--orange); background:var(--orange-soft); border:1px solid var(--orange); border-radius:10px; padding:9px 11px; font-weight:600; }
+  .ing-flag.fix{ cursor:pointer; text-transform:none; letter-spacing:0; font-weight:700; }
   .step-x b{ color:var(--ink); }
 </style>
 <script>
@@ -2300,6 +2302,22 @@ function ingScaledNutrition(ing, scale){
   return { cal:Math.round((it.cal||0)*factor), pro:Math.round((it.pro||0)*factor*10)/10,
            carb:(it.carb||0)*factor, fat:(it.fat||0)*factor, item:it };
 }
+/* why did an ingredient convert (or not)? used for on-card diagnostics so an
+   "estimate" never looks like a silent failure — it names the blocker and the fix */
+function ingConvertInfo(ing){
+  if(isNegligibleIng(ing)) return {state:"skip"};
+  const it=matchPantryItem(ing.name);
+  if(!it) return {state:"nolabel"};
+  if(ingScaledNutrition(ing,1)) return {state:"ok", item:it};
+  const idim=unitDim(canonUnit(ing.unit||""));
+  const recipeSide = idim==="vol" ? "volume ("+(ing.unit||"")+")"
+                   : idim==="wt"  ? "weight ("+(ing.unit||"")+")"
+                   : "count";
+  const dims=[...new Set(extractMeasures(it.serving).map(m=>m.dim==="vol"?"volume":"weight"))];
+  const labelSide = dims.length ? dims.join(" & ") : (leadingMeasureDim(it.serving)?"a measure":"count");
+  return {state:"nounit", item:it, recipeSide, labelSide,
+          msg:"label is by "+labelSide+", recipe is by "+recipeSide };
+}
 function mealNutrition(meal){
   const planned={ cal:(meal&&meal.c)||0, pro:meal?parseProtein(meal.r):0, carb:0, fat:0,
                   fromLabels:false, total:0, covered:0 };
@@ -2393,7 +2411,18 @@ function renderCook(){
     const badge = nut.fromLabels
       ? ' <span class="lbl-badge ok">\u2713 from your labels</span>'
       : (nut.total ? ' <span class="lbl-badge">estimate \u00b7 '+nut.covered+'/'+nut.total+' labeled</span>' : "");
-    $("cookCal").innerHTML=esc(baseCal)+badge;
+    let hint="";
+    if(nut.total && !nut.fromLabels){
+      const noUnit=[], noLabel=[];
+      r.ingredients.forEach(function(i){ const inf=ingConvertInfo(i); if(inf.state==="nounit") noUnit.push({n:i.name,inf:inf}); else if(inf.state==="nolabel") noLabel.push(i.name); });
+      if(noUnit.length){
+        const names=noUnit.map(function(x){return stripHtml(x.n);}).join(", ");
+        hint='<div class="lbl-hint">Still an estimate \u2014 '+esc(names)+': '+esc(noUnit[0].inf.msg)+'. Open it in the Pantry tab and add the recipe\u2019s measure to its serving (e.g. make it \u201c\u00be cup (170g)\u201d) so it can convert.</div>';
+      } else if(noLabel.length){
+        hint='<div class="lbl-hint">Scan a label for: '+esc(noLabel.join(", "))+'.</div>';
+      }
+    }
+    $("cookCal").innerHTML=esc(baseCal)+badge+hint;
   }
   const hasIng=r.ingredients && r.ingredients.length;
   $("cookServ").style.display=(hasIng && !cook.isPrep)?"flex":"none";
@@ -2402,7 +2431,10 @@ function renderCook(){
   const map={}; if(hasIng) r.ingredients.forEach(i=>{ if(i.id) map[i.id]=i; });
   $("cookIng").innerHTML = hasIng ? '<div class="cook-h">'+(cook.isPrep?'You\'ll need':'Ingredients')+'</div><ul class="ing-list">'+r.ingredients.map(function(i){
     if(cook.isPrep) return '<li><span class="ing-amt">'+esc(amtUnit(i,1))+'</span><span class="ing-nm">'+esc(i.name)+'</span></li>';
-    const flag = ingHasData(i.name) ? "" : '<span class="ing-flag">\u26A0 no label yet</span>';
+    const info=ingConvertInfo(i);
+    let flag="";
+    if(info.state==="nolabel") flag='<span class="ing-flag">\u26A0 no label yet</span>';
+    else if(info.state==="nounit") flag='<span class="ing-flag fix" onclick="openEdit(\''+info.item.id+'\')">\u26A0 '+esc(info.msg)+' \u00b7 tap to fix</span>';
     const sc=ingScaledNutrition(i,scale);
     const calTag = sc ? '<span class="ing-cal">'+sc.cal+' cal</span>' : '';
     return '<li><span class="ing-amt">'+esc(amtUnit(i,scale))+'</span><span class="ing-nm">'+esc(i.name)+flag+'</span>'+calTag+'</li>';
@@ -2703,7 +2735,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v1.1.0 · 2026-06-14";   // bump this each time you upload a new index.html
+const APP_VERSION="v1.2.0 · 2026-06-14";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
