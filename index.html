@@ -2163,14 +2163,32 @@ function matchPantryItem(name){
   const toks=ingTokens(name);
   if(toks.length===0 || toks.every(w=>NEGLIGIBLE_ING.has(w))) return null;
   const ln=(name||"").toLowerCase();
+  const noun=toks[toks.length-1];   // food noun is usually last: "shredded cheddar", "crunchy granola"
   const items=livePantry();
+  /* score every pantry item and take the best, rather than the first substring hit.
+     This stops a brand word from hijacking a match — e.g. "honey" the ingredient must
+     not bind to "Post Honey Roasted Granola" just because that name contains "honey". */
+  let best=null, bestScore=0, bestLen=1e9;
   for(const it of items){
     if(typeof it.cal!=="number") continue;
     const pn=(it.name||"").toLowerCase();
-    for(const w of toks){ if(w.length>=4 && pn.indexOf(w)>=0) return it; }
-    for(const w of ingTokens(pn)){ if(w.length>=4 && ln.indexOf(w)>=0) return it; }
+    const ptoks=ingTokens(pn);
+    let score=0;
+    for(const w of toks){
+      if(w.length<3) continue;
+      if(ptoks.includes(w)) score+=3;                         // shared whole word
+      else if(w.length>=4 && pn.indexOf(w)>=0) score+=2;      // substring of pantry name
+    }
+    for(const w of ptoks){
+      if(w.length>=4 && !toks.includes(w) && ln.indexOf(w)>=0) score+=1;  // pantry word inside ingredient
+    }
+    if(noun && ptoks.includes(noun)) score+=2;                            // ingredient noun present
+    if(noun && ptoks.length && ptoks[ptoks.length-1]===noun) score+=4;    // ...and it is the pantry food noun
+    if(score>bestScore || (score===bestScore && score>0 && pn.length<bestLen)){
+      bestScore=score; best=it; bestLen=pn.length;
+    }
   }
-  return null;
+  return bestScore>0 ? best : null;
 }
 function ingHasData(name){
   const toks=ingTokens(name);
@@ -2194,32 +2212,90 @@ function parseQtyStr(str){
   m=str.match(/^([\d.]+)/); if(m) return parseFloat(m[1]);
   return null;
 }
-function unitClassOf(str){
-  const s=(""+(str||"")).toLowerCase();
-  if(/\b(tbsp|tablespoon)/.test(s)) return "tbsp";
-  if(/\b(tsp|teaspoon)/.test(s)) return "tsp";
-  if(/\bcup/.test(s)) return "cup";
-  return "ea"; // count-based: eggs, patties, slices, tortillas, etc.
+/* ---- unit conversion engine ----
+   Volume units convert through milliliters and weight units through grams; anything
+   else is treated as a countable unit (eggs, patties, slices, cans, tortillas...).
+   A label's serving string can carry more than one unit — e.g. "1/2 cup (53g)" or
+   "2 patties (68g)" — so we capture EVERY quantity+unit pair and match the recipe
+   ingredient against whichever dimension lines up. That means a recipe written in
+   tsp can draw from a label written per tbsp, a cup amount from a per-cup label,
+   grams from a per-gram label, and so on. */
+const VOL_ML={tbsp:14.7868,tsp:4.92892,cup:236.588,floz:29.5735,ml:1,l:1000};
+const WT_G={g:1,kg:1000,oz:28.3495,lb:453.592};
+const FUZZY_UNITS=new Set(["pinch","handful","splash","dash","drizzle","sprinkle","squeeze"]);
+function canonUnit(u){
+  u=(""+(u||"")).toLowerCase().replace(/\./g,"").replace(/\s+/g,"");
+  const m={tablespoon:"tbsp",tablespoons:"tbsp",tbsp:"tbsp",tbs:"tbsp",
+    teaspoon:"tsp",teaspoons:"tsp",tsp:"tsp",
+    cup:"cup",cups:"cup",
+    fluidounce:"floz",fluidounces:"floz",floz:"floz",
+    milliliter:"ml",milliliters:"ml",millilitre:"ml",millilitres:"ml",ml:"ml",
+    liter:"l",liters:"l",litre:"l",litres:"l",l:"l",
+    kilogram:"kg",kilograms:"kg",kg:"kg",
+    gram:"g",grams:"g",gm:"g",g:"g",
+    ounce:"oz",ounces:"oz",oz:"oz",
+    pound:"lb",pounds:"lb",lb:"lb",lbs:"lb"};
+  return m[u]||null;
 }
-function servingBasis(item){
-  let q=parseQtyStr(item.serving); if(q==null||q<=0) q=1;
-  return { qty:q, unit:unitClassOf(item.serving) };
+function unitDim(cu){ return (cu&&cu in VOL_ML)?"vol":(cu&&cu in WT_G)?"wt":null; }
+function unitBase(qty,cu){ const d=unitDim(cu); if(d==="vol") return qty*VOL_ML[cu]; if(d==="wt") return qty*WT_G[cu]; return null; }
+/* read one number: "1 1/2", "3/4", decimals, or a unicode fraction */
+function readNum(tok){
+  if(tok==null) return null; tok=(""+tok).trim();
+  let m=tok.match(/^(\d+)\s+(\d+)\s*\/\s*(\d+)$/); if(m) return (+m[1])+(+m[2]/+m[3]);
+  m=tok.match(/^(\d+)\s*\/\s*(\d+)$/); if(m) return (+m[1])/(+m[2]);
+  if(UNI_FRAC[tok]!=null) return UNI_FRAC[tok];
+  const v=parseFloat(tok); return isNaN(v)?null:v;
 }
-function ingClass(ing){
-  const u=(ing.unit||"").toLowerCase();
-  if(u==="tbsp"||u==="tsp"||u==="cup"||u==="pinch"||u==="handful") return u;
-  return "ea";
+const QTY_RE="(\\d+\\s+\\d+\\s*\\/\\s*\\d+|\\d+\\s*\\/\\s*\\d+|\\d*\\.?\\d+|[\\u00BC-\\u00BE\\u2150-\\u215E])";
+const UNIT_RE="(tablespoons?|tbsp|tbs|teaspoons?|tsp|cups?|fluid\\s*ounces?|fl\\.?\\s*oz\\.?|floz|milliliters?|millilitres?|ml|liters?|litres?|kilograms?|kg|grams?|gm|ounces?|oz|pounds?|lbs?|g)(?![a-z])";
+/* pull every {dim,base} measure out of a label serving string */
+function extractMeasures(str){
+  const out=[]; if(!str) return out;
+  const re=new RegExp(QTY_RE+"\\s*"+UNIT_RE,"gi"); let m;
+  while((m=re.exec(str))){
+    const q=readNum(m[1]), cu=canonUnit(m[2]); if(q==null||!cu) continue;
+    const b=unitBase(q,cu); if(b!=null&&b>0) out.push({dim:unitDim(cu),base:b});
+  }
+  return out;
 }
-/* nutrition contribution of ONE ingredient at a given serving scale, or null
-   if it can't be confidently computed from labels */
+/* does the serving START with a volume/weight measure? if so it's a pure measure
+   (e.g. "1/2 cup (53g)") and has no countable basis — you can't ask how many eggs
+   are in "1/2 cup" */
+function leadingMeasureDim(str){
+  const m=(""+(str||"")).trim().match(new RegExp("^"+QTY_RE+"\\s*"+UNIT_RE,"i"));
+  return m?unitDim(canonUnit(m[2])):null;
+}
+/* garnish, spice, water — too small or fuzzy to matter for the budget */
+function isNegligibleIng(ing){
+  if(!ing) return true;
+  if(FUZZY_UNITS.has((ing.unit||"").toLowerCase())) return true;
+  const toks=ingTokens(ing.name);
+  return toks.length===0 || toks.every(w=>NEGLIGIBLE_ING.has(w));
+}
+/* nutrition contribution of ONE ingredient at a given serving scale, or null if it
+   genuinely can't be bridged to the matched label (e.g. recipe is in cups but the
+   label only gives weight, with no shared dimension to convert through) */
 function ingScaledNutrition(ing, scale){
   scale=scale||1;
-  const toks=ingTokens(ing.name);
-  if(toks.length===0 || toks.every(w=>NEGLIGIBLE_ING.has(w))) return null;
+  if(isNegligibleIng(ing)) return null;
   const it=matchPantryItem(ing.name); if(!it) return null;
-  const sb=servingBasis(it), ic=ingClass(ing);
-  if(ic!==sb.unit) return null;            // can't convert e.g. "1 slice" vs a "¼ cup" label
-  const factor=((ing.amt||0)*scale)/sb.qty;
+  const amt=(ing.amt||0)*scale;
+  const icu=canonUnit(ing.unit||"");
+  const idim=unitDim(icu);
+  let factor=null;
+  if(idim){
+    // ingredient is a volume or weight amount: find a label measure in the same dimension
+    const ingBase=unitBase(amt,icu);
+    const match=extractMeasures(it.serving).find(c=>c.dim===idim);
+    if(match&&ingBase!=null) factor=ingBase/match.base;
+  } else {
+    // count-based ingredient (eggs, patties, slices, cans, tortillas, fruit...)
+    if(leadingMeasureDim(it.serving)) return null;      // label is a pure measure, not a count
+    let labelCount=parseQtyStr(it.serving); if(labelCount==null||labelCount<=0) labelCount=1;
+    factor=amt/labelCount;
+  }
+  if(factor==null||!isFinite(factor)) return null;
   return { cal:Math.round((it.cal||0)*factor), pro:Math.round((it.pro||0)*factor*10)/10,
            carb:(it.carb||0)*factor, fat:(it.fat||0)*factor, item:it };
 }
@@ -2232,13 +2308,12 @@ function mealNutrition(meal){
   if(!ings||!ings.length) return planned;
   let cal=0,pro=0,carb=0,fat=0, total=0, covered=0, allConvertible=true;
   for(const ing of ings){
-    const toks=ingTokens(ing.name);
-    if(toks.length===0 || toks.every(w=>NEGLIGIBLE_ING.has(w))) continue; // negligible
+    if(isNegligibleIng(ing)) continue;                                 // garnish / spice / water
     total++;
     if(!matchPantryItem(ing.name)){ allConvertible=false; continue; }   // no label scanned
-    covered++;
+    covered++;                                                          // has a label
     const n=ingScaledNutrition(ing,1);
-    if(!n){ allConvertible=false; continue; }                          // label found but can't convert
+    if(!n){ allConvertible=false; continue; }                          // labeled but units won't bridge
     cal+=n.cal; pro+=n.pro; carb+=n.carb; fat+=n.fat;
   }
   if(total>0 && covered===total && allConvertible){
