@@ -675,6 +675,7 @@
       <textarea id="restoreBox" placeholder="Paste a backup here to restore…" style="height:90px"></textarea>
       <button class="btn ghost" style="width:100%;margin-top:10px" onclick="restorePantry()">⬇️ Restore from paste</button>
     </div>
+    <div class="settings-note" style="text-align:center;margin-top:20px;opacity:0.8">Kitchen <span id="appVersion"></span></div>
   </div>
 </div>
 
@@ -2702,6 +2703,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
+const APP_VERSION="v1.1.0 · 2026-06-14";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
@@ -2713,6 +2715,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
   renderToday();
   showTab('today');
   globalTick();
+  const vEl=$("appVersion"); if(vEl) vEl.textContent=APP_VERSION;
 })();
 </script>
 </body>
