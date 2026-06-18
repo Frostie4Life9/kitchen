@@ -353,6 +353,7 @@
   .sanity-box.show { display: block; }
   .sanity-box.ok { background: var(--green-soft); border-color: var(--green); color: var(--green); }
   .sanity-box.bad { background: var(--orange-soft); border-color: var(--orange); color: #7c2d12; }
+  .sanity-box.note { background: var(--paper-warm); border-color: var(--rule); color: var(--ink-soft); }
   .sanity-box b { font-weight: 700; }
   .spinner { display: inline-block; width: 15px; height: 15px; border: 2px solid var(--orange-soft); border-top-color: var(--orange); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
   @keyframes spin { to { transform: rotate(360deg); } }
@@ -1289,11 +1290,11 @@ function seedPantry(){
 /* ----- category chips + select ----- */
 function buildCatUI(){
   const chips=$("catChips"); chips.innerHTML="";
-  const present=new Set(pantry.map(i=>i.cat));
+  const present=new Set(ingredientItems().map(i=>i.cat));   // restaurant meals never get an Ingredients chip
   const mk=(val,label)=>{ const b=document.createElement("button"); b.className="chip"+(prefs.cat===val?" on":""); b.textContent=label; b.onclick=()=>{ prefs.cat=val; savePrefs(); buildCatUI(); render(); }; return b; };
   chips.appendChild(mk("all","All"));
   CATS.forEach(([v,l])=>{ if(present.has(v)) chips.appendChild(mk(v,l)); });
-  const sel=$("mCat"); if(sel){ sel.innerHTML='<option value="">Auto-detect</option>'+CATS.map(([v,l])=>`<option value="${v}">${l}</option>`).join(""); }
+  const sel=$("mCat"); if(sel){ sel.innerHTML='<option value="">Auto-detect</option>'+CATS.filter(([v])=>v!=="eatingout").map(([v,l])=>`<option value="${v}">${l}</option>`).join(""); }
 }
 
 /* ----- render list ----- */
@@ -1316,9 +1317,16 @@ function healthBadges(it){
   if(it.fav) out.push('<span class="badge pd-mid">⭐ Staple</span>');
   return out.length?`<div class="badges">${out.join("")}</div>`:"";
 }
+/* The pantry array holds two different kinds of thing: real ingredients you
+   scan/add, and saved restaurant meals (cat==="eatingout"). They must never mix
+   — the Ingredients tab, totals, recipe matching and label conversion only ever
+   look at ingredients; the Eating-out tab only ever looks at restaurant meals. */
+function ingredientItems(){ return pantry.filter(i=>i.cat!=="eatingout"); }
+function eatingOutItems(){ return pantry.filter(i=>i.cat==="eatingout"); }
 function visibleItems(){
   const q=($("search").value||"").trim().toLowerCase();
   let arr=pantry.filter(i=>{
+    if(i.cat==="eatingout") return false;                 // restaurant meals live in their own tab
     if(prefs.cat!=="all" && i.cat!==prefs.cat) return false;
     if(q && !((i.name||"").toLowerCase().includes(q) || (i.note||"").toLowerCase().includes(q))) return false;
     return true;
@@ -1373,9 +1381,10 @@ function itemHTML(it){
 }
 function render(){
   const items=visibleItems();
-  // totals reflect full pantry (qty-weighted)
-  let tc=0, tp=0; pantry.forEach(i=>{ const q=i.qty||1; tc+=(i.cal||0)*q; tp+=(i.pro||0)*q; });
-  $("totItems").textContent=pantry.length;
+  // totals reflect the ingredient pantry only (qty-weighted) — restaurant meals excluded
+  const ingItems=ingredientItems();
+  let tc=0, tp=0; ingItems.forEach(i=>{ const q=i.qty||1; tc+=(i.cal||0)*q; tp+=(i.pro||0)*q; });
+  $("totItems").textContent=ingItems.length;
   $("totCal").textContent=tc.toLocaleString();
   $("totPro").innerHTML=Math.round(tp)+'<span class="unit">g</span>';
   $("listLabel").textContent = prefs.cat==="all" ? "Your Pantry" : catLabel(prefs.cat);
@@ -1541,9 +1550,11 @@ function checkSanity(){
   const fromMacros=(p||0)*4+(c||0)*4+(f||0)*9;
   const diff=Math.abs(fromMacros-cal);
   box.classList.add("show");
-  if(cal>0 && diff>Math.max(40,cal*0.25)){
-    box.className="sanity-box show bad";
-    box.innerHTML=`<b>Quick check:</b> macros add up to ~${Math.round(fromMacros)} cal but you entered ${cal}. One of these is probably off — make sure they're all for the <b>same serving</b>.`;
+  // Restaurants round and report fiber/sugar-alcohols oddly, so only mention a
+  // gap when it's large — and keep it as a calm note, never an alarm.
+  if(cal>0 && diff>Math.max(150,cal*0.45)){
+    box.className="sanity-box show note";
+    box.innerHTML=`<b>Heads up:</b> the macros add up to about ${Math.round(fromMacros)} cal vs the ${cal} you entered. That's fine if they're from the menu — just make sure each number is for the same serving. No need to change anything.`;
   } else {
     box.className="sanity-box show ok";
     box.innerHTML="<b>Looks consistent</b> — calories and macros line up.";
@@ -1561,7 +1572,7 @@ function buildExport(items,title){
   return `${title}\n\n${lines.join("\n")}\n\nTotal: ${tc} cal · ${Math.round(tp)}g protein across ${items.length} item(s).`;
 }
 function copyOut(text){ copyText(text); $("exportText").value=text; $("exportOverlay").classList.add("show"); showToast("Copied to clipboard"); }
-function sendToClaude(){ if(!pantry.length){ showToast("Pantry is empty"); return; } copyOut(buildExport(pantry,"Here's my full pantry:")); }
+function sendToClaude(){ const ing=ingredientItems(); if(!ing.length){ showToast("Pantry is empty"); return; } copyOut(buildExport(ing,"Here's my full pantry:")); }
 function sendSelected(){ const s=selectedItems(); if(!s.length){ showToast("Select some items first"); return; } copyOut(buildExport(s,"Build me a meal from these pantry items (I'm targeting ~1,400–1,500 cal/day, protein-forward):")); }
 function sendGrocery(){
   const nb=pantry.filter(i=>i.needBuy);
@@ -1574,11 +1585,12 @@ function sendGrocery(){
 function openStats(){
   const body=$("statsBody");
   if(!pantry.length){ body.innerHTML='<p class="hint">No items yet.</p>'; $("statsOverlay").classList.add("show"); return; }
-  let tc=0,tp=0,tcarb=0,tfat=0; pantry.forEach(i=>{ tc+=(i.cal||0); tp+=(i.pro||0); tcarb+=(i.carb||0); tfat+=(i.fat||0); });
-  const byCat={}; pantry.forEach(i=>{ byCat[i.cat]=(byCat[i.cat]||0)+1; });
-  const topPro=[...pantry].filter(i=>i.cal>0).sort((a,b)=>(b.pro/b.cal)-(a.pro/a.cal)).slice(0,5);
+  const ing=ingredientItems();
+  let tc=0,tp=0,tcarb=0,tfat=0; ing.forEach(i=>{ tc+=(i.cal||0); tp+=(i.pro||0); tcarb+=(i.carb||0); tfat+=(i.fat||0); });
+  const byCat={}; ing.forEach(i=>{ byCat[i.cat]=(byCat[i.cat]||0)+1; });
+  const topPro=[...ing].filter(i=>i.cal>0).sort((a,b)=>(b.pro/b.cal)-(a.pro/a.cal)).slice(0,5);
   let html=`<div class="stat-grid">
-      <div class="stat-mini"><div class="sm-val">${pantry.length}</div><div class="sm-lbl">Items</div></div>
+      <div class="stat-mini"><div class="sm-val">${ing.length}</div><div class="sm-lbl">Items</div></div>
       <div class="stat-mini"><div class="sm-val">${Math.round(tp)}g</div><div class="sm-lbl">Protein</div></div>
       <div class="stat-mini"><div class="sm-val">${tc.toLocaleString()}</div><div class="sm-lbl">Calories</div></div>
     </div>`;
@@ -1628,7 +1640,7 @@ function renderEatingOut(){
     return `<div class="eo-group"><div class="eo-head">📍 ${esc(r)}</div>${list}</div>`;
   }).join("");
 }
-function pantryNames(){ return pantry.map(i=>(i.name||"").toLowerCase()); }
+function pantryNames(){ return ingredientItems().map(i=>(i.name||"").toLowerCase()); }
 function dishKeywords(name){
   // pull meaningful words from a dish name to match against pantry
   return (name||"").toLowerCase().replace(/[^a-z\s]/g," ").split(/\s+/)
@@ -1887,7 +1899,7 @@ function renderTodayMeals(){
     const cal=nut.cal||meal.c||0, pro=nut.pro||parseProtein(meal.r);
     const isJM=/JM tub/i.test(meal.n||"");
     const logged=dayState.log.some(x=>x.name===meal.n && x.slot===slotKey[which]);
-    const calLine=`${cal?cal+' cal':''}${cal&&pro?' \u00b7 ':''}${pro?pro+'g P':''}${nut.fromLabels?' \u2713':''}`;
+    const calLine=`${cal?cal+' cal':''}${cal&&pro?' \u00b7 ':''}${pro?pro+'g P':''}${nut.fromLabels?' \u2713':''}${nut.fromEatingOut?' \u00b7 saved \u2713':''}`;
     if(isJM){
       html+=`<div class="tmeal note"><div class="nt"><b>${sn}:</b> ${esc(meal.n)}<br><span style="color:var(--ink-faded);font-size:12px">${calLine}</span></div><button class="tmeal-log ${logged?'done':''}" onclick="logTodayMeal('${which}')">${logged?'Logged \u2713':'\uFF0B Log'}</button></div>`;
     } else {
@@ -2159,8 +2171,10 @@ function ingTokens(str){
 }
 const NEGLIGIBLE_ING=new Set(["water","ice","salt","pepper","lemon","lime","cumin","paprika","oregano","cinnamon","ginger","seasoning","garlic","curry"]);
 function livePantry(){
-  try{ const raw=localStorage.getItem("pantryItems_v2"); if(raw){ const a=JSON.parse(raw); if(Array.isArray(a)) return a; } }catch(e){}
-  return (typeof pantry!=="undefined" && Array.isArray(pantry))?pantry:[];
+  let arr=null;
+  try{ const raw=localStorage.getItem("pantryItems_v2"); if(raw){ const a=JSON.parse(raw); if(Array.isArray(a)) arr=a; } }catch(e){}
+  if(!arr) arr=(typeof pantry!=="undefined" && Array.isArray(pantry))?pantry:[];
+  return arr.filter(i=>i&&i.cat!=="eatingout");   // ingredients only — a saved restaurant meal must never satisfy a recipe ingredient
 }
 function matchPantryItem(name){
   const toks=ingTokens(name);
@@ -2279,6 +2293,23 @@ function isNegligibleIng(ing){
 /* nutrition contribution of ONE ingredient at a given serving scale, or null if it
    genuinely can't be bridged to the matched label (e.g. recipe is in cups but the
    label only gives weight, with no shared dimension to convert through) */
+/* approximate density (grams per mL) for common liquid/semi-liquid staples, used
+   ONLY to bridge a volume recipe amount to a weight-only label (or vice versa).
+   Solids aren't guessed — if there's no shared dimension and no density, we keep
+   the planned estimate rather than invent a number. */
+const DENSITY_G_PER_ML=[
+  [["oil","olive"],0.92],[["honey"],1.42],[["syrup","maple"],1.33],
+  [["soy","tamari"],1.16],[["coconut","milk"],0.98],[["milk"],1.03],
+  [["mayo","mayonnaise"],0.91],[["peanut","butter"],1.08],[["butter"],0.96],
+  [["yogurt","greek"],1.03],[["cream"],1.01],[["vinegar"],1.01],
+  [["caesar","dressing","ranch"],0.97],[["bbq","ketchup","sauce"],1.10],
+  [["water","broth","stock"],1.00],[["pesto"],0.95]
+];
+function densityFor(ingName,itemName){
+  const hay=((ingName||"")+" "+(itemName||"")).toLowerCase();
+  for(const [keys,d] of DENSITY_G_PER_ML){ if(keys.some(k=>hay.indexOf(k)>=0)) return d; }
+  return null;
+}
 function ingScaledNutrition(ing, scale){
   scale=scale||1;
   if(isNegligibleIng(ing)) return null;
@@ -2288,10 +2319,25 @@ function ingScaledNutrition(ing, scale){
   const idim=unitDim(icu);
   let factor=null;
   if(idim){
-    // ingredient is a volume or weight amount: find a label measure in the same dimension
-    const ingBase=unitBase(amt,icu);
-    const match=extractMeasures(it.serving).find(c=>c.dim===idim);
-    if(match&&ingBase!=null) factor=ingBase/match.base;
+    // ingredient is a volume or weight amount
+    const ingBase=unitBase(amt,icu);                 // mL if vol, g if wt
+    const measures=extractMeasures(it.serving);
+    const same=measures.find(c=>c.dim===idim);
+    if(same && ingBase!=null){
+      factor=ingBase/same.base;                       // same dimension: exact
+    } else if(ingBase!=null){
+      // different dimension on the label — bridge through density when we can
+      const dens=densityFor(ing.name, it.name);
+      if(dens){
+        if(idim==="vol"){
+          const wt=measures.find(c=>c.dim==="wt");
+          if(wt) factor=(ingBase*dens)/wt.base;       // recipe mL -> g
+        } else {
+          const vol=measures.find(c=>c.dim==="vol");
+          if(vol) factor=(ingBase/dens)/vol.base;     // recipe g -> mL
+        }
+      }
+    }
   } else {
     // count-based ingredient (eggs, patties, slices, cans, tortillas, fruit...)
     if(leadingMeasureDim(it.serving)) return null;      // label is a pure measure, not a count
@@ -2318,10 +2364,44 @@ function ingConvertInfo(ing){
   return {state:"nounit", item:it, recipeSide, labelSide,
           msg:"label is by "+labelSide+", recipe is by "+recipeSide };
 }
+/* ---- link a planned restaurant meal to a saved Eating-out entry ----
+   The plan stores restaurant slots as plain meals (e.g. "JM tub — turkey +
+   provolone", c:520). The real numbers live in the Eating-out tab. This bridges
+   the two: if a saved restaurant meal matches the planned slot, its numbers win,
+   so the JM bowl shows exactly what you entered instead of the plan placeholder. */
+function eoTokens(str){
+  return (str||"").toLowerCase()
+    .replace(/jm tub|jm bowl|jersey mike'?s|in a tub|mike'?s way|no bread|\(new\)/g," ")
+    .replace(/[^a-z]+/g," ").split(" ")
+    .filter(w=>w.length>=3 && !["the","and","with","tub","bowl","sub","reg","regular","provolone","supreme"].includes(w));
+}
+function matchEatingOut(meal){
+  if(!meal||!meal.n) return null;
+  const eo=eatingOutItems(); if(!eo.length) return null;
+  const mn=(meal.n||"").toLowerCase();
+  const isJM=/jm tub|jm bowl|jersey mike/.test(mn);
+  const mTok=eoTokens(meal.n);
+  let best=null,bestScore=0;
+  for(const it of eo){
+    const hay=((it.name||"")+" "+(it.restaurant||"")).toLowerCase();
+    const itTok=eoTokens((it.name||"")+" "+(it.restaurant||""));
+    const itIsJM=/jm\b|jersey mike/.test(hay);
+    let score=0;
+    if(isJM && itIsJM) score+=3;                              // both Jersey Mike's
+    for(const w of mTok){ if(itTok.includes(w)) score+=2; else if(hay.indexOf(w)>=0) score+=1; }
+    if(score>bestScore){ bestScore=score; best=it; }
+  }
+  return bestScore>=3 ? best : null;     // needs a restaurant match + a protein word, or two solid word hits
+}
 function mealNutrition(meal){
   const planned={ cal:(meal&&meal.c)||0, pro:meal?parseProtein(meal.r):0, carb:0, fat:0,
-                  fromLabels:false, total:0, covered:0 };
+                  fromLabels:false, fromEatingOut:false, total:0, covered:0 };
   if(!meal||!meal.n) return planned;
+  const eo=matchEatingOut(meal);                              // saved restaurant numbers take precedence
+  if(eo){
+    return { cal:eo.cal||0, pro:eo.pro||0, carb:eo.carb||0, fat:eo.fat||0,
+             fromLabels:false, fromEatingOut:true, total:0, covered:0, eoName:eo.name };
+  }
   const lib=RECIPE_LIB[meal.n];
   const ings=(lib&&Array.isArray(lib.ingredients))?lib.ingredients:null;
   if(!ings||!ings.length) return planned;
@@ -2408,20 +2488,14 @@ function renderCook(){
   } else {
     const baseCal=(r.cal?r.cal+" cal":"")+(r.cal&&r.pro?" \u00b7 ":"")+(r.pro?r.pro+"g protein":"");
     const nut=r.nut||{};
-    const badge = nut.fromLabels
+    const badge = nut.fromEatingOut
+      ? ' <span class="lbl-badge ok">\u2713 your saved numbers</span>'
+      : nut.fromLabels
       ? ' <span class="lbl-badge ok">\u2713 from your labels</span>'
-      : (nut.total ? ' <span class="lbl-badge">estimate \u00b7 '+nut.covered+'/'+nut.total+' labeled</span>' : "");
+      : (nut.total ? ' <span class="lbl-badge">planned estimate</span>' : "");
+    // No alarms: when a label or unit doesn't line up we simply keep the planned
+    // estimate. The number still shows; nothing flags or asks to be "fixed".
     let hint="";
-    if(nut.total && !nut.fromLabels){
-      const noUnit=[], noLabel=[];
-      r.ingredients.forEach(function(i){ const inf=ingConvertInfo(i); if(inf.state==="nounit") noUnit.push({n:i.name,inf:inf}); else if(inf.state==="nolabel") noLabel.push(i.name); });
-      if(noUnit.length){
-        const names=noUnit.map(function(x){return stripHtml(x.n);}).join(", ");
-        hint='<div class="lbl-hint">Still an estimate \u2014 '+esc(names)+': '+esc(noUnit[0].inf.msg)+'. Open it in the Pantry tab and add the recipe\u2019s measure to its serving (e.g. make it \u201c\u00be cup (170g)\u201d) so it can convert.</div>';
-      } else if(noLabel.length){
-        hint='<div class="lbl-hint">Scan a label for: '+esc(noLabel.join(", "))+'.</div>';
-      }
-    }
     $("cookCal").innerHTML=esc(baseCal)+badge+hint;
   }
   const hasIng=r.ingredients && r.ingredients.length;
@@ -2431,13 +2505,11 @@ function renderCook(){
   const map={}; if(hasIng) r.ingredients.forEach(i=>{ if(i.id) map[i.id]=i; });
   $("cookIng").innerHTML = hasIng ? '<div class="cook-h">'+(cook.isPrep?'You\'ll need':'Ingredients')+'</div><ul class="ing-list">'+r.ingredients.map(function(i){
     if(cook.isPrep) return '<li><span class="ing-amt">'+esc(amtUnit(i,1))+'</span><span class="ing-nm">'+esc(i.name)+'</span></li>';
-    const info=ingConvertInfo(i);
-    let flag="";
-    if(info.state==="nolabel") flag='<span class="ing-flag">\u26A0 no label yet</span>';
-    else if(info.state==="nounit") flag='<span class="ing-flag fix" onclick="openEdit(\''+info.item.id+'\')">\u26A0 '+esc(info.msg)+' \u00b7 tap to fix</span>';
+    // No per-ingredient warnings. If a label is scanned and the units line up we
+    // show its calories; otherwise we just show the ingredient with no alarm.
     const sc=ingScaledNutrition(i,scale);
     const calTag = sc ? '<span class="ing-cal">'+sc.cal+' cal</span>' : '';
-    return '<li><span class="ing-amt">'+esc(amtUnit(i,scale))+'</span><span class="ing-nm">'+esc(i.name)+flag+'</span>'+calTag+'</li>';
+    return '<li><span class="ing-amt">'+esc(amtUnit(i,scale))+'</span><span class="ing-nm">'+esc(i.name)+'</span>'+calTag+'</li>';
   }).join("")+'</ul>' : "";
   $("cookSteps").innerHTML='<div class="cook-h">Steps</div>'+r.steps.map(function(s,i){
     let txt=esc(s.text).replace(/\{(\w+)\}/g,function(mm,id){ const ing=map[id]; return ing?('<b>'+esc(amtUnit(ing,scale))+'</b> '+esc(ing.name)):mm; });
@@ -2715,7 +2787,7 @@ function openEatSheet(){
     planned.forEach(m=>{ html+=`<div class="eat-suggest"><div class="es-b"><div class="es-n">${esc(m.n)}</div><div class="es-m">~${m.c||0} cal</div></div><button class="log-add es-log" onclick="logMealToToday('any',{n:${JSON.stringify(m.n)},c:${m.c||0}});document.getElementById('eatOverlay').classList.remove('show')">＋ Log</button></div>`; });
   }
   // high-protein pantry items that fit
-  const fits=[...pantry].filter(i=>i.cal>0 && i.cal<=left+40).sort((a,b)=>(b.pro/b.cal)-(a.pro/a.cal)).slice(0,6);
+  const fits=[...ingredientItems()].filter(i=>i.cal>0 && i.cal<=left+40).sort((a,b)=>(b.pro/b.cal)-(a.pro/a.cal)).slice(0,6);
   if(fits.length){
     html+=`<div class="stat-h">High-protein from your pantry</div>`;
     fits.forEach(i=>{ html+=`<div class="eat-suggest"><div class="es-b"><div class="es-n">${esc(i.name)}</div><div class="es-m">${i.cal} cal · ${i.pro}g protein${i.serving?" · "+esc(i.serving):""}</div></div><button class="log-add es-log" onclick="logMealToToday('any',{n:${JSON.stringify(i.name)},c:${i.cal},p:${i.pro}});document.getElementById('eatOverlay').classList.remove('show')">＋ Log</button></div>`; });
@@ -2735,7 +2807,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v1.2.0 · 2026-06-14";   // bump this each time you upload a new index.html
+const APP_VERSION="v1.3.0 · 2026-06-18";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
