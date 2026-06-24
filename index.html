@@ -737,6 +737,17 @@
   </div>
 </div>
 
+<div class="overlay" id="assignOverlay">
+  <div class="sheet">
+    <button class="close" onclick="closeAssign()">×</button>
+    <h2>Link a pantry item</h2>
+    <div class="assign-for" id="assignFor"></div>
+    <input type="text" id="assignSearch" placeholder="Search your pantry…" oninput="renderAssignList()">
+    <div class="assign-list" id="assignList"></div>
+    <div class="cook-note">Linking is remembered — any future recipe using this ingredient will use this item's calories.</div>
+  </div>
+</div>
+
 <div class="overlay" id="logAddOverlay">
   <div class="sheet">
     <button class="close" onclick="document.getElementById('logAddOverlay').classList.remove('show')">×</button>
@@ -906,6 +917,23 @@ function showTab(name){
   .lbl-badge.ok{ color:var(--today); background:var(--today-soft); border-color:var(--today); }
   .lbl-badge.mix{ color:var(--ink-soft); background:var(--paper-warm); border-color:var(--rule); text-transform:none; letter-spacing:0; font-weight:700; }
   .ing-cal.est{ color:var(--ink-faded); font-weight:600; font-style:italic; }
+  .ing-cal.linked{ color:var(--today); }
+  .ing-assign{ background:none; border:none; padding:2px 0 2px 6px; margin:0; cursor:pointer; font:inherit; color:inherit; flex:0 0 auto; }
+  .ing-assign:active{ transform:scale(0.94); }
+  .ing-assign .ing-cal{ border-bottom:1px dotted var(--rule); }
+  .assign-for{ font-size:14px; color:var(--ink-soft); margin:2px 0 12px; line-height:1.5; }
+  .assign-cur{ color:var(--today); font-size:13px; font-weight:600; }
+  #assignSearch{ width:100%; font-size:15px; padding:11px 13px; border:1px solid var(--rule); border-radius:11px; background:var(--card); font-family:'Manrope',sans-serif; color:var(--ink); box-sizing:border-box; }
+  #assignSearch:focus{ outline:none; border-color:var(--ink-faded); }
+  .assign-list{ margin-top:12px; max-height:46vh; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+  .assign-row{ text-align:left; background:var(--card); border:1px solid var(--rule); border-radius:12px; padding:12px 14px; cursor:pointer; font-family:'Manrope',sans-serif; color:var(--ink); display:flex; flex-direction:column; gap:3px; width:100%; box-sizing:border-box; }
+  .assign-row.on{ border-color:var(--today); background:var(--today-soft); }
+  .assign-row.clear{ flex-direction:row; align-items:center; justify-content:center; color:var(--ink-faded); font-weight:700; }
+  .assign-row:active{ transform:scale(0.99); }
+  .assign-row .ar-n{ font-weight:700; font-size:14px; }
+  .assign-row .ar-m{ font-size:12px; color:var(--ink-faded); }
+  .assign-row .ar-tag{ align-self:flex-start; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:0.04em; color:var(--today); background:var(--today-soft); border-radius:6px; padding:2px 6px; margin-top:3px; }
+  .assign-row .ar-tag.auto{ color:var(--ink-faded); background:var(--paper-warm); }
   .lbl-hint{ margin-top:8px; font-size:12px; line-height:1.5; color:var(--orange); background:var(--orange-soft); border:1px solid var(--orange); border-radius:10px; padding:9px 11px; font-weight:600; }
   .ing-flag.fix{ cursor:pointer; text-transform:none; letter-spacing:0; font-weight:700; }
   .step-x b{ color:var(--ink); }
@@ -2217,7 +2245,34 @@ function tokenIn(w,ptoks,pn){
         item doesn't, it is rejected outright
      C. the two agree on the food noun, so a flavour word ("honey") can't bind to a
         different food that merely mentions it ("Honey Roasted Granola"). */
+/* ---- manual pantry⇄ingredient assignments ----
+   When the auto-matcher is too strict (e.g. a pantry item named "Granola Honey
+   Roasted" not recognising the ingredient "crunchy granola"), the user can link the
+   two by hand. The link is keyed by the ingredient's core food words, so once you
+   assign it, every future recipe that uses that ingredient is recognised too. A
+   manual link always wins over the automatic gates. */
+const ALIAS_KEY="ingAliases_v1";
+function loadAliases(){ try{ const r=localStorage.getItem(ALIAS_KEY); const o=r?JSON.parse(r):null; return (o&&typeof o==="object")?o:{}; }catch(e){ return {}; } }
+function saveAliases(o){ try{ localStorage.setItem(ALIAS_KEY, JSON.stringify(o||{})); }catch(e){} }
+function aliasKey(name){
+  const raw=ingTokens(name);
+  if(!raw.length) return "";
+  const core=raw.filter(w=>!SOFT_MOD.has(w));
+  return (core.length?core:raw).slice().sort().join("|");
+}
+function aliasedItem(name){
+  const k=aliasKey(name); if(!k) return null;
+  const id=loadAliases()[k]; if(!id) return null;
+  return livePantry().find(i=>i&&i.id===id && typeof i.cal==="number") || null;   // stale link to a deleted item -> ignore
+}
+function setAlias(name,id){
+  const k=aliasKey(name); if(!k) return;
+  const map=loadAliases();
+  if(id) map[k]=id; else delete map[k];
+  saveAliases(map);
+}
 function matchPantryItem(name){
+  const linked=aliasedItem(name); if(linked) return linked;   // a manual assignment always wins
   const rawToks=ingTokens(name);
   if(rawToks.length===0 || rawToks.every(w=>NEGLIGIBLE_ING.has(w))) return null;
   const ln=(name||"").toLowerCase();
@@ -2626,6 +2681,47 @@ function openCook(which){
   renderCook(); $("cookOverlay").classList.add("show"); globalTick();
 }
 function closeCook(){ $("cookOverlay").classList.remove("show"); }
+/* ----- manual "assign a pantry item" picker (opened from a recipe ingredient) ----- */
+let assignIx=null;
+function curIng(){ const r=cook.recipe; return (r&&r.ingredients&&assignIx!=null)?r.ingredients[assignIx]:null; }
+function openAssign(ix){
+  assignIx=ix; const ing=curIng(); if(!ing) return;
+  const cur=aliasedItem(ing.name);
+  $("assignFor").innerHTML='Recipe ingredient: <b>'+esc(ing.name)+'</b>'
+    +(cur?'<br><span class="assign-cur">\uD83D\uDD17 Linked to '+esc(cur.name)+'</span>':'');
+  const s=$("assignSearch"); if(s) s.value="";
+  renderAssignList();
+  $("assignOverlay").classList.add("show");
+}
+function closeAssign(){ $("assignOverlay").classList.remove("show"); assignIx=null; }
+function renderAssignList(){
+  const ing=curIng(); if(!ing) return;
+  const q=(($("assignSearch")||{}).value||"").toLowerCase().trim();
+  const items=livePantry().filter(i=>typeof i.cal==="number" && (!q || (i.name||"").toLowerCase().indexOf(q)>=0))
+                          .sort((a,b)=>(a.name||"").localeCompare(b.name||""));
+  const cur=aliasedItem(ing.name);
+  const auto=cur?null:matchPantryItem(ing.name);   // what the auto-matcher would pick
+  let html="";
+  if(cur) html+='<button class="assign-row clear" onclick="clearAssign()">\u2715 Remove link (use auto-match)</button>';
+  if(!items.length) html+='<div class="hint" style="padding:14px 2px">No matching pantry items. Scan or add it first.</div>';
+  items.forEach(function(it){
+    const isCur=cur&&cur.id===it.id;
+    const isAuto=auto&&auto.id===it.id;
+    html+='<button class="assign-row'+(isCur?' on':'')+'" onclick="chooseAssign(\''+it.id+'\')">'
+      +'<span class="ar-n">'+esc(it.name)+'</span>'
+      +'<span class="ar-m">'+(it.cal||0)+' cal \u00b7 '+(it.pro||0)+'g P'+(it.serving?' \u00b7 '+esc(it.serving):'')+'</span>'
+      +(isCur?'<span class="ar-tag">linked</span>':isAuto?'<span class="ar-tag auto">auto-match</span>':'')
+      +'</button>';
+  });
+  $("assignList").innerHTML=html;
+}
+function chooseAssign(id){ const ing=curIng(); if(!ing) return; setAlias(ing.name,id); closeAssign(); refreshCookNut(); }
+function clearAssign(){ const ing=curIng(); if(!ing) return; setAlias(ing.name,null); closeAssign(); refreshCookNut(); }
+function refreshCookNut(){
+  if(cook.which){ const m=meals[todayStr]; if(m&&m[cook.which]){ const nn=mealNutrition(m[cook.which]); cook.recipe.nut=nn; if(nn.cal) cook.recipe.cal=nn.cal; if(nn.pro) cook.recipe.pro=nn.pro; } }
+  renderCook();
+  if(typeof renderTodayMeals==="function") renderTodayMeals();
+}
 function cookServings(d){ cook.servings=Math.max(1,cook.servings+d); renderCook(); }
 function cookLog(){ if(cook.which) logTodayMeal(cook.which); closeCook(); }
 
@@ -2654,19 +2750,18 @@ function renderCook(){
   $("cookServN").textContent=cook.servings;
   const scale=(cook.base && !cook.isPrep)?cook.servings/cook.base:1;
   const map={}; if(hasIng) r.ingredients.forEach(i=>{ if(i.id) map[i.id]=i; });
-  $("cookIng").innerHTML = hasIng ? '<div class="cook-h">'+(cook.isPrep?'You\'ll need':'Ingredients')+'</div><ul class="ing-list">'+r.ingredients.map(function(i){
+  $("cookIng").innerHTML = hasIng ? '<div class="cook-h">'+(cook.isPrep?'You\'ll need':'Ingredients')+'</div><ul class="ing-list">'+r.ingredients.map(function(i,ix){
     if(cook.isPrep) return '<li><span class="ing-amt">'+esc(amtUnit(i,1))+'</span><span class="ing-nm">'+esc(i.name)+'</span></li>';
-    // No per-ingredient warnings. If a label is scanned and the units line up we
-    // show its calories; otherwise we just show the ingredient with no alarm.
-    const sc=ingScaledNutrition(i,scale);
-    let calTag='';
-    if(sc){ calTag='<span class="ing-cal">'+sc.cal+' cal</span>'; }
-    else if(!isNegligibleIng(i)){
-      const e=estIngNutrition(i,scale);
-      calTag = e ? '<span class="ing-cal est">~'+e.cal+' cal</span>'
-                 : '<span class="ing-cal est">no label</span>';
-    }
-    return '<li><span class="ing-amt">'+esc(amtUnit(i,scale))+'</span><span class="ing-nm">'+esc(i.name)+'</span>'+calTag+'</li>';
+    const neg=isNegligibleIng(i);
+    const sc=neg?null:ingScaledNutrition(i,scale);
+    const linked=!neg && !!aliasedItem(i.name);
+    let inner='';
+    if(neg){ inner=''; }
+    else if(sc){ inner='<span class="ing-cal'+(linked?' linked':'')+'">'+sc.cal+' cal'+(linked?' \uD83D\uDD17':'')+'</span>'; }
+    else { const e=estIngNutrition(i,scale); inner='<span class="ing-cal est">'+(e?'~'+e.cal+' cal':'assign')+'</span>'; }
+    // every real ingredient is tappable to link/relink it to a pantry item
+    const tag = neg ? '' : '<button class="ing-assign" onclick="openAssign('+ix+')" title="Assign a pantry item">'+inner+'</button>';
+    return '<li><span class="ing-amt">'+esc(amtUnit(i,scale))+'</span><span class="ing-nm">'+esc(i.name)+'</span>'+tag+'</li>';
   }).join("")+'</ul>' : "";
   $("cookSteps").innerHTML='<div class="cook-h">Steps</div>'+r.steps.map(function(s,i){
     let txt=esc(s.text).replace(/\{(\w+)\}/g,function(mm,id){ const ing=map[id]; return ing?('<b>'+esc(amtUnit(ing,scale))+'</b> '+esc(ing.name)):mm; });
@@ -2964,7 +3059,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v1.4.1 · 2026-06-23";   // bump this each time you upload a new index.html
+const APP_VERSION="v1.4.2 · 2026-06-23";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
