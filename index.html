@@ -791,6 +791,15 @@
   </div>
 </div>
 
+<div class="overlay" id="refineOverlay">
+  <div class="sheet">
+    <button class="close" onclick="document.getElementById('refineOverlay').classList.remove('show')">×</button>
+    <h2>Round it out</h2>
+    <p class="hint" style="margin:6px 0 0">Ideas only — nothing here is a correction.</p>
+    <div id="refineBody"></div>
+  </div>
+</div>
+
 <div class="overlay" id="logAddOverlay">
   <div class="sheet">
     <button class="close" onclick="document.getElementById('logAddOverlay').classList.remove('show')">×</button>
@@ -991,6 +1000,25 @@ function showTab(name){
   .lbl-badge.ok{ color:var(--today); background:var(--today-soft); border-color:var(--today); }
   .lbl-badge.mix{ color:var(--ink-soft); background:var(--paper-warm); border-color:var(--rule); text-transform:none; letter-spacing:0; font-weight:700; }
   .ing-cal.est{ color:var(--ink-faded); font-weight:600; font-style:italic; }
+  /* ----- meal refinement sheet ----- */
+  .li-btns{ display:flex; gap:2px; align-items:center; flex:0 0 auto; }
+  .li-refine{ background:none; border:none; font-size:14px; cursor:pointer; padding:2px 4px; opacity:0.75; }
+  .li-refine:active{ transform:scale(0.9); }
+  .rf-meal{ margin-top:16px; padding:13px 14px; background:var(--paper-warm); border:1px solid var(--rule); border-radius:12px; }
+  .rf-meal b{ font-family:'Fraunces',serif; font-size:17px; font-weight:500; }
+  .rf-now{ font-size:13px; color:var(--ink-soft); font-weight:600; margin-top:3px; font-variant-numeric:tabular-nums; }
+  .rf-band{ display:block; font-size:11.5px; color:var(--ink-faded); margin-top:5px; }
+  .rf-good{ margin-top:14px; font-size:13.5px; line-height:1.5; color:var(--today); background:var(--today-soft); border-radius:10px; padding:11px 13px; }
+  .rf-verdict{ margin-top:11px; font-size:14px; line-height:1.55; color:var(--ink); }
+  .rf-h{ margin:18px 0 8px; font-size:12px; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; color:var(--ink-faded); }
+  .rf-pick{ display:block; width:100%; text-align:left; background:var(--card); border:1px solid var(--rule); border-radius:12px; padding:12px 14px; margin-bottom:8px; cursor:pointer; font-family:'Manrope',sans-serif; }
+  .rf-pick:active{ transform:scale(0.985); border-color:var(--today); }
+  .rf-pn{ font-size:14.5px; font-weight:700; color:var(--ink); }
+  .rf-pd{ font-size:12.5px; color:var(--ink-soft); margin-top:3px; font-variant-numeric:tabular-nums; }
+  .rf-pd b{ color:var(--today); }
+  .rf-tag{ display:inline-block; margin-left:7px; font-size:9.5px; font-weight:800; letter-spacing:0.04em; text-transform:uppercase; color:var(--ink-faded); background:var(--paper-warm); border:1px solid var(--rule); border-radius:999px; padding:2px 6px; vertical-align:middle; }
+  .rf-tag.have{ color:var(--today); background:var(--today-soft); border-color:var(--today); }
+  .rf-leave{ margin-top:16px; font-size:13px; line-height:1.55; color:var(--ink-soft); font-style:italic; border-top:1px solid var(--rule); padding-top:14px; }
   .ing-cal.pantry{ color:var(--today); }   /* auto-matched from pantry — green, no icon */
   .ing-cal.linked{ color:var(--today); }   /* manually linked — green + link icon */
   .ing-assign{ background:none; border:none; padding:2px 0 2px 6px; margin:0; cursor:pointer; font:inherit; color:inherit; flex:0 0 auto; }
@@ -2160,7 +2188,7 @@ function renderLog(){
         <div class="lcal">${items.reduce((a,b)=>a+(b.it.cal||0),0)} cal <button class="log-add" onclick="event.stopPropagation();openLogAdd('${k}')">＋</button></div>
       </div>`;
     if(items.length){
-      h+=`<div class="log-items">`+items.map(o=>`<div class="log-item"><span>${esc(o.it.name)} · ${o.it.cal||0} cal${o.it.pro?` · ${o.it.pro}g P`:""}</span><button class="li-del" onclick="deleteLogItem(${o.idx})">✕</button></div>`).join("")+`</div>`;
+      h+=`<div class="log-items">`+items.map(o=>`<div class="log-item"><span>${esc(o.it.name)} · ${o.it.cal||0} cal${o.it.pro?` · ${o.it.pro}g P`:""}</span><span class="li-btns"><button class="li-refine" title="Ideas to round this out" onclick="openRefine(${o.idx})">✨</button><button class="li-del" onclick="deleteLogItem(${o.idx})">✕</button></span></div>`).join("")+`</div>`;
     }
     return h+`</div>`;
   };
@@ -2168,6 +2196,135 @@ function renderLog(){
   SLOTS.forEach(s=>{ html+=slotBlock(s.e,s.n,s.k,bySlot[s.k]); });
   Object.keys(extra).forEach(k=>{ const lbl=k.charAt(0).toUpperCase()+k.slice(1); html+=slotBlock("🍎",lbl,k,extra[k]); });
   box.innerHTML=html;
+}
+
+/* =========================================================
+   MEAL REFINEMENT — "make it a little better"
+   ---------------------------------------------------------
+   Design rules, deliberately constraining:
+   1. It NEVER fires on its own. It only ever runs when the ✨ is tapped.
+   2. It never calls a meal bad, failed, or a mistake. There is no scoring,
+      no grade, no streak to break. The opening line always names something
+      the meal is already doing right, because there always is something.
+   3. Every suggestion is ADDITIVE — "here's what would round it out" — never
+      "you shouldn't have eaten that". The food is already eaten; telling
+      someone their breakfast was a failure has no upside.
+   4. "Leave it as is" is always a real, listed option, not a consolation.
+   ========================================================= */
+/* Rough calorie/protein bands per slot, from KITCHEN_RULES. Bands are targets
+   to steer by, not pass/fail lines — nothing is ever marked failed. */
+const SLOT_BANDS={
+  breakfast:{cal:[360,450], pro:[25,38]},
+  lunch:    {cal:[460,570], pro:[40,55]},
+  dinner:   {cal:[450,550], pro:[35,50]},
+  bsnack:   {cal:[100,220], pro:[8,20]},
+  lsnack:   {cal:[100,220], pro:[8,20]},
+  dsnack:   {cal:[100,220], pro:[8,20]},
+  dessert:  {cal:[100,250], pro:[0,15]}
+};
+/* Fallback boosters when the pantry has nothing suitable. Approximate by design —
+   flagged in the UI as "not in your pantry" so a suggestion never pretends to be
+   a scanned label. */
+const STAPLE_BOOSTERS=[
+  {name:"2 hard-boiled eggs",            cal:140, pro:12},
+  {name:"3/4 cup plain Greek yogurt",    cal:100, pro:17},
+  {name:"1 string cheese",               cal:80,  pro:7},
+  {name:"1/4 cup shredded cheddar",      cal:110, pro:7},
+  {name:"2 turkey sausage patties",      cal:130, pro:13},
+  {name:"1 can chicken, drained",        cal:100, pro:21},
+  {name:"1 scoop whey protein",          cal:120, pro:24},
+  {name:"1 tbsp peanut butter",          cal:95,  pro:3.5},
+  {name:"1 tbsp chia seeds",             cal:58,  pro:2}
+];
+function proteinDensity(cal,pro){ return cal>0 ? (pro/cal*100) : 0; }   // g protein per 100 cal
+/* What is this meal already doing right? There is always an answer. */
+function mealStrength(cal,pro,band){
+  const pd=proteinDensity(cal,pro);
+  if(pd>=10) return "The protein density here is genuinely good — "+(Math.round(pd*10)/10)+"g per 100 cal.";
+  if(band && cal<band.cal[0]) return "This came in light on calories, which leaves you room later in the day — that's a cushion, not a problem.";
+  if(pro>=10) return "There's real protein in here already ("+Math.round(pro)+"g) — it's not starting from zero.";
+  if(cal<=250) return "It's a small, contained meal — nothing here needs undoing.";
+  return "You logged it, which is the part most people skip. That's the habit that actually matters.";
+}
+function refineMeal(item){
+  const cal=item.cal||0, pro=item.pro||0;
+  const band=SLOT_BANDS[item.slot]||null;
+  const pd=proteinDensity(cal,pro);
+  const proGap = band ? Math.max(0, band.pro[0]-pro) : Math.max(0, 25-pro);
+  const calRoom = band ? Math.max(0, band.cal[1]-cal) : 250;
+  const out={ item, cal, pro, pd, band, proGap, calRoom,
+              strength:mealStrength(cal,pro,band), verdict:"", picks:[] };
+  if(proGap<=3){
+    out.verdict="This one's already in a good place. Nothing to change.";
+    return out;
+  }
+  out.verdict = (band && cal<band.cal[0])
+    ? "It's lighter than a usual "+(item.slot||"meal")+" and short about "+Math.round(proGap)+"g of protein — which means there's room to ADD, not cut."
+    : "The one thing that would move this most is protein — about "+Math.round(proGap)+"g would bring it in line.";
+  // Don't suggest savory proteins alongside a sweet meal. Canned chicken closes a
+  // protein gap beautifully on paper and is an absurd thing to put next to cereal;
+  // a suggestion he'd never act on just makes the whole feature feel automated.
+  const sweetMeal=/cereal|smoothie|yogurt|parfait|fruit|banana|berr|oat|pancake|waffle|french toast|granola|honey|jam|muffin|dessert|ice cream/i.test(item.name||"");
+  const savory=/chicken|tuna|steak|beef|sausage|turkey|ham|salmon|pork|broccoli|rice|pasta|caesar|salad|soup|veg|tortilla|cheddar|provolone|mayo|soy/i;
+  // rank candidates by how much of the protein gap they close per calorie spent
+  const cands=[];
+  ingredientItems().forEach(it=>{
+    const c=it.cal||0, p=it.pro||0;
+    if(c<=0||p<2) return;
+    if(bannedDish(it.name)) return;
+    if(sweetMeal && savory.test(it.name)) return;
+    cands.push({name:it.name, cal:c, pro:p, have:true});
+  });
+  STAPLE_BOOSTERS.forEach(s=>{
+    // skip a staple if the pantry already covers the same food
+    const key=s.name.toLowerCase().replace(/[^a-z ]/g,"").split(" ").filter(w=>w.length>3)[0]||"";
+    if(key && cands.some(c=>c.have && c.name.toLowerCase().includes(key))) return;
+    if(sweetMeal && savory.test(s.name)) return;
+    cands.push(Object.assign({have:false},s));
+  });
+  const scored=cands.map(c=>{
+    const closes=Math.min(c.pro, proGap);
+    const overflow=Math.max(0, c.cal-calRoom);       // penalise blowing past the band
+    return Object.assign({}, c, {
+      score: (closes/Math.max(1,c.cal))*100 - overflow*0.06,
+      newCal: cal+c.cal, newPro: Math.round((pro+c.pro)*10)/10
+    });
+  }).sort((a,b)=>b.score-a.score);
+  // "Pantry first, then the best thing regardless" — fill by composition, not by raw
+  // score, so a slightly-worse item you actually own always beats a better one you
+  // don't. Otherwise the list reads like a shopping list instead of a suggestion.
+  const seen=new Set(), take=c=>{ const k=c.name.toLowerCase(); if(seen.has(k)) return false; seen.add(k); return true; };
+  const mine=scored.filter(c=>c.have), other=scored.filter(c=>!c.have);
+  out.picks=[...mine.filter(take).slice(0,2), ...other.filter(take).slice(0,2)].slice(0,3);
+  return out;
+}
+let refineCtx=null;
+function openRefine(idx){
+  const it=dayState.log[idx]; if(!it) return;
+  refineCtx={idx};
+  const r=refineMeal(it);
+  const bandTxt=r.band?`<span class="rf-band">usual ${esc(it.slot)}: ${r.band.cal[0]}–${r.band.cal[1]} cal · ${r.band.pro[0]}–${r.band.pro[1]}g P</span>`:"";
+  let html=`<div class="rf-meal"><b>${esc(it.name)}</b><div class="rf-now">${r.cal} cal · ${Math.round(r.pro*10)/10}g protein${r.cal>0?` · ${Math.round(r.pd*10)/10}g P per 100 cal`:""}</div>${bandTxt}</div>`;
+  html+=`<div class="rf-good">✅ ${esc(r.strength)}</div>`;
+  html+=`<div class="rf-verdict">${esc(r.verdict)}</div>`;
+  if(r.picks.length){
+    html+=`<div class="rf-h">Tap one to add it to this meal</div>`;
+    html+=r.picks.map(p=>`<button class="rf-pick" onclick="applyRefine('${esc(p.name).replace(/'/g,"\\'")}',${p.cal},${p.pro})">
+        <div class="rf-pn">${esc(p.name)}${p.have?'<span class="rf-tag have">in your pantry</span>':'<span class="rf-tag">not in pantry</span>'}</div>
+        <div class="rf-pd">+${p.cal} cal · +${p.pro}g protein → <b>${p.newCal} cal · ${p.newPro}g P</b></div>
+      </button>`).join("");
+  }
+  html+=`<div class="rf-leave">Or leave it exactly as it is. One meal doesn't move the week, and there's nothing here to make up for.</div>`;
+  $("refineBody").innerHTML=html;
+  $("refineOverlay").classList.add("show");
+}
+function applyRefine(name,cal,pro){
+  if(!refineCtx) return;
+  const base=dayState.log[refineCtx.idx];
+  dayState.log.push({id:uid(), slot:base?base.slot:"snacks", name, cal, pro, carb:0, fat:0});
+  saveDay(todayStr,dayState); renderToday(); renderCalendar();
+  $("refineOverlay").classList.remove("show");
+  showToast("Added — "+name);
 }
 
 function renderMacros(target,tot){
