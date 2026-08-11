@@ -1010,6 +1010,8 @@ function showTab(name){
   .rf-band{ display:block; font-size:11.5px; color:var(--ink-faded); margin-top:5px; }
   .rf-good{ margin-top:14px; font-size:13.5px; line-height:1.5; color:var(--today); background:var(--today-soft); border-radius:10px; padding:11px 13px; }
   .rf-verdict{ margin-top:11px; font-size:14px; line-height:1.55; color:var(--ink); }
+  .rf-day{ margin-top:11px; font-size:12.5px; line-height:1.5; font-weight:600; padding:9px 12px; border-radius:10px; background:var(--paper-warm); border:1px solid var(--rule); color:var(--ink-soft); }
+  .rf-day.under{ color:var(--accent); border-color:var(--accent); background:#F7EBE7; }
   .rf-h{ margin:18px 0 8px; font-size:12px; font-weight:700; letter-spacing:0.03em; text-transform:uppercase; color:var(--ink-faded); }
   .rf-pick{ display:block; width:100%; text-align:left; background:var(--card); border:1px solid var(--rule); border-radius:12px; padding:12px 14px; margin-bottom:8px; cursor:pointer; font-family:'Manrope',sans-serif; }
   .rf-pick:active{ transform:scale(0.985); border-color:var(--today); }
@@ -2236,46 +2238,96 @@ const STAPLE_BOOSTERS=[
   {name:"1 tbsp peanut butter",          cal:95,  pro:3.5},
   {name:"1 tbsp chia seeds",             cal:58,  pro:2}
 ];
+/* Foods for the OTHER kind of gap: a meal that already has its protein but not
+   enough actual food under it. Suggesting more protein there is the mistake this
+   engine is specifically built to avoid — protein is the plan's priority, never
+   its scoreboard. These carry calories, volume and fibre instead. */
+const STAPLE_ROUNDERS=[
+  {name:"1 apple",                          cal:95,  pro:0.5},
+  {name:"1 banana",                         cal:105, pro:1.3},
+  {name:"1 cup fruit bowl (pineapple/melon)",cal:80, pro:1},
+  {name:"1 tortilla + 1 tbsp peanut butter", cal:230, pro:8},
+  {name:"3/4 cup Minute rice (cooked)",     cal:150, pro:3},
+  {name:"1/4 cup crunchy granola",          cal:130, pro:3},
+  {name:"1.5 cup frozen broccoli",          cal:50,  pro:4},
+  {name:"1 handful fresh strawberries",     cal:50,  pro:1}
+];
 function proteinDensity(cal,pro){ return cal>0 ? (pro/cal*100) : 0; }   // g protein per 100 cal
-/* What is this meal already doing right? There is always an answer. */
+/* What is this meal already doing right? There is always an answer.
+   Deliberately does NOT praise coming in under on calories. Under-eating on a
+   deficit plus a lifting program costs muscle — the exact thing the protein
+   target exists to protect — so framing "light" as a win would be a lie that
+   nudges the wrong way. */
 function mealStrength(cal,pro,band){
   const pd=proteinDensity(cal,pro);
+  if(pd>=15) return "The protein density here is excellent — "+(Math.round(pd*10)/10)+"g per 100 cal. As a protein source this is about as efficient as it gets.";
   if(pd>=10) return "The protein density here is genuinely good — "+(Math.round(pd*10)/10)+"g per 100 cal.";
-  if(band && cal<band.cal[0]) return "This came in light on calories, which leaves you room later in the day — that's a cushion, not a problem.";
+  if(band && pro>=band.pro[0]) return "Protein's fully handled here ("+Math.round(pro)+"g) — that part's done.";
   if(pro>=10) return "There's real protein in here already ("+Math.round(pro)+"g) — it's not starting from zero.";
-  if(cal<=250) return "It's a small, contained meal — nothing here needs undoing.";
   return "You logged it, which is the part most people skip. That's the habit that actually matters.";
+}
+/* How is the whole day tracking? A single meal can look fine in isolation while
+   the day quietly runs 600 cal short — the sheet has to be able to see that. */
+function dayContext(){
+  const tot=logTotals(), target=dayState.target||1450;
+  const h=new Date().getHours();
+  // rough share of the day's food that should be in by now
+  const pace = h<10?0.15 : h<14?0.45 : h<18?0.65 : h<21?0.95 : 1;
+  const expected=target*pace;
+  const short=Math.round(expected-tot.c);
+  if(pace>=0.95 && tot.c<target*0.75)
+    return {tone:"under", msg:"Day so far: "+tot.c+" of "+target+" cal. That's a much steeper deficit than the plan intends — under-eating this hard is what costs muscle, even with protein handled."};
+  if(short>250)
+    return {tone:"under", msg:"Day so far: "+tot.c+" of "+target+" cal, roughly "+short+" behind pace for this hour. Worth eating more today, not less."};
+  if(tot.c>target+150)
+    return {tone:"over", msg:"Day so far: "+tot.c+" of "+target+" cal. A bit above target — tomorrow resets on its own, nothing to claw back."};
+  return {tone:"ok", msg:"Day so far: "+tot.c+" of "+target+" cal — on pace."};
 }
 function refineMeal(item){
   const cal=item.cal||0, pro=item.pro||0;
   const band=SLOT_BANDS[item.slot]||null;
   const pd=proteinDensity(cal,pro);
   const proGap = band ? Math.max(0, band.pro[0]-pro) : Math.max(0, 25-pro);
+  const calGap = band ? Math.max(0, band.cal[0]-cal) : 0;      // <- the axis this engine used to be blind to
   const calRoom = band ? Math.max(0, band.cal[1]-cal) : 250;
-  const out={ item, cal, pro, pd, band, proGap, calRoom,
-              strength:mealStrength(cal,pro,band), verdict:"", picks:[] };
-  if(proGap<=3){
-    out.verdict="This one's already in a good place. Nothing to change.";
+  /* A meal has TWO ways of being short, and clearing one says nothing about the
+     other. A 42g protein shake at 232 cal clears a lunch protein band outright
+     while sitting 230 cal under the same band's floor. Checking protein alone
+     and calling it done is treating protein as the scoreboard rather than the
+     priority — the precise error this whole feature is meant to argue against. */
+  const need = (proGap>3 && calGap>60) ? "both" : proGap>3 ? "protein" : calGap>60 ? "calories" : "none";
+  const out={ item, cal, pro, pd, band, proGap, calGap, calRoom, need,
+              strength:mealStrength(cal,pro,band), verdict:"", picks:[], day:dayContext() };
+  if(need==="none"){
+    out.verdict="This one's already in a good place — protein and calories both sit where they should. Nothing to change.";
     return out;
   }
-  out.verdict = (band && cal<band.cal[0])
-    ? "It's lighter than a usual "+(item.slot||"meal")+" and short about "+Math.round(proGap)+"g of protein — which means there's room to ADD, not cut."
-    : "The one thing that would move this most is protein — about "+Math.round(proGap)+"g would bring it in line.";
+  if(need==="calories"){
+    out.verdict="Protein's already there — this is just light on food. It's about "+Math.round(calGap)+" cal under a usual "+(item.slot||"meal")+", so what it wants is something to eat alongside it, not more protein.";
+  } else if(need==="both"){
+    out.verdict="This is running light on both — about "+Math.round(proGap)+"g of protein and "+Math.round(calGap)+" cal under a usual "+(item.slot||"meal")+". Room to add.";
+  } else {
+    out.verdict="Calories are in range; protein is the one thing short, by about "+Math.round(proGap)+"g.";
+  }
   // Don't suggest savory proteins alongside a sweet meal. Canned chicken closes a
   // protein gap beautifully on paper and is an absurd thing to put next to cereal;
   // a suggestion he'd never act on just makes the whole feature feel automated.
   const sweetMeal=/cereal|smoothie|yogurt|parfait|fruit|banana|berr|oat|pancake|waffle|french toast|granola|honey|jam|muffin|dessert|ice cream/i.test(item.name||"");
   const savory=/chicken|tuna|steak|beef|sausage|turkey|ham|salmon|pork|broccoli|rice|pasta|caesar|salad|soup|veg|tortilla|cheddar|provolone|mayo|soy/i;
-  // rank candidates by how much of the protein gap they close per calorie spent
+  // Candidate pool depends on WHICH gap we're closing. When only calories are
+  // short, the low-protein pantry items that the protein path filters out are
+  // exactly the ones we want, so the p<2 floor is lifted here.
+  const wantCal = (need==="calories");
   const cands=[];
   ingredientItems().forEach(it=>{
     const c=it.cal||0, p=it.pro||0;
-    if(c<=0||p<2) return;
+    if(c<=0) return;
+    if(!wantCal && p<2) return;
     if(bannedDish(it.name)) return;
     if(sweetMeal && savory.test(it.name)) return;
     cands.push({name:it.name, cal:c, pro:p, have:true});
   });
-  STAPLE_BOOSTERS.forEach(s=>{
+  (wantCal?STAPLE_ROUNDERS:STAPLE_BOOSTERS).forEach(s=>{
     // skip a staple if the pantry already covers the same food
     const key=s.name.toLowerCase().replace(/[^a-z ]/g,"").split(" ").filter(w=>w.length>3)[0]||"";
     if(key && cands.some(c=>c.have && c.name.toLowerCase().includes(key))) return;
@@ -2283,11 +2335,20 @@ function refineMeal(item){
     cands.push(Object.assign({have:false},s));
   });
   const scored=cands.map(c=>{
-    const closes=Math.min(c.pro, proGap);
-    const overflow=Math.max(0, c.cal-calRoom);       // penalise blowing past the band
+    let score;
+    if(wantCal){
+      // Reward landing near the calorie gap, punish overshooting the band ceiling,
+      // and actively penalise protein density: the protein is already covered, so
+      // a lean protein here is just the scoreboard error wearing a different hat.
+      score = 100 - Math.abs(c.cal-calGap)*0.5 - Math.max(0, c.cal-calRoom)*0.4
+                  - proteinDensity(c.cal,c.pro)*1.6;
+    } else {
+      const closes=Math.min(c.pro, proGap);
+      const overflow=Math.max(0, c.cal-calRoom);     // penalise blowing past the band
+      score = (closes/Math.max(1,c.cal))*100 - overflow*0.06;
+    }
     return Object.assign({}, c, {
-      score: (closes/Math.max(1,c.cal))*100 - overflow*0.06,
-      newCal: cal+c.cal, newPro: Math.round((pro+c.pro)*10)/10
+      score, newCal: cal+c.cal, newPro: Math.round((pro+c.pro)*10)/10
     });
   }).sort((a,b)=>b.score-a.score);
   // "Pantry first, then the best thing regardless" — fill by composition, not by raw
@@ -2307,8 +2368,9 @@ function openRefine(idx){
   let html=`<div class="rf-meal"><b>${esc(it.name)}</b><div class="rf-now">${r.cal} cal · ${Math.round(r.pro*10)/10}g protein${r.cal>0?` · ${Math.round(r.pd*10)/10}g P per 100 cal`:""}</div>${bandTxt}</div>`;
   html+=`<div class="rf-good">✅ ${esc(r.strength)}</div>`;
   html+=`<div class="rf-verdict">${esc(r.verdict)}</div>`;
+  if(r.day) html+=`<div class="rf-day ${r.day.tone}">${esc(r.day.msg)}</div>`;
   if(r.picks.length){
-    html+=`<div class="rf-h">Tap one to add it to this meal</div>`;
+    html+=`<div class="rf-h">${r.need==="calories"?"Something to eat alongside it":"Tap one to add it to this meal"}</div>`;
     html+=r.picks.map(p=>`<button class="rf-pick" onclick="applyRefine('${esc(p.name).replace(/'/g,"\\'")}',${p.cal},${p.pro})">
         <div class="rf-pn">${esc(p.name)}${p.have?'<span class="rf-tag have">in your pantry</span>':'<span class="rf-tag">not in pantry</span>'}</div>
         <div class="rf-pd">+${p.cal} cal · +${p.pro}g protein → <b>${p.newCal} cal · ${p.newPro}g P</b></div>
