@@ -634,6 +634,7 @@
   <div class="shop-switch" id="shopSwitch">
     <button data-shopview="kit" class="on" onclick="setShopView('kit')">Day One</button>
     <button data-shopview="weekly" onclick="setShopView('weekly')">Every week</button>
+    <button data-shopview="week" onclick="setShopView('week')">This week</button>
   </div>
   <div id="shopBody"></div>
 </div>
@@ -817,6 +818,17 @@ const STARTER_KIT = [
   ]}
 ];
 
+/* ===================== WEEKLY GROCERY LISTS =====================
+   Each week's list is its own HTML file sitting next to this one in the
+   repo. Same origin means they share localStorage with the app, so aisle
+   locations saved on one list carry to every future list automatically.
+   To add a week: upload the file, then add a row here. Newest first.
+   ================================================================= */
+const WEEK_LISTS = [
+  {file:"grocery-sep6-12.html", dates:"Sun Sep 6 \u2013 Sat Sep 12", items:41,
+   note:"Department-walk order. 8 chicken portions, 2 chuck eyes, 4.5 cups cooked rice."}
+];
+
 /* ---------- rendering ---------- */
 let shopView='kit';
 function setShopView(v){
@@ -831,6 +843,7 @@ function shopSave(st){ try{ localStorage.setItem(shopKey(), JSON.stringify(st));
 
 function renderShop(){
   const host=document.getElementById('shopBody'); if(!host) return;
+  if(shopView==='week'){ renderWeekLists(host); return; }
   const DATA = shopView==='kit' ? STARTER_KIT : STORE_GUIDE;
   const st=shopState();
   const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -891,6 +904,31 @@ function renderShop(){
   });
   const rs=document.getElementById('shopReset');
   if(rs) rs.addEventListener('click',()=>{ shopSave({}); renderShop(); });
+}
+
+function renderWeekLists(host){
+  const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  let html='<p class="shop-intro">The specific list for a single week \\u2014 every ingredient for all 21 meals plus Sunday prep, ordered the way you walk each store. Tap a week to open it.</p>';
+
+  if(!WEEK_LISTS.length){
+    html+='<div class="shop-note">No week lists uploaded yet. Ask Claude for one, drop the file in this repo, and add a row to <b>WEEK_LISTS</b>.</div>';
+    host.innerHTML=html;
+    return;
+  }
+
+  WEEK_LISTS.forEach((w,i)=>{
+    html+='<a class="wk-card'+(i===0?' now':'')+'" href="'+esc(w.file)+'">'
+        + '<div class="wk-top"><div class="wk-dates">'+esc(w.dates)+'</div>'
+        + (i===0?'<span class="wk-tag">Current</span>':'')+'</div>'
+        + '<div class="wk-meta">'+w.items+' items</div>'
+        + (w.note?'<div class="wk-note">'+esc(w.note)+'</div>':'')
+        + '</a>';
+  });
+
+  html+='<div class="shop-note"><b>Locations carry over.</b> Every list lives on this same address, so an aisle you save on one week shows up pre-filled on every list after it. Save it once, never type it again.<br><br>'
+      + '<b>Adding next week.</b> Upload the new HTML file here in the repo, then add a row to <b>WEEK_LISTS</b> near the top of the Shop script. Newest goes first.</div>';
+
+  host.innerHTML=html;
 }
 </script>
 
@@ -1169,6 +1207,14 @@ function showTab(name){
   .shop-switch{ display:flex; gap:6px; background:var(--paper-warm); border:1px solid var(--rule); border-radius:12px; padding:4px; margin:0 0 16px; }
   .shop-switch button{ flex:1; background:none; border:none; border-radius:9px; padding:9px 6px; cursor:pointer; font-family:'Manrope',sans-serif; font-size:12px; font-weight:800; letter-spacing:0.05em; text-transform:uppercase; color:var(--ink-faded); }
   .shop-switch button.on{ background:var(--card); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,0.07); }
+  .wk-card{ display:block; background:var(--card); border:1px solid var(--rule); border-radius:14px; padding:16px; margin-bottom:10px; text-decoration:none; color:inherit; }
+  .wk-card:active{ transform:scale(0.99); }
+  .wk-card.now{ border-color:var(--ink); }
+  .wk-top{ display:flex; align-items:center; gap:10px; }
+  .wk-dates{ font-family:'Fraunces',serif; font-weight:700; font-size:18px; line-height:1.15; flex:1; }
+  .wk-tag{ flex:0 0 auto; font-size:9px; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; background:var(--ink); color:var(--paper); border-radius:20px; padding:4px 9px; }
+  .wk-meta{ font-size:12px; font-weight:700; color:var(--ink-faded); margin-top:4px; }
+  .wk-note{ font-size:13px; color:var(--ink-soft); margin-top:8px; line-height:1.45; }
   .shop-intro{ font-size:13px; color:var(--ink-faded); line-height:1.55; margin:0 0 16px; }
   .shop-tot{ display:flex; gap:8px; margin:0 0 18px; }
   .shop-tot > div{ flex:1; background:var(--paper-warm); border:1px solid var(--rule); border-radius:12px; padding:11px 13px; }
@@ -4112,7 +4158,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v2.1.0 · 2026-08-28";   // bump this each time you upload a new index.html
+const APP_VERSION="v2.2.0 · 2026-09-04";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
