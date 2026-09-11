@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#F7F3EC">
+<title>Groceries · Sep 13–19</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#F7F3EC;--card:#FFFDF9;--ink:#2B2621;--ink-soft:#6E655B;--ink-faint:#9A9086;
+ --rule:#E4DCD0;--leaf:#4A6B4F;--leaf-soft:#EDF1EC;--flag:#B4562C;--flag-soft:#F7EBE4;
+ --blue:#3C5A72;--blue-soft:#E9EEF2}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);font-family:Manrope,system-ui,sans-serif;
+ font-size:16px;line-height:1.5;padding:0 0 108px;-webkit-font-smoothing:antialiased}
+.wrap{max-width:660px;margin:0 auto;padding:0 18px}
+header{padding:34px 0 18px}
+h1{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:38px;line-height:1.05;
+ letter-spacing:-.02em;margin:0 0 6px}
+h1 em{font-style:italic;font-weight:400}
+.dates{color:var(--ink-soft);font-size:15px;margin:0}
+.legend{margin-top:16px;font-size:13px;color:var(--ink-soft);line-height:1.6}
+.key{display:inline-block;font-size:10.5px;font-weight:700;border-radius:5px;padding:2px 6px;margin-right:5px}
+.k-res{color:var(--flag);background:var(--flag-soft)}
+.k-gen{color:var(--blue);background:var(--blue-soft)}
+.tally{margin-top:18px;display:flex;align-items:baseline;gap:10px;padding-bottom:18px;border-bottom:2px solid var(--ink)}
+.tally b{font-family:Fraunces,serif;font-size:46px;font-weight:600;line-height:1}
+.tally span{color:var(--ink-soft);font-size:14px}
+.store{margin-top:34px}
+.store-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.store-name{font-family:Fraunces,serif;font-size:23px;font-weight:600}
+.store-meta{font-size:13px;color:var(--ink-faint)}
+.store-note{font-size:13.5px;color:var(--ink-soft);margin:2px 0 12px;max-width:54ch}
+.group{margin-top:16px}
+.group-name{font-size:13px;font-weight:700;color:var(--ink-faint);margin:0 0 7px}
+.item{display:flex;gap:13px;align-items:flex-start;background:var(--card);border:1px solid var(--rule);
+ border-radius:12px;padding:13px 14px;margin-bottom:7px;cursor:pointer;
+ transition:background .13s,border-color .13s,opacity .13s}
+.item:focus-visible{outline:2px solid var(--leaf);outline-offset:2px}
+.box{flex:0 0 auto;width:22px;height:22px;margin-top:1px;border-radius:7px;
+ border:2px solid var(--ink-faint);display:grid;place-items:center;transition:all .13s}
+.box svg{width:13px;height:13px;opacity:0;transform:scale(.6);transition:all .13s}
+.body{flex:1;min-width:0}
+.cat{font-size:12.5px;font-weight:700;color:var(--ink-faint)}
+.pick{font-family:Fraunces,serif;font-weight:600;font-size:17px;line-height:1.3;margin-top:2px}
+.qty{color:var(--flag);font-weight:700;font-family:Manrope,sans-serif;font-size:14px}
+.why{font-size:13px;color:var(--ink-soft);margin-top:5px;line-height:1.5}
+.alt{font-size:12.5px;color:var(--ink-faint);margin-top:4px;line-height:1.45}
+.warn{font-size:12.5px;color:var(--flag);margin-top:4px;line-height:1.45;font-weight:600}
+.item.done{background:var(--leaf-soft);border-color:#D6DFD5;opacity:.6}
+.item.done .box{background:var(--leaf);border-color:var(--leaf)}
+.item.done .box svg{opacity:1;transform:scale(1)}
+.item.done .pick{text-decoration:line-through;text-decoration-color:var(--ink-faint)}
+.note-btn{background:none;border:none;padding:5px 0 0;margin:0;cursor:pointer;
+ font-family:inherit;font-size:12.5px;color:var(--ink-faint);font-weight:600}
+.note-show{font-size:12.5px;color:var(--leaf);font-weight:600;margin-top:5px}
+.gear,.srcs{margin-top:32px;border:2px solid var(--ink);border-radius:14px;padding:18px 17px;background:var(--card)}
+.srcs{border:1px solid var(--rule)}
+.gear h2,.srcs h2{font-family:Fraunces,serif;font-size:19px;font-weight:600;margin:0 0 8px}
+.gear p{margin:0 0 10px;font-size:14px;color:var(--ink-soft);line-height:1.55}
+.gear p:last-child{margin:0}
+.srcs li{font-size:13px;color:var(--ink-soft);line-height:1.65;margin-bottom:7px}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(247,243,236,.94);
+ backdrop-filter:blur(11px);border-top:1px solid var(--rule);
+ padding:11px 18px calc(11px + env(safe-area-inset-bottom))}
+.bar-in{max-width:660px;margin:0 auto;display:flex;gap:9px}
+.btn{flex:1;font-family:inherit;font-size:14.5px;font-weight:700;padding:13px 10px;border-radius:11px;
+ cursor:pointer;border:1.5px solid var(--ink);background:var(--ink);color:var(--paper);transition:transform .1s}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn:active{transform:scale(.97)}
+.btn.reset{flex:0 0 auto;padding:13px 15px;border-color:var(--rule);color:var(--ink-faint);background:transparent}
+.toast{position:fixed;left:50%;bottom:88px;transform:translate(-50%,14px);background:var(--ink);
+ color:var(--paper);font-size:14px;font-weight:600;padding:11px 17px;border-radius:10px;
+ opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:30}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>Groceries for the<br><em>week of the 13th</em></h1>
+  <p class="dates">Sunday 13 – Saturday 19 September · shop Friday, prep Sunday</p>
+  <p class="legend">
+    <span class="key k-res">researched</span>the brand genuinely matters here — taste tests or lab data back the pick.<br>
+    <span class="key k-gen">store brand</span>no meaningful quality gap. Buy whatever's cheapest on the shelf.
+  </p>
+  <div class="tally"><b id="count">0</b><span>still to buy<br>of <span id="total">0</span> items</span></div>
+</header>
+<div id="list"></div>
+
+<div class="gear">
+  <h2>Two swaps that save the most</h2>
+  <p><strong>Buy cheese in blocks, not bags.</strong> Pre-shredded runs 20¢ to over $1 more per pound, and the potato starch and cellulose coating that keeps it from clumping also stops it melting smoothly. Costs you two minutes with a grater; saves money and melts better in every quesadilla on your plan.</p>
+  <p><strong>Granola from the bulk bin, not the cereal aisle.</strong> Boxed granola is one of the worst value-per-calorie items in the store — often 200+ calories per ⅓ cup and priced like a snack food. The bin version is a fraction of the cost. Check the added sugar on the bin label and pick the lowest.</p>
+</div>
+
+<div class="gear">
+  <h2>One thing that isn't groceries</h2>
+  <p><strong>PackIt Freezable lunch bag — about $20, Target or Amazon.</strong> The bag itself is lined with freezable gel, so there's no separate ice pack to forget. Without it, Wednesday and Friday default to the shelf-stable pack every week.</p>
+</div>
+
+<div class="srcs">
+  <h2>Where the researched picks came from</h2>
+  <ul>
+    <li><strong>Peanut butter</strong> — America's Test Kitchen ranked 21 jars and the regular hydrogenated-oil styles beat the "natural" ones outright. The cheap jar won; you don't need to pay up here.</li>
+    <li><strong>Greek yogurt</strong> — Fage Total tops Consumer Reports' plain Greek ratings and delivers 20g protein per 100 calories, the best ratio of any mainstream brand. Chobani is the value runner-up at 15g/90cal.</li>
+    <li><strong>Whey</strong> — Garage Gym Reviews lab-tested 150+ powders with Ellipse Analytics; ON Gold Standard is their budget pick, NSF Certified for Sport, verified at 98% of claimed protein.</li>
+    <li><strong>Marinara</strong> — Rao's won ATK's jarred-sauce test on whole tomatoes and no added sugar. A 24-jar consumer test found store brands surprisingly close, so take the cheap jar if Rao's isn't on sale.</li>
+    <li><strong>Meat sticks</strong> — Chomps carries 10g protein per 33g stick against 8g in Country Archer's 28g.</li>
+    <li><strong>Canned chicken</strong> — Kirkland took first in several blind tests for real chunks rather than shreds, around $2/can.</li>
+    <li><strong>Trail mix</strong> — Consumer Reports: nuts and fruit are the nutrition; yogurt-coated pieces add hydrogenated oil and sugar, candy coating adds more, and savory mixes can carry serious sodium.</li>
+    <li><strong>Bars</strong> — Quest leads on protein-plus-fiber and is stocked at Costco. Barebells wins nearly every taste test if chalkiness has put you off bars before.</li>
+  </ul>
+</div>
+</div>
+
+<div class="bar"><div class="bar-in">
+  <button class="btn" id="copy">Copy what's left</button>
+  <button class="btn ghost" id="collapse">Hide bought</button>
+  <button class="btn reset" id="reset">Reset</button>
+</div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* t:"res" = a taste test or lab data backs this specific product.
+   t:"gen" = the category doesn't reward brand spending; buy cheapest.
+   Knowing which is which is most of the budget skill. */
+const DATA=[
+ {store:"Costco", where:"Orem", note:"Bulk proteins and Kirkland staples. Pack sizes run past one week \u2014 freeze or shelve the rest.", groups:[
+  {g:"Meat & eggs", items:[
+   {t:"gen",c:"Chicken breast",p:"Kirkland Signature boneless skinless breasts",q:"2 jumbo (~20 oz ea)",w:"Chicken is chicken \u2014 what matters is the size. Jumbo breasts run close to 20 oz, which is exactly your 4-portion unit. Fresh case, not frozen.",a:"Smith's self-serve case if the tray is all small breasts."},
+   {t:"gen",c:"Eggs",p:"Kirkland Signature Large AA, 24 ct",q:"1 flat",w:"Zero quality gap between brands at the same grade. Buy the cheapest large. You need 16 this week.",a:"Any large grade A."}]},
+  {g:"Grab shelf", items:[
+   {t:"res",c:"Chicken pouches",p:"StarKist Premium White Chicken, 2.6 oz \u2014 PLAIN",q:"4 pouches",w:"15g protein, no drain, no opener, no fridge. The one thing that makes a backpack lunch actually work.",a:"Bumble Bee premium chicken pouch.",warn:"Skip the Chicken Creations line \u2014 mayo-based, and the flavors include buffalo."},
+   {t:"res",c:"Protein bars",p:"Quest Bar, Chocolate Chip Cookie Dough",q:"1 box",w:"21g protein, 190 cal, 1g sugar, 12g fiber \u2014 the best macro profile Costco stocks. Lives in the backpack permanently.",a:"Barebells Cookies & Cream if chalky bars have put you off before \u2014 it wins nearly every taste test, with slightly worse macros."},
+   {t:"gen",c:"String cheese",p:"Kirkland Signature mozzarella sticks",q:"1 bag",w:"Commodity product. Cheapest part-skim stick wins.",a:"Any store brand.",warn:"Cold bag only \u2014 goes in with the frozen PackIt or stays home."}]},
+  {g:"Pantry", items:[
+   {t:"res",c:"Whey protein",p:"Optimum Nutrition Gold Standard, 5 lb \u2014 Vanilla Ice Cream",q:"1 tub",w:"24g per scoop, NSF Certified for Sport, lab-verified at 98% of its claimed protein. Vanilla disappears into yogurt and oats; chocolate fights the fruit in half your snacks.",a:"Kirkland Signature whey \u2014 same manufacturer, less money, fewer flavors."},
+   {t:"res",c:"Canned chicken",p:"Kirkland Signature Premium Chunk Chicken Breast, 12.5 oz",q:"2 cans (6-pack)",w:"First in several blind tests \u2014 real chunks, not shreds, about $2/can. Spares double as backpack protein: a sealed can needs no fridge.",a:"Swanson premium white chunk."},
+   {t:"res",c:"Peanut butter",p:"Skippy Creamy",q:"1 jar",w:"ATK's winner out of 21 jars. Counterintuitively the regular version beat all the \u201cnatural\u201d ones \u2014 so the cheap jar is also the best one. No stirring, either.",a:"Jif Creamy finished right behind it."},
+   {t:"gen",c:"Foil",p:"Any heavy-duty aluminum foil",q:"1 roll",w:"Heavy-duty specifically \u2014 regular foil tears in a backpack. Brand is irrelevant.",a:"\u2014"},
+   {t:"gen",c:"Snack bags",p:"Any sandwich bags",q:"1 box",w:"For the trail mix, almonds and granola you portion on Sunday.",a:"\u2014"}]}
+ ]},
+
+ {store:"WinCo", where:"Provo", note:"Bulk bins, spice rack, markdown meat rack. Bins run roughly a third the price of packaged \u2014 this stop is what keeps the snack shelf affordable.", groups:[
+  {g:"Bulk bins", items:[
+   {t:"res",c:"Trail mix",p:"Bin 2090 \u201cTrail Mix No Salt\u201d or Bin 2123 \u201cFruit and Nut\u201d",q:"~2 cups",w:"Both are nut-and-fruit based. The nuts and fruit are the entire nutritional case; yogurt-coated pieces and candy coating just displace them and add sugar.",a:"Bin 1937 Deluxe if those are empty.",warn:"Avoid Bin 1968 Super Deluxe (candy-heavy) and Bin 1973 Blazing (very salty)."},
+   {t:"gen",c:"Almonds",p:"Dry-roasted unsalted almonds, bulk bin",q:"~1.5 cups",w:"Unsalted so sodium doesn't stack with the meat sticks. About five 1 oz bags.",a:"Raw almonds."},
+   {t:"res",c:"Granola",p:"Bulk bin granola \u2014 pick the lowest added sugar on the label",q:"~2.5 cups",w:"Boxed granola is one of the worst value items in the store. The bin is a fraction of the price and the only number worth comparing is added sugar per serving.",a:"If you want a box: Bob's Red Mill has no added sugar."}]},
+  {g:"Markdown rack", items:[
+   {t:"gen",c:"Steak",p:"Chuck eye steak",q:"2",w:"The markdown rack is the whole point \u2014 chuck eye is already the value cut. Freeze Friday, thaw Saturday night.",a:"Chuck roast cut into steaks: same muscle, cheaper again."}]},
+  {g:"Grab shelf", items:[
+   {t:"res",c:"Meat sticks",p:"Chomps Original Beef Stick",q:"1 multipack",w:"10g protein per 33g stick against 8g in Country Archer's 28g. Grass-fed, no sugar. Two ride in the Wed and Fri bags.",a:"Country Archer Original \u2014 smaller, slightly cheaper per stick.",warn:"Not Slim Jim \u2014 half the protein and a much longer ingredient list."}]},
+  {g:"Grains & staples", items:[
+   {t:"gen",c:"Rice",p:"Cheapest jasmine rice, largest bag",q:"4 cups dry",w:"Jasmine is jasmine. Buy the biggest bag \u2014 you're now cooking 3 cups dry every Sunday, so it turns over fast.",a:"\u2014"},
+   {t:"gen",c:"Pasta",p:"Store-brand rotini or penne",q:"1 box",w:"Blind tests rarely separate pasta brands. The shape matters more: ridges hold dressing in a cold pasta salad where spaghetti won't.",a:"Farfalle."},
+   {t:"res",c:"Tortillas",p:"Mission Extra Grande Burrito (10-inch)",q:"1 pack",w:"Consistently well-rated for staying pliable cold and not cracking when rolled \u2014 which is the whole job when a wrap sits in a bag until noon.",a:"Guerrero Riquisimas burrito size.",warn:"Burrito size only. Taco-size won't hold a lunch."},
+   {t:"gen",c:"Hash browns",p:"Store-brand frozen shredded hash browns",q:"1 bag",w:"Shredded, not patties or diced \u2014 shreds crisp in four minutes in a pan.",a:"\u2014"}]},
+  {g:"Sauces & seasoning", items:[
+   {t:"gen",c:"BBQ sauce",p:"Sweet Baby Ray's Original, or cheapest thick-style",q:"1 bottle",w:"Monday's sauced-at-prep container. Thick matters more than brand \u2014 thin sauce pools at the bottom after reheating.",a:"Any store-brand original."},
+   {t:"gen",c:"Alfredo",p:"Cheapest jarred Alfredo",q:"1 jar",w:"Thursday's sauced container. Jarred Alfredo is a fairly uniform product and the cheese in the dish covers the difference.",a:"\u2014"},
+   {t:"res",c:"Marinara",p:"Rao's Homemade Marinara \u2014 if it's on sale",q:"1 jar",w:"ATK's winner: whole tomatoes, no added sugar. Honestly though, for chicken parm under melted cheese, a store-brand jar does about as well \u2014 a 24-jar test put store brands near the top. Buy Rao's on sale, otherwise don't.",a:"Store-brand traditional marinara."},
+   {t:"gen",c:"Caesar dressing",p:"Cheapest creamy Caesar",q:"1 bottle",w:"Creamy, not vinaigrette-style \u2014 it clings instead of running out of the tortilla by lunch.",a:"\u2014"},
+   {t:"gen",c:"Soy sauce",p:"Store-brand less-sodium soy sauce",q:"1 bottle",w:"Less-sodium specifically; it's in three dishes this week and the regular stuff stacks up fast.",a:"Kikkoman less-sodium if the gap is small."},
+   {t:"gen",c:"Honey",p:"Any pure honey, squeeze bottle",q:"1",w:"Squeeze bottle over a jar \u2014 you're using it one-handed at 7am.",a:"\u2014"},
+   {t:"gen",c:"Olive oil",p:"Check what's left first",q:"as needed",w:"A teaspoon per broccoli side, four nights.",a:"\u2014"},
+   {t:"gen",c:"Mayo",p:"Smallest jar of real mayo",q:"1",w:"Sunday's chicken salad only. Small jar \u2014 you use it sparingly and it shouldn't sit for months.",a:"\u2014"},
+   {t:"gen",c:"Spices",p:"Garlic powder, black pepper, Italian seasoning",q:"top up what's low",w:"Bulk spice rack, a fraction of jarred pricing. This is one of WinCo's best deals.",a:"\u2014"}]}
+ ]},
+
+ {store:"Smith's", where:"Provo", note:"Produce and dairy. Self-serve meat case only, no butcher counter.", groups:[
+  {g:"Dairy", items:[
+   {t:"res",c:"Cheddar",p:"Sharp cheddar in a BLOCK, 1 lb \u2014 store brand is fine",q:"1 lb",q2:"",w:"Blocks cost 20\u00a2 to over $1 less per pound than bags, and the anti-caking coating on pre-shredded actively stops it melting smoothly. Two minutes with a grater. Sharp, so less goes further.",a:"If you'll genuinely never grate it, bagged shredded \u2014 an ungrated block helps nobody."},
+   {t:"res",c:"Greek yogurt",p:"Chobani Plain Non-Fat, 32 oz",q:"1 tub",w:"15g protein for 90 cal, everywhere, and the value pick in every ranking. Fage Total 0% is better \u2014 20g per 100 cal and top of Consumer Reports \u2014 but costs more; grab it if the gap is under a dollar.",a:"Fage Total 0%, or store-brand plain Greek."},
+   {t:"gen",c:"Parmesan",p:"Cheapest grated parmesan",q:"1 small container",w:"It's a topping here, not the point. Shelf-stable grated is fine.",a:"\u2014"}]},
+  {g:"Meat case", items:[
+   {t:"gen",c:"Turkey sausage",p:"Any turkey sausage patties \u2014 check it's ~130 cal / 13g protein per 2",q:"1 pack",w:"Brands vary more on fat than flavor, so read the panel rather than the label. That ratio is what the app's numbers assume.",a:"\u2014"},
+   {t:"gen",c:"Bacon bits",p:"Any REAL bacon bits",q:"1 jar",w:"Real bacon, not the soy imitation bits \u2014 the texture is the entire reason they're in Saturday's quesadilla.",a:"\u2014"}]},
+  {g:"Produce", items:[
+   {t:"gen",c:"Bananas",p:"Bananas, slightly green",q:"7",w:"Buy them underripe Friday and they're still good Saturday.",a:"\u2014"},
+   {t:"res",c:"Apples",p:"Honeycrisp or Gala",q:"8",w:"Firm varieties survive four hours in a backpack; soft ones are bruised by lunch.",a:"Fuji.",warn:"Avoid Red Delicious \u2014 they go mealy fast."},
+   {t:"gen",c:"Strawberries",p:"Fresh strawberries, 1 lb",q:"1",w:"Monday's yogurt snack and Saturday's smoothie.",a:"Frozen if the fresh look tired \u2014 better for the smoothie anyway, and cheaper."},
+   {t:"gen",c:"Fruit bowl",p:"Pre-cut melon and pineapple tub",q:"2 large tubs",w:"About six cups. Costs more than whole fruit, and it's the difference between eating it and watching it rot \u2014 worth it here.",a:"Whole cantaloupe and pineapple if you'll genuinely cut them Sunday. Saves several dollars."},
+   {t:"gen",c:"Broccoli",p:"Fresh crowns, or frozen florets",q:"3 lb fresh / 2 lb frozen",w:"Nine cups this week. Crowns, not whole heads \u2014 you're not using stalks. Frozen is cheaper and completely fine in the two sauced containers.",a:"\u2014"},
+   {t:"gen",c:"Romaine",p:"Romaine hearts, 3-pack",q:"1",w:"Hearts hold up better than a loose head in a wrap.",a:"\u2014"},
+   {t:"gen",c:"Coleslaw mix",p:"Shredded coleslaw mix, undressed",q:"1 bag",w:"Cabbage stays crunchy in a bag for hours where lettuce wilts. Get the plain kind, not the kit with dressing.",a:"\u2014"},
+   {t:"gen",c:"Cucumber",p:"English cucumber",q:"1",w:"No peeling, no seedy middle.",a:"Any slicing cucumber, cheaper."},
+   {t:"gen",c:"Limes",p:"Limes",q:"2",w:"Monday's honey-lime bowl.",a:"Bottled lime juice."},
+   {t:"gen",c:"Peaches",p:"Peaches, ripe",q:"2",w:"Tuesday's parfait. Press near the stem \u2014 it should just give.",a:"Canned peaches in juice, drained."},
+   {t:"gen",c:"Bell peppers",p:"Red and green bell pepper",q:"2",w:"Wednesday's pepper steak. Green is usually cheaper; red is sweeter.",a:"\u2014"},
+   {t:"gen",c:"Onion",p:"Yellow onion",q:"1",w:"Wednesday's pepper steak.",a:"\u2014"}]}
+ ]}
+];
+
+const KEY="groceries-2026-09-13";
+let state={};
+try{ state=JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){ state={}; }
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(state)); }catch(e){} }
+let hideDone=false;
+const esc=s=>String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const TICK='<svg viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3.2L13 5" stroke="#FFFDF9" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const KEYLBL={res:['researched','k-res'],gen:['store brand','k-gen']};
+
+function render(){
+  let total=0,left=0,h="";
+  DATA.forEach((st,si)=>{
+    let rows="";
+    st.groups.forEach((gr,gi)=>{
+      let gh="";
+      gr.items.forEach((it,ii)=>{
+        const id=si+"-"+gi+"-"+ii, s=state[id]||{}, kl=KEYLBL[it.t]||KEYLBL.gen;
+        total++; if(!s.done) left++;
+        if(hideDone&&s.done) return;
+        gh+=`<div class="item${s.done?' done':''}" data-id="${id}" tabindex="0" role="checkbox" aria-checked="${!!s.done}">
+          <div class="box">${TICK}</div><div class="body">
+          <div class="cat">${esc(it.c)} <span class="key ${kl[1]}">${kl[0]}</span></div>
+          <div class="pick">${esc(it.p)} <span class="qty">· ${esc(it.q)}</span></div>
+          <div class="why">${esc(it.w)}</div>
+          ${it.warn?`<div class="warn">${esc(it.warn)}</div>`:""}
+          ${it.a&&it.a!=="\u2014"?`<div class="alt">If it's out: ${esc(it.a)}</div>`:""}
+          ${s.note?`<div class="note-show">Aisle ${esc(s.note)}</div>`:""}
+          <button class="note-btn" data-note="${id}">${s.note?"Edit aisle":"Add aisle"}</button>
+          </div></div>`;
+      });
+      if(gh) rows+=`<div class="group"><p class="group-name">${esc(gr.g)}</p>${gh}</div>`;
+    });
+    if(rows) h+=`<section class="store"><div class="store-head"><span class="store-name">${esc(st.store)}</span><span class="store-meta">${esc(st.where)}</span></div><p class="store-note">${esc(st.note)}</p>${rows}</section>`;
+  });
+  if(!h) h=`<p style="color:var(--ink-soft);padding:30px 0">Everything's bought. Prep is Sunday.</p>`;
+  document.getElementById("list").innerHTML=h;
+  document.getElementById("count").textContent=left;
+  document.getElementById("total").textContent=total;
+}
+function toggle(id){ state[id]=state[id]||{}; state[id].done=!state[id].done; save(); render(); }
+function askNote(id){
+  const cur=(state[id]&&state[id].note)||"";
+  const v=prompt("Which aisle? (saved for next week too)",cur);
+  if(v===null) return;
+  state[id]=state[id]||{};
+  if(v.trim()) state[id].note=v.trim(); else delete state[id].note;
+  save(); render();
+}
+document.getElementById("list").addEventListener("click",e=>{
+  const nb=e.target.closest("[data-note]");
+  if(nb){ e.stopPropagation(); askNote(nb.getAttribute("data-note")); return; }
+  const row=e.target.closest(".item"); if(row) toggle(row.getAttribute("data-id"));
+});
+document.getElementById("list").addEventListener("keydown",e=>{
+  if(e.key!==" "&&e.key!=="Enter") return;
+  const row=e.target.closest(".item");
+  if(row){ e.preventDefault(); toggle(row.getAttribute("data-id")); }
+});
+let tt;
+function toast(m){ const el=document.getElementById("toast"); el.textContent=m; el.classList.add("on");
+  clearTimeout(tt); tt=setTimeout(()=>el.classList.remove("on"),2000); }
+document.getElementById("copy").addEventListener("click",()=>{
+  const out=["Here's what I still need to buy:"];
+  DATA.forEach((st,si)=>{
+    const lines=[];
+    st.groups.forEach((gr,gi)=>gr.items.forEach((it,ii)=>{
+      const id=si+"-"+gi+"-"+ii;
+      if(!(state[id]&&state[id].done)) lines.push("  - "+it.p+" ("+it.q+")");
+    }));
+    if(lines.length) out.push("",st.store+":",...lines);
+  });
+  const txt=out.length>1?out.join("\n"):"Everything on the list is bought.";
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(()=>toast("Copied")).catch(()=>fallback(txt));
+  } else fallback(txt);
+});
+function fallback(t){
+  const a=document.createElement("textarea");
+  a.value=t; a.style.position="fixed"; a.style.opacity="0";
+  document.body.appendChild(a); a.select();
+  try{ document.execCommand("copy"); toast("Copied"); }catch(e){ toast("Copy failed"); }
+  document.body.removeChild(a);
+}
+document.getElementById("collapse").addEventListener("click",e=>{
+  hideDone=!hideDone; e.target.textContent=hideDone?"Show all":"Hide bought"; render();
+});
+document.getElementById("reset").addEventListener("click",()=>{
+  if(!confirm("Uncheck everything? Your saved aisle notes stay.")) return;
+  Object.keys(state).forEach(k=>{ if(state[k]) delete state[k].done; });
+  save(); render(); toast("List reset");
+});
+render();
+</script>
+</body>
+</html>
