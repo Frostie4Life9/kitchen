@@ -445,12 +445,12 @@
   <div class="sec-label">Calorie budget</div>
   <div class="card">
     <div class="budget-row">
-      <div class="budget-big"><span id="t-consumed">0</span> <span class="of">/ <span id="t-target">1450</span> cal</span></div>
-      <div class="budget-left" id="t-left">1450 left</div>
+      <div class="budget-big"><span id="t-consumed">0</span> <span class="of">/ <span id="t-target">2250</span> cal</span></div>
+      <div class="budget-left" id="t-left">2250 left</div>
     </div>
     <div class="bar"><span id="t-bar" style="width:0%"></span></div>
     <div class="target-chips" id="t-target-chips"></div>
-    <button class="eat-btn" id="t-eat-btn">🍽 What can I eat? (1450 cal left)</button>
+    <button class="eat-btn" id="t-eat-btn">🍽 What can I eat? (2250 cal left)</button>
     <div class="note-sm">Fixed deficit target — your workout calories are already baked in, so it doesn't balloon on lift or cardio days.</div>
   </div>
 
@@ -1406,15 +1406,21 @@ function showTab(name){
 const KITCHEN_RULES = {
   _meta: {
     note: "Single source of truth for diet rules, pantry, exact nutrition, and meal/grocery workflow.",
-    updated: "2026-08-27"
+    updated: "2026-09-10"
   },
 
   diet: {
-    dailyCalories: "1400-1500",
-    phase: "fat loss, preserve muscle (calorie deficit)",
+    dailyCalories: "2100-2400 by day type (rest 2100 / cardio 2250 / lift 2400)",
+    revisedOn: "2026-09-10",
+    whyRevised: "Evolt 360 scan 2026-09-08 put TEE at 2890 kcal and BMR at 1877. The old 1400-1500 target was a ~1440/day deficit \u2014 roughly half of maintenance, below BMR, and about 1.5x the outer edge of what is considered safe (500-1000/day). Held there while lifting 3x and doing cardio 3x a week, that costs muscle, recovery and hormones. The new band is a ~600/day deficit, ~1.2 lb/week.",
+    ramp: "Stepped up over three weeks rather than all at once: 1750-1900 from 09-10, 1950-2150 from 09-13, full 2100-2400 from 09-20. Expect 3-5 lb of glycogen water on the scale in the first ten days \u2014 that is not fat and it is not a setback.",
+    proteinFloor: "184g/day (0.9g per lb of bodyweight). Fixed to bodyweight, NOT to a percentage of calories \u2014 the floor has to hold when calories move.",
+    fatFloor: "50g/day minimum; target ~25% of calories (~62g at 2250).",
+    phase: "fat loss, preserve muscle (moderate deficit)",
     priority: "protein optimization",
-    eatBackExerciseCalories: false, // target already accounts for typical workout activity
-    training: "Tonal PPL 3x/wk (Tue push, Thu pull, Sat legs) + elliptical cardio Mon/Wed/Fri, indoors"
+    eatBackExerciseCalories: false, // day-type targets already vary for training
+    training: "Tonal PPL 3x/wk (Tue push, Thu pull, Sat legs) + elliptical cardio Mon/Wed/Fri, indoors",
+    recheck: "Judge on trend weight over 3-4 weeks, not day to day. Bioimpedance TEE runs generous; if the trend is flatter than ~0.8 lb/wk after a month, take 150 off, not 500."
   },
 
   dislikes_neverUse: [
@@ -1485,6 +1491,33 @@ const KITCHEN_RULES = {
 
   weekdaySimplicity: "Mon-Sat meals = assembly/reheat only, zero motivation to cook. ALL raw-protein cooking happens on Sunday prep exclusively.",
 
+  effortTiers: {
+    added: "2026-09-10",
+    why: "Three problems turned out to be one problem: meals felt slow and samey, there was no lunch that survived a backpack, and nothing in the apartment could just be picked up and eaten. The common cause was that EVERY meal required a finishing step \u2014 there was no zero-effort option anywhere in the system, so a low-motivation day had no landing place except quitting.",
+    tier1_DONE: "Cooked AND sauced at Sunday prep. Microwave 2 min, eat. 2 per week, deliberately placed on the nights after lifting.",
+    tier2_ASSEMBLE: "The normal model \u2014 5-10 min, one pan, a few components.",
+    tier3_GRAB: "Zero prep, zero fridge, lives in the backpack. See the Grab & go shelf in the app.",
+    theRule: "Any meal can be swapped DOWN a tier, never up. You stop deciding what to eat and start deciding how much effort you have. A bad day costs a tier, not the plan.",
+    plainPrepException: "The plain-prep rule still holds for every portion EXCEPT the two Tier 1 dinners, which are sauced at prep on purpose. Flavour variety is protected by rotating which sauce those two get each week.",
+    formatNotFlavour: "The monotony was never the sauces \u2014 it was that nearly every dinner was plain chicken + rice + broccoli + a sauce. Twenty flavours on one shape. When adding dishes, vary the FORMAT (wrap, flatbread, bake, skillet, cold salad), not just the seasoning."
+  },
+
+  lunchAwayFromHome: {
+    days: "Wednesday and Friday \u2014 away from home, NO fridge and NO microwave. Friday leaves only 5-10 minutes to actually eat.",
+    foodSafety: "THE BINDING CONSTRAINT. Perishable food is unsafe after 2 hours between 40\u00b0F and 140\u00b0F; a backpack from 8am to noon is four hours. Chicken, egg and dairy lunches are NOT safe packed bare \u2014 they require the frozen cold bag. Never plan one without saying so on the card.",
+    gear: "PackIt Freezable lunch bag (~$20). The whole bag goes in the freezer, so there is no separate ice pack to forget. USDA guidance is two cold sources in an insulated bag to hold food under 40\u00b0F; this is both, built in.",
+    format: "WRAPS, NOT BOWLS. A bowl needs a fork, a flat surface and attention; a wrap needs one hand and five minutes. Roll in foil.",
+    builtWhen: "The night before, never the morning of.",
+    alwaysPairWithFallback: "Every cold-bag lunch card must also name its SHELF-STABLE swap, because some days he is away unexpectedly and some days the bag never got frozen. Default fallback: PB-honey tortilla + shelf-stable chicken pouch + apple + pre-loaded dry whey shaker (~715 cal, 45g P, needs nothing)."
+  },
+
+  snackShelf: {
+    problem: "He buys ingredients, not food. When hungry there was nothing to reach for, which is what actually broke diet consistency \u2014 not willpower.",
+    buy: "Shelf-stable chicken pouches, beef/meat sticks, one box of protein bars, string cheese (cold bag only). These four have no workable DIY version.",
+    portionOnSunday: "Trail mix and almonds from WinCo bulk bins into snack bags (~1/3 the price of pre-bagged), granola into bags, whey pre-loaded DRY into 2-3 shaker bottles.",
+    budget: "The all-buy path adds ~$25-35/wk against a ~$64/wk budget, which does not fit. The hybrid above lands around +$15/wk and +15 min on Sunday."
+  },
+
   weeklyCycle: {
     prepDay: "Sunday (batch-cook)",
     groceryWeek: "Sunday -> Saturday",
@@ -1544,6 +1577,15 @@ const KITCHEN_RULES = {
     "frozen shredded hash browns": "~90 cal / 2g P per 1/2 cup",
     "apple": "~95 cal / 0g P (medium)",
     "garlic powder": "~0 cal"
+  },
+
+  volumeUp: {
+    principle: "Calories went up ~800/day; the answer is ADDING to meals and adding two snack slots, never rewriting dishes that already work. Every dish in the library stays valid \u2014 the PLUS layer bolts extra food onto it.",
+    twoSnacks: "A lunch snack and a dinner snack are now standing slots, not optional extras. They carry ~400-550 cal and ~30-45g protein between them.",
+    proteinGap: "Base b/l/d runs ~115g protein. The floor is 184g. Whey (1 scoop = 120 cal / 24g P) is the cheapest way to close that without another 900 calories \u2014 it is now a standing grocery item.",
+    ricePasta: "Rice and pasta portions go from 3/4 cup cooked to 1.5 cups cooked in most bowls. Sunday prep must cook proportionally more rice \u2014 3 cups dry, not 1.5.",
+    eggs: "Sunday hard-boils 6 eggs now, not 3 \u2014 two of them feed the egg-and-cheddar snack.",
+    chickenUnchanged: "Chicken stays at 2 jumbo breasts / 8 portions per week. The extra calories come from carbs, dairy and fat, NOT from more chicken \u2014 protein was never the thing that was short."
   },
 
   portionMath: {
@@ -1689,7 +1731,7 @@ const meals = {
 "2026-08-28": { dow:"Fri", overlay:"Cardio", b:{n:"Cheddar omelet + fruit",c:370,r:"<strong>Cheddar omelet + fruit.</strong> Beat 3 eggs, pour into a nonstick pan over medium-low, fold in 1/4 cup shredded cheddar as it sets. 1/2 cup fruit on the side. ~370 cal, 25g protein. 7 min."}, l:{n:"Canned chicken Caesar wrap",c:470,r:"<strong>Canned chicken Caesar wrap.</strong> 1 can chicken drained + 1.5 cups chopped romaine + 1 tbsp Caesar dressing + 1 tbsp shredded parmesan in 1 burrito-size (10-inch) flour tortilla. No-cook. ~470 cal, 42g protein. 5 min."}, d:{n:"Canned chicken quesadilla",c:500,r:"<strong>Canned chicken quesadilla.</strong> 1 can chicken drained, 1/3 cup shredded cheddar, pinch garlic powder folded into 1 burrito-size (10-inch) flour tortilla. Press in a dry pan 2 min per side. ~500 cal, 42g protein. 8 min."}, subs:["\u2014 No prep in the fridge yet \u2014 everything this week is canned, egg, or sausage based."] },
   
 "2026-08-29": { dow:"Sat", overlay:"Lift", b:{n:"Hash brown & egg skillet",c:450,r:"<strong>Hash brown &amp; egg skillet.</strong> Crisp 1/2 cup frozen shredded hash browns in 1 tsp olive oil ~6 min. Push aside, scramble 3 eggs in the pan, fold together with 1/4 cup shredded cheddar. <em>Frozen hash browns are a grocery add.</em> ~450 cal, 26g protein. 10 min."}, l:{n:"Peanut-sesame chicken noodles",c:500,r:"<strong>Peanut-sesame chicken noodles.</strong> 3/4 cup cooked pasta tossed with 1 tbsp peanut butter + 1 tbsp soy + splash water + pinch garlic, plus 1 can chicken drained. Cucumber on the side. No-cook protein. ~500 cal, 38g protein. 10 min."}, d:{n:"Maple turkey sausage & sweet potato hash",c:500,r:"<strong>Maple turkey sausage &amp; sweet potato hash (NEW).</strong> Microwave 1 medium sweet potato ~6 min, then cube. Brown 2 turkey sausage patties chopped 4 min, add the sweet potato + 1/2 tbsp maple syrup + a pinch of cinnamon, cook 3 more min. <em>Sweet potato + maple syrup are grocery adds.</em> ~500 cal, 26g protein. 12 min."}, subs:["\u26a1 Dinner sub: Healthy Choice steamer + side salad"] },
-  "2026-08-30": { dow:"Sun", overlay:"PREP DAY \u2014 Steak night", isPrep:true, prep:["FROZEN? Check the chicken and steak first thing. Thaw overnight in the fridge, OR seal and submerge in cold water ~1 hr, OR cook from frozen adding ~50% time to 165\u00b0F chicken / steak cooked through.","Batch chicken PLAIN \u2014 2 jumbo chicken breasts (~20 oz raw each = 8 portions, ~5 oz each). Salt + pepper ONLY, no sauces. Air fry 380\u00b0F ~22 min to 165\u00b0F; rest; slice into 8 portions. Flavor each the day you eat it.","Steak bites PLAIN \u2014 cube 1 chuck eye steak, sear hard 2 min per side, salt + pepper only. Fridge for Wednesday. The SECOND chuck eye stays raw \u2014 that one is tonight's dinner, cooked fresh.","Cook the rice \u2014 1.5 cups dry jasmine rice makes ~4.5 cups cooked. Portion into containers; it reheats all week.","Hard-boil 3 eggs for Friday breakfast.","Wash and chop romaine, slice cucumber, portion fruit."], b:{n:"Greek yogurt parfait",c:360,r:"<strong>Greek yogurt parfait.</strong> 3/4 cup plain Greek yogurt + 1/2 cup fresh strawberries + 1/4 cup granola + a drizzle of honey. ~360 cal, 24g protein. 2 min."}, l:{n:"Canned chicken salad wrap",c:440,r:"<strong>Canned chicken salad wrap.</strong> 1 can chicken drained + 1 tbsp mayo + 1/2 cup diced cucumber + romaine in 1 burrito-size (10-inch) flour tortilla. Eat while the chicken batch cooks. ~440 cal, 38g protein. 5 min."}, d:{n:"Garlic butter steak & rice bowl",c:550,r:"<strong>Garlic butter steak &amp; rice bowl \u2014 STEAK NIGHT.</strong> Cook the second chuck eye FRESH tonight: salt + pepper, sear 3-4 min per side to medium, rest 5 min, slice. Toss with 1 tsp olive oil + a pinch of garlic powder. Over 3/4 cup cooked rice + 1.5 cups broccoli. ~550 cal, 42g protein. 18 min."}, subs:[] },
+  "2026-08-30": { dow:"Sun", overlay:"PREP DAY \u2014 Steak night", isPrep:true, prep:["FROZEN? Check the chicken and steak first thing. Thaw overnight in the fridge, OR seal and submerge in cold water ~1 hr, OR cook from frozen adding ~50% time to 165\u00b0F chicken / steak cooked through.","Batch chicken PLAIN \u2014 2 jumbo chicken breasts (~20 oz raw each = 8 portions, ~5 oz each). Salt + pepper ONLY, no sauces. Air fry 380\u00b0F ~22 min to 165\u00b0F; rest; slice into 8 portions. Flavor each the day you eat it.","Steak bites PLAIN \u2014 cube 1 chuck eye steak, sear hard 2 min per side, salt + pepper only. Fridge for Wednesday. The SECOND chuck eye stays raw \u2014 that one is tonight's dinner, cooked fresh.","Cook the rice \u2014 3 cups dry jasmine rice makes ~9 cups cooked. That is DOUBLE what this step used to say: rice and pasta portions went from 3/4 cup to 1.5 cups cooked when the calorie target moved up on 09-10, so the old 1.5 cups dry now runs out by Wednesday. Portion into containers; it reheats all week.","Hard-boil 6 eggs \u2014 3 for Friday breakfast, and 2 more for the egg-and-cheddar snack, with one spare.","Wash and chop romaine, slice cucumber, portion fruit."], b:{n:"Greek yogurt parfait",c:360,r:"<strong>Greek yogurt parfait.</strong> 3/4 cup plain Greek yogurt + 1/2 cup fresh strawberries + 1/4 cup granola + a drizzle of honey. ~360 cal, 24g protein. 2 min."}, l:{n:"Canned chicken salad wrap",c:440,r:"<strong>Canned chicken salad wrap.</strong> 1 can chicken drained + 1 tbsp mayo + 1/2 cup diced cucumber + romaine in 1 burrito-size (10-inch) flour tortilla. Eat while the chicken batch cooks. ~440 cal, 38g protein. 5 min."}, d:{n:"Garlic butter steak & rice bowl",c:550,r:"<strong>Garlic butter steak &amp; rice bowl \u2014 STEAK NIGHT.</strong> Cook the second chuck eye FRESH tonight: salt + pepper, sear 3-4 min per side to medium, rest 5 min, slice. Toss with 1 tsp olive oil + a pinch of garlic powder. Over 3/4 cup cooked rice + 1.5 cups broccoli. ~550 cal, 42g protein. 18 min."}, subs:[] },
   
 "2026-08-31": { dow:"Mon", overlay:"Cardio", b:{n:"PB-banana-granola wrap",c:400,r:"<strong>PB-banana-granola wrap.</strong> 1 burrito-size (10-inch) flour tortilla + 1.5 tbsp peanut butter + sliced banana + a sprinkle of crunchy granola. Roll up. ~400 cal, 14g protein. 3 min."}, l:{n:"Honey-garlic chicken wrap",c:470,r:"<strong>Honey-garlic chicken wrap.</strong> 1 plain chicken portion (from Sun) sliced, tossed with 1 tbsp soy + 1 tsp honey + a pinch of garlic powder. Into 1 burrito-size (10-inch) flour tortilla with romaine and cucumber. ~470 cal, 44g protein. 6 min."}, d:{n:"Chicken parm tortilla flatbread",c:510,r:"<strong>Chicken parm tortilla flatbread (NEW).</strong> Lay 1 burrito-size (10-inch) flour tortilla flat, spread 1/3 cup marinara, top with 1 plain chicken portion (from Sun) sliced + 1/4 cup shredded cheddar + a sprinkle of parmesan + Italian herbs. Air fry 350&deg;F ~5 min until bubbly and the edges crisp. ~510 cal, 46g protein. 8 min."}, subs:["\u26a1 Dinner sub: Chicken Pockets + broccoli"] },
   "2026-09-01": { dow:"Tue", overlay:"Lift \u2014 Push", b:{n:"Cheddar egg scramble + fruit",c:360,r:"<strong>Cheddar egg scramble + fruit.</strong> Scramble 3 eggs, fold in 1/4 cup shredded cheddar off the heat. 1/2 cup fruit bowl on the side. ~360 cal, 25g protein. 6 min."}, l:{n:"Italian chicken & provolone bowl",c:480,r:"<strong>Italian chicken &amp; provolone bowl.</strong> 1 plain chicken portion (from Sun) sliced over 2 cups romaine + cucumber, 1 slice provolone torn over the top, dressed with 1 tsp olive oil + 1 tsp red wine vinegar + a pinch of Italian seasoning. ~480 cal, 45g protein. 6 min."}, d:{n:"Marinara chicken parmesan bowl",c:530,r:"<strong>Marinara chicken parmesan bowl.</strong> 1 plain chicken portion (from Sun) sliced, simmered 3 min in 1/2 cup marinara, topped with 1/4 cup shredded cheddar + parmesan, over 3/4 cup cooked pasta. ~530 cal, 47g protein. 9 min."}, subs:[] },
@@ -1702,32 +1744,171 @@ const meals = {
   "2026-09-08": { dow:"Tue", overlay:"Lift \u2014 Push", b:{n:"Greek yogurt parfait",c:360,r:"<strong>Greek yogurt parfait.</strong> 3/4 cup plain Greek yogurt + 1/2 cup fresh strawberries + 1/4 cup granola + a drizzle of honey. ~360 cal, 24g protein. 2 min."}, l:{n:"Chicken shawarma bowl",c:490,r:"<strong>Chicken shawarma bowl.</strong> 1 plain chicken portion (from Sun) tossed with a pinch each of cumin, smoked paprika and garlic powder + 1 tsp olive oil, warmed 90 sec. Over 3/4 cup cooked rice with romaine and cucumber. ~490 cal, 45g protein. 7 min."}, d:{n:"BBQ chicken & cheddar quesadilla",c:540,r:"<strong>BBQ chicken &amp; cheddar quesadilla.</strong> 1 plain chicken portion (from Sun) shredded with 1 tbsp BBQ sauce + 1/3 cup shredded cheddar in 1 burrito-size (10-inch) flour tortilla. Press in a dry pan 2 min per side. ~540 cal, 46g protein. 8 min."}, subs:[] },
   "2026-09-09": { dow:"Wed", overlay:"Cardio", b:{n:"Bacon-cheddar egg scramble",c:400,r:"<strong>Bacon-cheddar egg scramble.</strong> Scramble 3 eggs, fold in 1/4 cup shredded cheddar + 1 tbsp real bacon bits off the heat. ~400 cal, 28g protein. 6 min."}, l:{n:"Canned chicken Caesar wrap",c:470,r:"<strong>Canned chicken Caesar wrap.</strong> 1 can chicken drained + 1.5 cups chopped romaine + 1 tbsp Caesar dressing + 1 tbsp shredded parmesan in 1 burrito-size (10-inch) flour tortilla. No-cook. ~470 cal, 42g protein. 5 min."}, d:{n:"Honey-garlic steak bites",c:540,r:"<strong>Honey-garlic steak bites.</strong> Steak bites (from Sun prep) reheated ~2 min in a hot dry pan \u2014 they are already cooked, so you are warming them, not searing. Glaze OFF the heat with 2 tbsp soy + 1 tsp honey + a pinch of garlic. Over 3/4 cup cooked rice + 1.5 cups broccoli. ~540 cal, 42g protein. 10 min."}, subs:[] },
   "2026-09-10": { dow:"Thu", overlay:"Lift \u2014 Pull", b:{n:"Apple-cinnamon yogurt parfait",c:370,r:"<strong>Apple-cinnamon yogurt parfait.</strong> 3/4 cup plain Greek yogurt + 1 diced apple + 1/4 cup granola + a pinch of cinnamon + a drizzle of honey. ~370 cal, 24g protein. 3 min."}, l:{n:"Sesame chicken crunch wrap",c:470,r:"<strong>Sesame chicken crunch wrap.</strong> 1 plain chicken portion (from Sun) chopped, tossed with 1 tbsp soy + 1/2 tsp sesame oil + 1/2 tsp honey. Into 1 burrito-size (10-inch) flour tortilla with 1 cup coleslaw mix. ~470 cal, 43g protein. 6 min."}, d:{n:"Cheesy chicken & broccoli rice bake",c:530,r:"<strong>Cheesy chicken &amp; broccoli rice bake (NEW).</strong> Stir 3/4 cup cooked rice + 1.5 cups broccoli + 1 plain chicken portion (from Sun) chopped + 1/3 cup shredded cheddar + a pinch of garlic powder in an oven-safe dish. Air fry or bake 375\u00b0F ~8 min until the top browns. ~530 cal, 47g protein. 12 min."}, subs:[] },
-  "2026-09-11": { dow:"Fri", overlay:"Cardio", b:{n:"Hard-boiled egg & cheddar plate + fruit",c:400,r:"<strong>Hard-boiled egg &amp; cheddar plate + fruit.</strong> 3 hard-boiled eggs (from Sun) halved + 1/4 cup shredded cheddar + 1/2 cup fruit bowl. No-cook. ~400 cal, 25g protein. 2 min."}, l:{n:"Italian chicken pasta salad",c:490,r:"<strong>Italian chicken pasta salad (NEW).</strong> 3/4 cup cooked pasta + 1 plain chicken portion (from Sun) chopped, tossed with 1 tsp olive oil + 1 tsp red wine vinegar + a pinch of Italian seasoning + a pinch of oregano, with diced cucumber and 1 tbsp parmesan. Cold. ~490 cal, 45g protein. 6 min."}, d:{n:"Turkey sausage + broccoli + rice",c:470,r:"<strong>Turkey sausage + broccoli + rice.</strong> Brown 2 turkey sausage patties chopped ~5 min. Add 1.5 cups frozen broccoli, cook 4 min. Over 3/4 cup cooked rice. ~470 cal, 28g protein. 12 min."}, subs:[] },
+  "2026-09-11": { dow:"Fri", overlay:"Cardio", b:{n:"Hard-boiled egg & cheddar plate + fruit",c:400,r:"<strong>Hard-boiled egg &amp; cheddar plate + fruit.</strong> 3 hard-boiled eggs (from Sun) halved + 1/4 cup shredded cheddar + 1/2 cup fruit bowl. No-cook. ~400 cal, 25g protein. 2 min."}, l:{n:"Backpack lunch \u2014 PB-honey wrap + chicken can",c:615,r:"<strong>Backpack lunch \u2014 PB-honey wrap + chicken can.</strong> SHELF-STABLE, no cold bag needed \u2014 you shop today, so this is built entirely from what is already in the cupboard. 1 burrito-size (10-inch) flour tortilla + 1.5 tbsp peanut butter + 1 tbsp honey, rolled tight in foil. 1 UNOPENED can of chicken (pull-tab) \u2014 sealed cans need no refrigeration, which is what makes real protein possible in a bare backpack. 1 apple. Eats one-handed in 5 min. ~615 cal, 33g protein. 3 min to pack."}, d:{n:"Turkey sausage + broccoli + rice",c:470,r:"<strong>Turkey sausage + broccoli + rice.</strong> Brown 2 turkey sausage patties chopped ~5 min. Add 1.5 cups frozen broccoli, cook 4 min. Over 3/4 cup cooked rice. ~470 cal, 28g protein. 12 min."}, subs:[] },
   "2026-09-12": { dow:"Sat", overlay:"Lift \u2014 Legs", b:{n:"Cheddar omelet + fruit",c:370,r:"<strong>Cheddar omelet + fruit.</strong> Beat 3 eggs, pour into a nonstick pan over medium-low, fold in 1/4 cup shredded cheddar as it sets. 1/2 cup fruit on the side. ~370 cal, 25g protein. 7 min."}, l:{n:"Canned chicken quesadilla",c:500,r:"<strong>Canned chicken quesadilla.</strong> 1 can chicken drained, 1/3 cup shredded cheddar, pinch garlic powder in 1 burrito-size (10-inch) flour tortilla. Press in a dry pan 2 min per side. ~500 cal, 42g protein. 8 min."}, d:{n:"Chicken fajita bowl",c:510,r:"<strong>Chicken fajita bowl.</strong> 1 plain chicken portion (from Sun) sliced, warmed with 1 cup stir-fry veg + a pinch each of cumin, chili powder and onion powder. Over 3/4 cup cooked rice with 1/4 cup shredded cheddar. ~510 cal, 46g protein. 9 min."}, subs:[] },
-  "2026-09-13": { dow:"Sun", overlay:"PREP DAY \u2014 Steak night", isPrep:true, prep:["FROZEN? Check the chicken and steak first thing. Thaw overnight in the fridge, OR seal and submerge in cold water ~1 hr, OR cook from frozen adding ~50% time to 165\u00b0F chicken / steak cooked through.","Batch chicken PLAIN \u2014 2 jumbo chicken breasts (~20 oz raw each = 8 portions, ~5 oz each). Salt + pepper ONLY, no sauces. Air fry 380\u00b0F ~22 min to 165\u00b0F; rest; slice into 8 portions. Flavor each the day you eat it.","Steak bites PLAIN \u2014 cube ONE chuck eye, sear hard 2 min per side, salt + pepper only. Fridge for Wednesday. The SECOND chuck eye stays raw \u2014 that one is tonight's dinner, cooked fresh.","Cook the rice \u2014 1.5 cups dry jasmine rice makes ~4.5 cups cooked. Portion into containers; it reheats all week.","Hard-boil 3 eggs for Friday breakfast.","Wash and chop romaine, slice cucumber, portion fruit."], b:{n:"Greek yogurt + banana + granola",c:380,r:"<strong>Greek yogurt + banana + granola.</strong> 3/4 cup plain Greek yogurt + 1 sliced banana + 1/4 cup granola + a thin drizzle of peanut butter. ~380 cal, 24g protein. 2 min."}, l:{n:"Canned chicken salad wrap",c:440,r:"<strong>Canned chicken salad wrap.</strong> 1 can chicken drained + 1 tbsp mayo + 1/2 cup diced cucumber + romaine in 1 burrito-size (10-inch) flour tortilla. No-cook. ~440 cal, 38g protein. 5 min."}, d:{n:"Garlic-parmesan steak bites & rice",c:550,r:"<strong>Garlic-parmesan steak bites &amp; rice \u2014 STEAK NIGHT.</strong> Cube a chuck eye and cook FRESH tonight: sear hard 2 min per side, salt + pepper. Toss with a pinch of garlic powder + 1 tbsp parmesan. Over 3/4 cup cooked rice + 1.5 cups broccoli. ~550 cal, 43g protein. 16 min."}, subs:[] },
-  "2026-09-14": { dow:"Mon", overlay:"Cardio", b:{n:"Three-egg fried rice bowl",c:420,r:"<strong>Three-egg fried rice bowl.</strong> Fry 3/4 cup cooked rice in 1 tsp sesame oil ~3 min, push aside, scramble 3 eggs into the pan, toss with 1 tbsp soy. ~420 cal, 24g protein. 8 min."}, l:{n:"Honey-lime chicken rice bowl",c:490,r:"<strong>Honey-lime chicken rice bowl.</strong> 1 plain chicken portion (from Sun) tossed with 1 tsp honey + a squeeze of lime + a pinch of chili powder, over 3/4 cup cooked rice with 1 cup broccoli. ~490 cal, 44g protein. 7 min."}, d:{n:"BBQ chicken rice bowl",c:530,r:"<strong>BBQ chicken rice bowl.</strong> 1 plain chicken portion (from Sun) shredded and tossed with 1.5 tbsp BBQ sauce, warmed 2 min. Over 3/4 cup cooked rice + 1.5 cups broccoli. ~530 cal, 45g protein. 8 min."}, subs:[] },
+  "2026-09-13": { dow:"Sun", overlay:"PREP DAY \u2014 Steak night", isPrep:true, prep:["NEW TARGET \u2014 this is the first prep under the ~2250 cal plan. Chicken and steak are UNCHANGED (2 jumbo breasts, 2 chuck eyes). What changed is rice (3 cups dry, double), eggs (6 hard-boiled, double), and a standing snack every day. Read the two changed lines below carefully rather than working from memory.","FROZEN? Check the chicken and steak first thing. Thaw overnight in the fridge, OR seal and submerge in cold water ~1 hr, OR cook from frozen adding ~50% time to 165\u00b0F chicken / steak cooked through.","Batch chicken PLAIN \u2014 2 jumbo chicken breasts (~20 oz raw each = 8 portions, ~5 oz each). Salt + pepper ONLY, no sauces. Air fry 380\u00b0F ~22 min to 165\u00b0F; rest; slice into 8 portions. Flavor each the day you eat it.","Steak bites PLAIN \u2014 cube ONE chuck eye, sear hard 2 min per side, salt + pepper only. Fridge for Wednesday. The SECOND chuck eye stays raw \u2014 that one is tonight's dinner, cooked fresh.","Cook the rice \u2014 3 cups dry jasmine rice makes ~9 cups cooked. That is DOUBLE what this step used to say: rice and pasta portions went from 3/4 cup to 1.5 cups cooked when the calorie target moved up on 09-10, so the old 1.5 cups dry now runs out by Wednesday. Portion into containers; it reheats all week.","Hard-boil 6 eggs \u2014 3 for Friday breakfast, and 2 more for the egg-and-cheddar snack, with one spare.","SAUCE TWO DINNERS NOW \u2014 this is the change that buys back your worst two weeknights. Take 2 chicken portions, 3 cups cooked rice or pasta and 3 cups broccoli, split into 2 containers, and sauce them FULLY (BBQ, teriyaki, Alfredo, marinara or honey-garlic \u2014 rotate week to week). Those two are DONE: microwave 2 min and eat, no pan, no step. Every OTHER portion still stays plain.","PORTION THE SNACKS \u2014 10 min, and it is the difference between having food and having ingredients. Fill snack bags: trail mix and almonds from the WinCo bulk bins (1/3 cup each), granola (1/4 cup each). Pre-load 2-3 shaker bottles with a DRY scoop of whey \u2014 they live in the backpack and you add water wherever you are.","FREEZE THE LUNCH BAG \u2014 put the PackIt in the freezer tonight so it is ready for Wednesday. If it is not frozen, Wednesday lunch becomes the shelf-stable pack instead; chicken does NOT go out in a bare backpack.","BUILD TUESDAY NIGHT, not Wednesday morning \u2014 the Wed/Fri wraps take 6 min the night before and zero minutes on a morning you do not have.","Wash and chop romaine, slice cucumber, portion fruit."], b:{n:"Greek yogurt + banana + granola",c:380,r:"<strong>Greek yogurt + banana + granola.</strong> 3/4 cup plain Greek yogurt + 1 sliced banana + 1/4 cup granola + a thin drizzle of peanut butter. ~380 cal, 24g protein. 2 min."}, l:{n:"Canned chicken salad wrap",c:440,r:"<strong>Canned chicken salad wrap.</strong> 1 can chicken drained + 1 tbsp mayo + 1/2 cup diced cucumber + romaine in 1 burrito-size (10-inch) flour tortilla. No-cook. ~440 cal, 38g protein. 5 min."}, d:{n:"Garlic-parmesan steak bites & rice",c:550,r:"<strong>Garlic-parmesan steak bites &amp; rice \u2014 STEAK NIGHT.</strong> Cube a chuck eye and cook FRESH tonight: sear hard 2 min per side, salt + pepper. Toss with a pinch of garlic powder + 1 tbsp parmesan. Over 3/4 cup cooked rice + 1.5 cups broccoli. ~550 cal, 43g protein. 16 min."}, subs:[] },
+  "2026-09-14": { dow:"Mon", overlay:"Cardio", b:{n:"Three-egg fried rice bowl",c:420,r:"<strong>Three-egg fried rice bowl.</strong> Fry 3/4 cup cooked rice in 1 tsp sesame oil ~3 min, push aside, scramble 3 eggs into the pan, toss with 1 tbsp soy. ~420 cal, 24g protein. 8 min."}, l:{n:"Honey-lime chicken rice bowl",c:490,r:"<strong>Honey-lime chicken rice bowl.</strong> 1 plain chicken portion (from Sun) tossed with 1 tsp honey + a squeeze of lime + a pinch of chili powder, over 3/4 cup cooked rice with 1 cup broccoli. ~490 cal, 44g protein. 7 min."}, d:{n:"DONE — BBQ chicken &amp; rice, sauced at prep",c:710,r:"<strong>DONE — BBQ chicken &amp; rice.</strong> Already sauced Sunday. Take the container out, microwave 2 min, eat. No pan, no step, no decision. 1.5 cups rice + BBQ chicken + broccoli, all in one dish from prep. ~710 cal, 49g protein. 2 min."}, subs:[] },
   "2026-09-15": { dow:"Tue", overlay:"Lift \u2014 Push", b:{n:"Peach & honey yogurt parfait",c:370,r:"<strong>Peach &amp; honey yogurt parfait.</strong> 3/4 cup plain Greek yogurt + 1 diced peach + 1/4 cup granola + 1 tbsp honey. ~370 cal, 24g protein. 3 min."}, l:{n:"Chicken Caesar pasta salad",c:490,r:"<strong>Chicken Caesar pasta salad.</strong> 3/4 cup cooked pasta + 1 plain chicken portion (from Sun) chopped + 1 cup chopped romaine, tossed with 1 tbsp Caesar dressing + 1 tbsp parmesan. Cold. ~490 cal, 45g protein. 6 min."}, d:{n:"Chicken parm tortilla flatbread",c:510,r:"<strong>Chicken parm tortilla flatbread.</strong> Lay 1 burrito-size (10-inch) flour tortilla flat, spread 1/3 cup marinara, top with 1 plain chicken portion (from Sun) sliced + 1/4 cup shredded cheddar + parmesan + Italian herbs. Air fry 350\u00b0F ~5 min. ~510 cal, 46g protein. 8 min."}, subs:[] },
-  "2026-09-16": { dow:"Wed", overlay:"Cardio", b:{n:"Cheddar egg scramble + fruit",c:360,r:"<strong>Cheddar egg scramble + fruit.</strong> Scramble 3 eggs, fold in 1/4 cup shredded cheddar off the heat. 1/2 cup fruit bowl on the side. ~360 cal, 25g protein. 6 min."}, l:{n:"Canned chicken Caesar wrap",c:470,r:"<strong>Canned chicken Caesar wrap.</strong> 1 can chicken drained + 1.5 cups chopped romaine + 1 tbsp Caesar dressing + 1 tbsp shredded parmesan in 1 burrito-size (10-inch) flour tortilla. No-cook. ~470 cal, 42g protein. 5 min."}, d:{n:"Pepper steak rice bowl",c:530,r:"<strong>Pepper steak rice bowl.</strong> Reheat the plain steak bites (from Sun) 2 min with 1 cup stir-fry veg + 1.5 tbsp soy + plenty of cracked pepper. Over 3/4 cup cooked rice. ~530 cal, 41g protein. 8 min."}, subs:[] },
-  "2026-09-17": { dow:"Thu", overlay:"Lift \u2014 Pull", b:{n:"Turkey sausage & cheddar egg scramble",c:430,r:"<strong>Turkey sausage &amp; cheddar egg scramble.</strong> Brown 2 turkey sausage patties chopped ~4 min, pour in 3 beaten eggs, fold in 1/4 cup shredded cheddar off the heat. ~430 cal, 38g protein. 8 min."}, l:{n:"Garlic-herb chicken rice bowl",c:490,r:"<strong>Garlic-herb chicken rice bowl.</strong> 1 plain chicken portion (from Sun) tossed with 1 tsp olive oil + a pinch each of garlic powder and Italian seasoning, over 3/4 cup cooked rice with 1 cup broccoli. ~490 cal, 44g protein. 7 min."}, d:{n:"Alfredo chicken & broccoli rice bowl",c:530,r:"<strong>Alfredo chicken &amp; broccoli rice bowl (NEW).</strong> 1 plain chicken portion (from Sun) sliced, warmed with 1/3 cup Alfredo sauce + 1.5 cups broccoli, over 3/4 cup cooked rice. Cracked pepper and 1 tbsp parmesan over the top. ~530 cal, 46g protein. 9 min."}, subs:[] },
-  "2026-09-18": { dow:"Fri", overlay:"Cardio", b:{n:"Hard-boiled egg & cheddar plate + apple",c:415,r:"<strong>Hard-boiled egg &amp; cheddar plate + apple.</strong> 3 hard-boiled eggs (from Sun) halved + 1/4 cup shredded cheddar + 1 apple sliced. No-cook. ~415 cal, 25g protein. 2 min."}, l:{n:"Sesame-ginger chicken rice bowl",c:480,r:"<strong>Sesame-ginger chicken rice bowl.</strong> 1 plain chicken portion (from Sun) tossed with 1 tbsp soy + 1/2 tsp sesame oil + a pinch of garlic powder, over 3/4 cup cooked rice with 1 cup stir-fry veg. ~480 cal, 44g protein. 7 min."}, d:{n:"Honey-soy turkey sausage rice bowl",c:480,r:"<strong>Honey-soy turkey sausage rice bowl (NEW).</strong> Brown 2 turkey sausage patties chopped ~5 min, glaze off the heat with 1 tbsp soy + 1 tsp honey + a pinch of garlic powder. Over 3/4 cup cooked rice + 1.5 cups broccoli. ~480 cal, 29g protein. 12 min."}, subs:[] },
+  "2026-09-16": { dow:"Wed", overlay:"Cardio", b:{n:"Cheddar egg scramble + fruit",c:360,r:"<strong>Cheddar egg scramble + fruit.</strong> Scramble 3 eggs, fold in 1/4 cup shredded cheddar off the heat. 1/2 cup fruit bowl on the side. ~360 cal, 25g protein. 6 min."}, l:{n:"Backpack lunch — chicken Caesar wrap",c:600,r:"<strong>Backpack lunch — chicken Caesar wrap.</strong> Built TUESDAY NIGHT, not in the morning. 1 plain chicken portion (from Sun) chopped + 1 tbsp Caesar dressing + 1 tbsp parmesan + 1 cup coleslaw mix in 1 burrito-size (10-inch) flour tortilla, rolled tight in foil. 1 apple. <em>Needs the frozen PackIt bag — chicken is not safe in a bare backpack.</em> SHELF-STABLE SWAP if the bag is not frozen: PB-honey wrap + chicken pouch + apple. ~600 cal, 48g protein. 6 min the night before."}, d:{n:"Pepper steak rice bowl",c:530,r:"<strong>Pepper steak rice bowl.</strong> Reheat the plain steak bites (from Sun) 2 min with 1 cup stir-fry veg + 1.5 tbsp soy + plenty of cracked pepper. Over 3/4 cup cooked rice. ~530 cal, 41g protein. 8 min."}, subs:[] },
+  "2026-09-17": { dow:"Thu", overlay:"Lift \u2014 Pull", b:{n:"Turkey sausage & cheddar egg scramble",c:430,r:"<strong>Turkey sausage &amp; cheddar egg scramble.</strong> Brown 2 turkey sausage patties chopped ~4 min, pour in 3 beaten eggs, fold in 1/4 cup shredded cheddar off the heat. ~430 cal, 38g protein. 8 min."}, l:{n:"Garlic-herb chicken rice bowl",c:490,r:"<strong>Garlic-herb chicken rice bowl.</strong> 1 plain chicken portion (from Sun) tossed with 1 tsp olive oil + a pinch each of garlic powder and Italian seasoning, over 3/4 cup cooked rice with 1 cup broccoli. ~490 cal, 44g protein. 7 min."}, d:{n:"DONE — Alfredo chicken &amp; broccoli, sauced at prep",c:700,r:"<strong>DONE — Alfredo chicken &amp; broccoli.</strong> Already sauced Sunday. Microwave 2 min and eat. 1.5 cups pasta + Alfredo chicken + broccoli in one container. ~700 cal, 48g protein. 2 min."}, subs:[] },
+  "2026-09-18": { dow:"Fri", overlay:"Cardio", b:{n:"Hard-boiled egg & cheddar plate + apple",c:415,r:"<strong>Hard-boiled egg &amp; cheddar plate + apple.</strong> 3 hard-boiled eggs (from Sun) halved + 1/4 cup shredded cheddar + 1 apple sliced. No-cook. ~415 cal, 25g protein. 2 min."}, l:{n:"Backpack lunch — turkey sausage + cheddar wrap",c:575,r:"<strong>Backpack lunch — turkey sausage &amp; cheddar wrap.</strong> Built THURSDAY NIGHT. 2 turkey sausage patties browned and chopped + 1/4 cup shredded cheddar + romaine in 1 burrito-size (10-inch) flour tortilla, rolled in foil. 1 apple. <em>Needs the frozen PackIt bag.</em> SHELF-STABLE SWAP: PB-honey wrap + chicken pouch + apple. Friday is the 5-minute day — this is one-handed on purpose. ~575 cal, 33g protein. 8 min the night before."}, d:{n:"Honey-soy turkey sausage rice bowl",c:480,r:"<strong>Honey-soy turkey sausage rice bowl (NEW).</strong> Brown 2 turkey sausage patties chopped ~5 min, glaze off the heat with 1 tbsp soy + 1 tsp honey + a pinch of garlic powder. Over 3/4 cup cooked rice + 1.5 cups broccoli. ~480 cal, 29g protein. 12 min."}, subs:[] },
   "2026-09-19": { dow:"Sat", overlay:"Lift \u2014 Legs", b:{n:"Strawberry-banana smoothie + granola",c:390,r:"<strong>Strawberry-banana smoothie + granola.</strong> 1 cup frozen strawberries + 1 banana + 3/4 cup plain Greek yogurt + splash water, blended. 1/4 cup granola on top. ~390 cal, 26g protein. 4 min."}, l:{n:"Canned chicken quesadilla",c:500,r:"<strong>Canned chicken quesadilla.</strong> 1 can chicken drained, 1/3 cup shredded cheddar, pinch garlic powder in 1 burrito-size (10-inch) flour tortilla. Press in a dry pan 2 min per side. ~500 cal, 42g protein. 8 min."}, d:{n:"Chicken, bacon & cheddar quesadilla",c:550,r:"<strong>Chicken, bacon &amp; cheddar quesadilla.</strong> 1 plain chicken portion (from Sun) shredded with 1 tbsp bacon bits + 1/3 cup shredded cheddar + a pinch of garlic powder and Italian herbs in 1 burrito-size (10-inch) flour tortilla. Press 2 min per side. ~550 cal, 47g protein. 8 min."}, subs:[] },
-  "2026-09-20": { dow:"Sun", overlay:"PREP DAY \u2014 Steak night", isPrep:true, prep:["FROZEN? Check the chicken and steak first thing. Thaw overnight in the fridge, OR seal and submerge in cold water ~1 hr, OR cook from frozen adding ~50% time to 165\u00b0F chicken / steak cooked through.","Batch chicken PLAIN \u2014 2 jumbo chicken breasts (~20 oz raw each = 8 portions, ~5 oz each). Salt + pepper ONLY, no sauces. Air fry 380\u00b0F ~22 min to 165\u00b0F; rest; slice into 8 portions. Flavor each the day you eat it.","Steak bites PLAIN \u2014 cube ONE chuck eye, sear hard 2 min per side, salt + pepper only. Fridge for Wednesday. The SECOND chuck eye stays raw \u2014 that one is tonight's dinner, cooked fresh.","Cook the rice \u2014 1.5 cups dry jasmine rice makes ~4.5 cups cooked. Portion into containers; it reheats all week.","Hard-boil 3 eggs for Friday breakfast.","Wash and chop romaine, slice cucumber, portion fruit."], b:{n:"Apple-cinnamon yogurt parfait",c:370,r:"<strong>Apple-cinnamon yogurt parfait.</strong> 3/4 cup plain Greek yogurt + 1 diced apple + 1/4 cup granola + a pinch of cinnamon + a drizzle of honey. ~370 cal, 24g protein. 3 min."}, l:{n:"Canned chicken salad wrap",c:440,r:"<strong>Canned chicken salad wrap.</strong> 1 can chicken drained + 1 tbsp mayo + 1/2 cup diced cucumber + romaine in 1 burrito-size (10-inch) flour tortilla. No-cook. ~440 cal, 38g protein. 5 min."}, d:{n:"Honey-garlic steak bites",c:540,r:"<strong>Honey-garlic steak bites \u2014 STEAK NIGHT.</strong> Cube a chuck eye and cook FRESH tonight: sear hard 2 min per side. Glaze off the heat with 2 tbsp soy + 1 tsp honey + a pinch of garlic. Over 3/4 cup cooked rice + 1.5 cups broccoli. ~540 cal, 42g protein. 16 min."}, subs:[] },
-  "2026-09-21": { dow:"Mon", overlay:"Cardio", b:{n:"PB-banana-granola wrap",c:400,r:"<strong>PB-banana-granola wrap.</strong> 1 burrito-size (10-inch) flour tortilla + 1.5 tbsp peanut butter + sliced banana + a sprinkle of granola. Roll up. ~400 cal, 14g protein. 3 min."}, l:{n:"Italian chicken & provolone bowl",c:480,r:"<strong>Italian chicken &amp; provolone bowl.</strong> 1 plain chicken portion (from Sun) sliced over 2 cups romaine + cucumber, 1 slice provolone torn over the top, dressed with 1 tsp olive oil + 1 tsp red wine vinegar + a pinch of Italian seasoning. ~480 cal, 45g protein. 6 min."}, d:{n:"Pineapple teriyaki chicken bowl",c:520,r:"<strong>Pineapple teriyaki chicken bowl.</strong> 1 plain chicken portion (from Sun) warmed with 1/3 cup canned pineapple + 1.5 tbsp soy + 1 tsp honey. Over 3/4 cup cooked rice + 1 cup broccoli. ~520 cal, 45g protein. 8 min."}, subs:[] },
+  "2026-09-20": { dow:"Sun", overlay:"PREP DAY \u2014 Steak night", isPrep:true, prep:["FROZEN? Check the chicken and steak first thing. Thaw overnight in the fridge, OR seal and submerge in cold water ~1 hr, OR cook from frozen adding ~50% time to 165\u00b0F chicken / steak cooked through.","Batch chicken PLAIN \u2014 2 jumbo chicken breasts (~20 oz raw each = 8 portions, ~5 oz each). Salt + pepper ONLY, no sauces. Air fry 380\u00b0F ~22 min to 165\u00b0F; rest; slice into 8 portions. Flavor each the day you eat it.","Steak bites PLAIN \u2014 cube ONE chuck eye, sear hard 2 min per side, salt + pepper only. Fridge for Wednesday. The SECOND chuck eye stays raw \u2014 that one is tonight's dinner, cooked fresh.","Cook the rice \u2014 3 cups dry jasmine rice makes ~9 cups cooked. That is DOUBLE what this step used to say: rice and pasta portions went from 3/4 cup to 1.5 cups cooked when the calorie target moved up on 09-10, so the old 1.5 cups dry now runs out by Wednesday. Portion into containers; it reheats all week.","Hard-boil 6 eggs \u2014 3 for Friday breakfast, and 2 more for the egg-and-cheddar snack, with one spare.","SAUCE TWO DINNERS NOW \u2014 this is the change that buys back your worst two weeknights. Take 2 chicken portions, 3 cups cooked rice or pasta and 3 cups broccoli, split into 2 containers, and sauce them FULLY (BBQ, teriyaki, Alfredo, marinara or honey-garlic \u2014 rotate week to week). Those two are DONE: microwave 2 min and eat, no pan, no step. Every OTHER portion still stays plain.","PORTION THE SNACKS \u2014 10 min, and it is the difference between having food and having ingredients. Fill snack bags: trail mix and almonds from the WinCo bulk bins (1/3 cup each), granola (1/4 cup each). Pre-load 2-3 shaker bottles with a DRY scoop of whey \u2014 they live in the backpack and you add water wherever you are.","FREEZE THE LUNCH BAG \u2014 put the PackIt in the freezer tonight so it is ready for Wednesday. If it is not frozen, Wednesday lunch becomes the shelf-stable pack instead; chicken does NOT go out in a bare backpack.","BUILD TUESDAY NIGHT, not Wednesday morning \u2014 the Wed/Fri wraps take 6 min the night before and zero minutes on a morning you do not have.","Wash and chop romaine, slice cucumber, portion fruit."], b:{n:"Apple-cinnamon yogurt parfait",c:370,r:"<strong>Apple-cinnamon yogurt parfait.</strong> 3/4 cup plain Greek yogurt + 1 diced apple + 1/4 cup granola + a pinch of cinnamon + a drizzle of honey. ~370 cal, 24g protein. 3 min."}, l:{n:"Canned chicken salad wrap",c:440,r:"<strong>Canned chicken salad wrap.</strong> 1 can chicken drained + 1 tbsp mayo + 1/2 cup diced cucumber + romaine in 1 burrito-size (10-inch) flour tortilla. No-cook. ~440 cal, 38g protein. 5 min."}, d:{n:"Honey-garlic steak bites",c:540,r:"<strong>Honey-garlic steak bites \u2014 STEAK NIGHT.</strong> Cube a chuck eye and cook FRESH tonight: sear hard 2 min per side. Glaze off the heat with 2 tbsp soy + 1 tsp honey + a pinch of garlic. Over 3/4 cup cooked rice + 1.5 cups broccoli. ~540 cal, 42g protein. 16 min."}, subs:[] },
+  "2026-09-21": { dow:"Mon", overlay:"Cardio", b:{n:"PB-banana-granola wrap",c:400,r:"<strong>PB-banana-granola wrap.</strong> 1 burrito-size (10-inch) flour tortilla + 1.5 tbsp peanut butter + sliced banana + a sprinkle of granola. Roll up. ~400 cal, 14g protein. 3 min."}, l:{n:"Italian chicken & provolone bowl",c:480,r:"<strong>Italian chicken &amp; provolone bowl.</strong> 1 plain chicken portion (from Sun) sliced over 2 cups romaine + cucumber, 1 slice provolone torn over the top, dressed with 1 tsp olive oil + 1 tsp red wine vinegar + a pinch of Italian seasoning. ~480 cal, 45g protein. 6 min."}, d:{n:"DONE — Teriyaki chicken &amp; rice, sauced at prep",c:700,r:"<strong>DONE — Teriyaki chicken &amp; rice.</strong> Already sauced Sunday. Microwave 2 min and eat. 1.5 cups rice + teriyaki chicken + broccoli in one container. ~700 cal, 48g protein. 2 min."}, subs:[] },
   "2026-09-22": { dow:"Tue", overlay:"Lift \u2014 Push", b:{n:"Cheesy egg & veggie skillet",c:380,r:"<strong>Cheesy egg &amp; veggie skillet.</strong> Saut&eacute; 1 cup frozen stir-fry mix ~4 min until the water cooks off, add 3 beaten eggs, finish with 1/4 cup shredded cheddar. ~380 cal, 26g protein. 8 min."}, l:{n:"Chicken shawarma bowl",c:490,r:"<strong>Chicken shawarma bowl.</strong> 1 plain chicken portion (from Sun) tossed with a pinch each of cumin, smoked paprika and garlic powder + 1 tsp olive oil, warmed 90 sec. Over 3/4 cup cooked rice with romaine and cucumber. ~490 cal, 45g protein. 7 min."}, d:{n:"BBQ chicken & cheddar flatbread",c:520,r:"<strong>BBQ chicken &amp; cheddar flatbread (NEW).</strong> Lay 1 burrito-size (10-inch) flour tortilla flat, spread 1.5 tbsp BBQ sauce, top with 1 plain chicken portion (from Sun) shredded + 1/4 cup shredded cheddar + a pinch of onion powder. Air fry 350\u00b0F ~5 min until the edges crisp. ~520 cal, 46g protein. 8 min."}, subs:[] },
-  "2026-09-23": { dow:"Wed", overlay:"Cardio", b:{n:"Greek yogurt parfait",c:360,r:"<strong>Greek yogurt parfait.</strong> 3/4 cup plain Greek yogurt + 1/2 cup fresh strawberries + 1/4 cup granola + a drizzle of honey. ~360 cal, 24g protein. 2 min."}, l:{n:"Canned chicken Caesar wrap",c:470,r:"<strong>Canned chicken Caesar wrap.</strong> 1 can chicken drained + 1.5 cups chopped romaine + 1 tbsp Caesar dressing + 1 tbsp shredded parmesan in 1 burrito-size (10-inch) flour tortilla. No-cook. ~470 cal, 42g protein. 5 min."}, d:{n:"Pepper steak rice bowl",c:530,r:"<strong>Pepper steak rice bowl.</strong> Reheat the plain steak bites (from Sun) 2 min with 1 cup stir-fry veg + 1.5 tbsp soy + plenty of cracked pepper. Over 3/4 cup cooked rice. ~530 cal, 41g protein. 8 min."}, subs:[] },
-  "2026-09-24": { dow:"Thu", overlay:"Lift \u2014 Pull", b:{n:"Bacon-cheddar egg scramble",c:400,r:"<strong>Bacon-cheddar egg scramble.</strong> Scramble 3 eggs, fold in 1/4 cup shredded cheddar + 1 tbsp real bacon bits off the heat. ~400 cal, 28g protein. 6 min."}, l:{n:"Lemon-pepper chicken rice bowl",c:480,r:"<strong>Lemon-pepper chicken rice bowl.</strong> 1 plain chicken portion (from Sun) tossed with a pinch of lemon-pepper + a squeeze of lemon, over 3/4 cup cooked rice with 1 cup broccoli. ~480 cal, 44g protein. 7 min."}, d:{n:"Smoky chicken & sweet potato bowl",c:520,r:"<strong>Smoky chicken &amp; sweet potato bowl (NEW).</strong> Microwave 1 medium sweet potato ~6 min, cube. Toss with 1 plain chicken portion (from Sun) chopped + 1 tsp olive oil + a pinch each of smoked paprika and cumin, warm 2 min. 1 cup broccoli alongside. ~520 cal, 45g protein. 11 min."}, subs:[] },
-  "2026-09-25": { dow:"Fri", overlay:"Cardio", b:{n:"Hard-boiled egg & cheddar plate + fruit",c:400,r:"<strong>Hard-boiled egg &amp; cheddar plate + fruit.</strong> 3 hard-boiled eggs (from Sun) halved + 1/4 cup shredded cheddar + 1/2 cup fruit bowl. No-cook. ~400 cal, 25g protein. 2 min."}, l:{n:"Chicken Caesar crunch wrap",c:480,r:"<strong>Chicken Caesar crunch wrap (NEW).</strong> 1 plain chicken portion (from Sun) chopped, tossed with 1 tbsp Caesar dressing + 1 tbsp parmesan. Into 1 burrito-size (10-inch) flour tortilla with 1 cup coleslaw mix for crunch. Roll tight. ~480 cal, 45g protein. 6 min."}, d:{n:"Turkey sausage stir-fry bowl",c:480,r:"<strong>Turkey sausage stir-fry bowl.</strong> Brown 2 turkey sausage patties chopped ~5 min, add 1.5 cups frozen stir-fry mix, cook 5 min, finish with 1 tbsp soy. Over 3/4 cup cooked rice. ~480 cal, 28g protein. 12 min."}, subs:[] },
+  "2026-09-23": { dow:"Wed", overlay:"Cardio", b:{n:"Greek yogurt parfait",c:360,r:"<strong>Greek yogurt parfait.</strong> 3/4 cup plain Greek yogurt + 1/2 cup fresh strawberries + 1/4 cup granola + a drizzle of honey. ~360 cal, 24g protein. 2 min."}, l:{n:"Backpack lunch — chicken Caesar wrap",c:600,r:"<strong>Backpack lunch — chicken Caesar wrap.</strong> Built TUESDAY NIGHT. 1 plain chicken portion (from Sun) chopped + 1 tbsp Caesar dressing + 1 tbsp parmesan + 1 cup coleslaw mix in 1 burrito-size (10-inch) flour tortilla, rolled tight in foil. 1 apple. <em>Needs the frozen PackIt bag.</em> SHELF-STABLE SWAP: PB-honey wrap + chicken pouch + apple. ~600 cal, 48g protein. 6 min the night before."}, d:{n:"Pepper steak rice bowl",c:530,r:"<strong>Pepper steak rice bowl.</strong> Reheat the plain steak bites (from Sun) 2 min with 1 cup stir-fry veg + 1.5 tbsp soy + plenty of cracked pepper. Over 3/4 cup cooked rice. ~530 cal, 41g protein. 8 min."}, subs:[] },
+  "2026-09-24": { dow:"Thu", overlay:"Lift \u2014 Pull", b:{n:"Bacon-cheddar egg scramble",c:400,r:"<strong>Bacon-cheddar egg scramble.</strong> Scramble 3 eggs, fold in 1/4 cup shredded cheddar + 1 tbsp real bacon bits off the heat. ~400 cal, 28g protein. 6 min."}, l:{n:"Lemon-pepper chicken rice bowl",c:480,r:"<strong>Lemon-pepper chicken rice bowl.</strong> 1 plain chicken portion (from Sun) tossed with a pinch of lemon-pepper + a squeeze of lemon, over 3/4 cup cooked rice with 1 cup broccoli. ~480 cal, 44g protein. 7 min."}, d:{n:"DONE — Marinara chicken parm bake, sauced at prep",c:720,r:"<strong>DONE — Marinara chicken parm bake.</strong> Already sauced Sunday. Microwave 2 min and eat. 1.5 cups pasta + marinara chicken + cheddar and parmesan, one container. ~720 cal, 50g protein. 2 min."}, subs:[] },
+  "2026-09-25": { dow:"Fri", overlay:"Cardio", b:{n:"Hard-boiled egg & cheddar plate + fruit",c:400,r:"<strong>Hard-boiled egg &amp; cheddar plate + fruit.</strong> 3 hard-boiled eggs (from Sun) halved + 1/4 cup shredded cheddar + 1/2 cup fruit bowl. No-cook. ~400 cal, 25g protein. 2 min."}, l:{n:"Backpack lunch — shelf-stable pack",c:715,r:"<strong>Backpack lunch — shelf-stable pack.</strong> NO cold bag, NO fridge, nothing to build the night before — this is the one to keep on the Fridays that get away from you. 1 burrito-size (10-inch) flour tortilla + 1.5 tbsp peanut butter + 1 tbsp honey, rolled in foil. 1 shelf-stable chicken pouch. 1 apple. 1 shaker pre-loaded with a dry scoop of whey — add water when you get there. ~715 cal, 45g protein. 3 min to pack."}, d:{n:"Turkey sausage stir-fry bowl",c:480,r:"<strong>Turkey sausage stir-fry bowl.</strong> Brown 2 turkey sausage patties chopped ~5 min, add 1.5 cups frozen stir-fry mix, cook 5 min, finish with 1 tbsp soy. Over 3/4 cup cooked rice. ~480 cal, 28g protein. 12 min."}, subs:[] },
   "2026-09-26": { dow:"Sat", overlay:"Lift \u2014 Legs", b:{n:"Cheddar omelet + fruit",c:370,r:"<strong>Cheddar omelet + fruit.</strong> Beat 3 eggs, pour into a nonstick pan over medium-low, fold in 1/4 cup shredded cheddar as it sets. 1/2 cup fruit on the side. ~370 cal, 25g protein. 7 min."}, l:{n:"Canned chicken quesadilla",c:500,r:"<strong>Canned chicken quesadilla.</strong> 1 can chicken drained, 1/3 cup shredded cheddar, pinch garlic powder in 1 burrito-size (10-inch) flour tortilla. Press in a dry pan 2 min per side. ~500 cal, 42g protein. 8 min."}, d:{n:"Marinara chicken parmesan bowl",c:530,r:"<strong>Marinara chicken parmesan bowl.</strong> 1 plain chicken portion (from Sun) sliced, simmered 3 min in 1/2 cup marinara, topped with 1/4 cup shredded cheddar + parmesan, over 3/4 cup cooked pasta. ~530 cal, 47g protein. 9 min."}, subs:[] },
-  "2026-09-27": { dow:"Sun", overlay:"PREP DAY \u2014 Steak night \u2014 SHORT WEEK", isPrep:true, prep:["FROZEN? Check the chicken and steak first thing. Thaw overnight in the fridge, OR seal and submerge in cold water ~1 hr, OR cook from frozen adding ~50% time to 165\u00b0F chicken / steak cooked through.","Batch chicken PLAIN \u2014 1 jumbo chicken breast (~20 oz raw = 4 portions, ~5 oz each). Salt + pepper ONLY, no sauces. Air fry 380\u00b0F ~22 min to 165\u00b0F; rest; slice into 4 portions. Flavor each the day you eat it.","Steak bites PLAIN \u2014 cube ONE chuck eye, sear hard 2 min per side, salt + pepper only. Fridge for Wednesday. The SECOND chuck eye stays raw \u2014 that one is tonight's dinner, cooked fresh.","Cook the rice \u2014 1.5 cups dry jasmine rice makes ~4.5 cups cooked. Portion into containers; it reheats all week.","Hard-boil 3 eggs if a no-cook breakfast lands this week.","Wash and chop romaine, slice cucumber, portion fruit.","SHORT WEEK \u2014 September ends Wednesday. One jumbo breast (4 portions) covers it with one spare rolling into October."], b:{n:"Greek yogurt + banana + granola",c:380,r:"<strong>Greek yogurt + banana + granola.</strong> 3/4 cup plain Greek yogurt + 1 sliced banana + 1/4 cup granola + a thin drizzle of peanut butter. ~380 cal, 24g protein. 2 min."}, l:{n:"Canned chicken salad wrap",c:440,r:"<strong>Canned chicken salad wrap.</strong> 1 can chicken drained + 1 tbsp mayo + 1/2 cup diced cucumber + romaine in 1 burrito-size (10-inch) flour tortilla. No-cook. ~440 cal, 38g protein. 5 min."}, d:{n:"Steak & cheddar quesadilla",c:560,r:"<strong>Steak &amp; cheddar quesadilla \u2014 STEAK NIGHT.</strong> Cook a chuck eye FRESH tonight: salt + pepper, sear 3-4 min per side, rest, then slice thin. Fold into 1 burrito-size (10-inch) flour tortilla with 1/3 cup shredded cheddar. Press 2 min per side. ~560 cal, 44g protein. 20 min."}, subs:["Short week \u2014 only 3 days left in September. Prep light: 1 breast, not 2."] },
-  "2026-09-28": { dow:"Mon", overlay:"Cardio", b:{n:"Three-egg fried rice bowl",c:420,r:"<strong>Three-egg fried rice bowl.</strong> Fry 3/4 cup cooked rice in 1 tsp sesame oil ~3 min, push aside, scramble 3 eggs into the pan, toss with 1 tbsp soy. ~420 cal, 24g protein. 8 min."}, l:{n:"Honey-garlic chicken wrap",c:470,r:"<strong>Honey-garlic chicken wrap.</strong> 1 plain chicken portion (from Sun) sliced, tossed with 1 tbsp soy + 1 tsp honey + a pinch of garlic powder. Into 1 burrito-size (10-inch) flour tortilla with romaine and cucumber. ~470 cal, 44g protein. 6 min."}, d:{n:"Cheesy chicken & broccoli rice bake",c:530,r:"<strong>Cheesy chicken &amp; broccoli rice bake (NEW).</strong> Stir 3/4 cup cooked rice + 1.5 cups broccoli + 1 plain chicken portion (from Sun) chopped + 1/3 cup shredded cheddar + a pinch of garlic powder in an oven-safe dish. Air fry or bake 375\u00b0F ~8 min until the top browns. ~530 cal, 47g protein. 12 min."}, subs:[] },
+  "2026-09-27": { dow:"Sun", overlay:"PREP DAY \u2014 Steak night \u2014 SHORT WEEK", isPrep:true, prep:["FROZEN? Check the chicken and steak first thing. Thaw overnight in the fridge, OR seal and submerge in cold water ~1 hr, OR cook from frozen adding ~50% time to 165\u00b0F chicken / steak cooked through.","Batch chicken PLAIN \u2014 1 jumbo chicken breast (~20 oz raw = 4 portions, ~5 oz each). Salt + pepper ONLY, no sauces. Air fry 380\u00b0F ~22 min to 165\u00b0F; rest; slice into 4 portions. Flavor each the day you eat it.","Steak bites PLAIN \u2014 cube ONE chuck eye, sear hard 2 min per side, salt + pepper only. Fridge for Wednesday. The SECOND chuck eye stays raw \u2014 that one is tonight's dinner, cooked fresh.","Cook the rice \u2014 1.5 cups dry jasmine rice makes ~4.5 cups cooked. Portion into containers; it reheats all week.","Hard-boil 3 eggs if a no-cook breakfast lands this week.","SAUCE TWO DINNERS NOW \u2014 this is the change that buys back your worst two weeknights. Take 2 chicken portions, 3 cups cooked rice or pasta and 3 cups broccoli, split into 2 containers, and sauce them FULLY (BBQ, teriyaki, Alfredo, marinara or honey-garlic \u2014 rotate week to week). Those two are DONE: microwave 2 min and eat, no pan, no step. Every OTHER portion still stays plain.","PORTION THE SNACKS \u2014 10 min, and it is the difference between having food and having ingredients. Fill snack bags: trail mix and almonds from the WinCo bulk bins (1/3 cup each), granola (1/4 cup each). Pre-load 2-3 shaker bottles with a DRY scoop of whey \u2014 they live in the backpack and you add water wherever you are.","FREEZE THE LUNCH BAG \u2014 put the PackIt in the freezer tonight so it is ready for Wednesday. If it is not frozen, Wednesday lunch becomes the shelf-stable pack instead; chicken does NOT go out in a bare backpack.","BUILD TUESDAY NIGHT, not Wednesday morning \u2014 the Wed/Fri wraps take 6 min the night before and zero minutes on a morning you do not have.","Wash and chop romaine, slice cucumber, portion fruit.","SHORT WEEK \u2014 September ends Wednesday. One jumbo breast (4 portions) still covers it: the calorie increase came from carbs, dairy and fat, NOT from more chicken, so protein portions per meal did not change."], b:{n:"Greek yogurt + banana + granola",c:380,r:"<strong>Greek yogurt + banana + granola.</strong> 3/4 cup plain Greek yogurt + 1 sliced banana + 1/4 cup granola + a thin drizzle of peanut butter. ~380 cal, 24g protein. 2 min."}, l:{n:"Canned chicken salad wrap",c:440,r:"<strong>Canned chicken salad wrap.</strong> 1 can chicken drained + 1 tbsp mayo + 1/2 cup diced cucumber + romaine in 1 burrito-size (10-inch) flour tortilla. No-cook. ~440 cal, 38g protein. 5 min."}, d:{n:"Steak & cheddar quesadilla",c:560,r:"<strong>Steak &amp; cheddar quesadilla \u2014 STEAK NIGHT.</strong> Cook a chuck eye FRESH tonight: salt + pepper, sear 3-4 min per side, rest, then slice thin. Fold into 1 burrito-size (10-inch) flour tortilla with 1/3 cup shredded cheddar. Press 2 min per side. ~560 cal, 44g protein. 20 min."}, subs:["Short week \u2014 only 3 days left in September. Prep light: 1 breast, not 2."] },
+  "2026-09-28": { dow:"Mon", overlay:"Cardio", b:{n:"Three-egg fried rice bowl",c:420,r:"<strong>Three-egg fried rice bowl.</strong> Fry 3/4 cup cooked rice in 1 tsp sesame oil ~3 min, push aside, scramble 3 eggs into the pan, toss with 1 tbsp soy. ~420 cal, 24g protein. 8 min."}, l:{n:"Honey-garlic chicken wrap",c:470,r:"<strong>Honey-garlic chicken wrap.</strong> 1 plain chicken portion (from Sun) sliced, tossed with 1 tbsp soy + 1 tsp honey + a pinch of garlic powder. Into 1 burrito-size (10-inch) flour tortilla with romaine and cucumber. ~470 cal, 44g protein. 6 min."}, d:{n:"DONE — Honey-garlic chicken &amp; rice, sauced at prep",c:700,r:"<strong>DONE — Honey-garlic chicken &amp; rice.</strong> Already sauced Sunday. Microwave 2 min and eat. 1.5 cups rice + honey-garlic chicken + broccoli in one container. ~700 cal, 48g protein. 2 min."}, subs:[] },
   "2026-09-29": { dow:"Tue", overlay:"Lift \u2014 Push", b:{n:"Cheddar egg scramble + fruit",c:360,r:"<strong>Cheddar egg scramble + fruit.</strong> Scramble 3 eggs, fold in 1/4 cup shredded cheddar off the heat. 1/2 cup fruit bowl on the side. ~360 cal, 25g protein. 6 min."}, l:{n:"Canned chicken quesadilla",c:500,r:"<strong>Canned chicken quesadilla.</strong> 1 can chicken drained, 1/3 cup shredded cheddar, pinch garlic powder in 1 burrito-size (10-inch) flour tortilla. Press in a dry pan 2 min per side. ~500 cal, 42g protein. 8 min."}, d:{n:"Chicken Alfredo & broccoli pasta",c:540,r:"<strong>Chicken Alfredo &amp; broccoli pasta.</strong> 3/4 cup cooked pasta + 1.5 cups broccoli tossed with 1/3 cup Alfredo sauce and 1 plain chicken portion (from Sun) sliced. Warm through. ~540 cal, 46g protein. 9 min."}, subs:[] },
-  "2026-09-30": { dow:"Wed", overlay:"Cardio", b:{n:"Peach & honey yogurt parfait",c:370,r:"<strong>Peach &amp; honey yogurt parfait.</strong> 3/4 cup plain Greek yogurt + 1 diced peach + 1/4 cup granola + 1 tbsp honey. ~370 cal, 24g protein. 3 min."}, l:{n:"Canned chicken Caesar wrap",c:470,r:"<strong>Canned chicken Caesar wrap.</strong> 1 can chicken drained + 1.5 cups chopped romaine + 1 tbsp Caesar dressing + 1 tbsp shredded parmesan in 1 burrito-size (10-inch) flour tortilla. No-cook. ~470 cal, 42g protein. 5 min."}, d:{n:"Pepper steak rice bowl",c:530,r:"<strong>Pepper steak rice bowl.</strong> Reheat the plain steak bites (from Sun) 2 min with 1 cup stir-fry veg + 1.5 tbsp soy + plenty of cracked pepper. Over 3/4 cup cooked rice. ~530 cal, 41g protein. 8 min."}, subs:["Last day of September \u2014 one spare chicken portion carries into October."] }
+  "2026-09-30": { dow:"Wed", overlay:"Cardio", b:{n:"Peach & honey yogurt parfait",c:370,r:"<strong>Peach &amp; honey yogurt parfait.</strong> 3/4 cup plain Greek yogurt + 1 diced peach + 1/4 cup granola + 1 tbsp honey. ~370 cal, 24g protein. 3 min."}, l:{n:"Backpack lunch — chicken Caesar wrap",c:600,r:"<strong>Backpack lunch — chicken Caesar wrap.</strong> Built TUESDAY NIGHT. 1 plain chicken portion (from Sun) chopped + 1 tbsp Caesar dressing + 1 tbsp parmesan + 1 cup coleslaw mix in 1 burrito-size (10-inch) flour tortilla, rolled tight in foil. 1 apple. <em>Needs the frozen PackIt bag.</em> SHELF-STABLE SWAP: PB-honey wrap + chicken pouch + apple. ~600 cal, 48g protein. 6 min the night before."}, d:{n:"Pepper steak rice bowl",c:530,r:"<strong>Pepper steak rice bowl.</strong> Reheat the plain steak bites (from Sun) 2 min with 1 cup stir-fry veg + 1.5 tbsp soy + plenty of cracked pepper. Over 3/4 cup cooked rice. ~530 cal, 41g protein. 8 min."}, subs:["Last day of September \u2014 one spare chicken portion carries into October."] }
 };
 
 const todayDate = new Date();
 const todayStr = todayISO();
 let currentMonth = todayDate.getMonth();
 let currentYear = todayDate.getFullYear();
+
+/* ===================== PLUS — the volume-up layer =====================
+   Sept 2026: the daily target moved from ~1450 to ~2250 (see KITCHEN_RULES.diet).
+   Rather than rewrite 60-odd dishes that already work, this layer bolts extra
+   food ONTO each existing day: an addition to a meal, plus a standing snack.
+
+   Two rules this layer obeys:
+     1. It is purely ADDITIVE. No dish here is corrected, shrunk or replaced,
+        and no historical day is touched — only dates from 2026-09-10 forward
+        have entries, so the calendar's past stays exactly as it was lived.
+     2. 09-10 through 09-12 use ONLY food already in the kitchen. The shop is
+        Friday 09-11, so those three days lean on pantry staples (granola,
+        yogurt, cheddar, turkey sausage, fruit, broccoli) and no whey.
+
+   Shape:  date -> { b/l/d:{a:addition text, c:cal, p:protein},
+                     s:[{k:slot, n:name, r:recipe, c:cal, p:protein}] }
+   ===================================================================== */
+const PLUS = {
+  "2026-09-10": { d:{a:"Add 1/4 cup shredded cheddar over the top.",c:110,p:7}, s:[{k:"dsnack",n:"Greek yogurt + granola + honey",r:"3/4 cup plain Greek yogurt + 1/4 cup crunchy granola + 1 tbsp honey. No-cook. ~275 cal, 19g protein. 2 min.",c:275,p:19}] },
+  "2026-09-11": { b:{a:"Alongside: 2 turkey sausage patties, browned ~4 min.",c:130,p:13}, s:[{k:"lsnack",n:"Greek yogurt + strawberries",r:"3/4 cup plain Greek yogurt + 1/2 cup fresh strawberries + a drizzle of honey. No-cook. ~185 cal, 17g protein. 2 min.",c:185,p:17}] },
+  "2026-09-12": { b:{a:"Alongside: 2 turkey sausage patties, browned ~4 min.",c:130,p:13}, d:{a:"Add 1/4 cup shredded cheddar over the top.",c:110,p:7}, s:[{k:"dsnack",n:"Greek yogurt + granola + honey",r:"3/4 cup plain Greek yogurt + 1/4 cup crunchy granola + 1 tbsp honey. No-cook. ~275 cal, 19g protein. 2 min.",c:275,p:19}] },
+  "2026-09-13": { b:{a:"Stir 1 scoop whey into it.",c:120,p:24}, l:{a:"Alongside: 1 apple + 1 tbsp peanut butter.",c:195,p:4}, d:{a:"Alongside: 1.5 cups broccoli tossed with 1 tsp olive oil.",c:90,p:4}, s:[{k:"lsnack",n:"Fruit bowl + granola",r:"1 cup fruit bowl + 1/4 cup crunchy granola. No-cook. ~195 cal, 3g protein. 1 min.",c:195,p:3}] },
+  "2026-09-14": { b:{a:"Alongside: 2 turkey sausage patties, browned ~4 min.",c:130,p:13}, l:{a:"Alongside: 1 cup fruit bowl.",c:80,p:1}, s:[{k:"lsnack",n:"Greek yogurt + strawberries",r:"3/4 cup plain Greek yogurt + 1/2 cup fresh strawberries + a drizzle of honey. No-cook. ~185 cal, 17g protein. 2 min.",c:185,p:17}] },
+  "2026-09-15": { b:{a:"Stir 1 scoop whey in, and add another 1/4 cup crunchy granola.",c:235,p:26}, l:{a:"Alongside: 1 cup fruit bowl.",c:80,p:1}, d:{a:"Alongside: 1.5 cups broccoli tossed with 1 tsp olive oil, and 1/4 cup shredded cheddar over the bowl.",c:200,p:11}, s:[{k:"dsnack",n:"Apple + peanut butter",r:"1 apple sliced + 2 tbsp peanut butter. No-cook. ~295 cal, 8g protein. 2 min.",c:295,p:8}] },
+  "2026-09-16": { b:{a:"Make it 4 eggs instead of 3, and go to 1/3 cup shredded cheddar.",c:105,p:9}, l:{a:"Add a beef stick to the bag.",c:100,p:8}, d:{a:"Make it 1.5 cups cooked rice instead of 3/4 cup.",c:170,p:4}, s:[{k:"lsnack",n:"Whey shake + banana",r:"1 scoop whey blended with 1 cup water and ice. 1 banana alongside. ~225 cal, 25g protein. 3 min.",c:225,p:25}] },
+  "2026-09-17": { b:{a:"Alongside: 1/2 cup frozen shredded hash browns crisped in 1 tsp olive oil.",c:130,p:2}, l:{a:"Make it 1.5 cups cooked rice instead of 3/4 cup.",c:170,p:4}, s:[{k:"dsnack",n:"Greek yogurt + granola + honey",r:"3/4 cup plain Greek yogurt + 1/4 cup crunchy granola + 1 tbsp honey. No-cook. ~275 cal, 19g protein. 2 min.",c:275,p:19}] },
+  "2026-09-18": { b:{a:"Alongside: 3/4 cup plain Greek yogurt with a drizzle of honey.",c:160,p:17}, l:{a:"Add a beef stick to the bag.",c:100,p:8}, d:{a:"Alongside: 1.5 cups broccoli tossed with 1 tsp olive oil.",c:90,p:4}, s:[{k:"lsnack",n:"Whey shake + banana",r:"1 scoop whey blended with 1 cup water and ice. 1 banana alongside. ~225 cal, 25g protein. 3 min.",c:225,p:25}] },
+  "2026-09-19": { b:{a:"Stir 1 scoop whey into it.",c:120,p:24}, l:{a:"Alongside: 1 cup fruit bowl.",c:80,p:1}, d:{a:"Alongside: 1.5 cups broccoli tossed with 1 tsp olive oil, and 1/4 cup shredded cheddar over the bowl.",c:200,p:11}, s:[{k:"dsnack",n:"Apple + peanut butter",r:"1 apple sliced + 2 tbsp peanut butter. No-cook. ~295 cal, 8g protein. 2 min.",c:295,p:8}] },
+  "2026-09-20": { b:{a:"Stir 1 scoop whey in, and add another 1/4 cup crunchy granola.",c:235,p:26}, l:{a:"Alongside: 1 apple + 1 tbsp peanut butter.",c:195,p:4}, d:{a:"Make it 1.5 cups cooked rice instead of 3/4 cup.",c:170,p:4}, s:[{k:"lsnack",n:"Greek yogurt + strawberries",r:"3/4 cup plain Greek yogurt + 1/2 cup fresh strawberries + a drizzle of honey. No-cook. ~185 cal, 17g protein. 2 min.",c:185,p:17}] },
+  "2026-09-21": { b:{a:"Alongside: 3/4 cup plain Greek yogurt with a drizzle of honey.",c:160,p:17}, l:{a:"Alongside: 1 burrito-size (10-inch) flour tortilla with 1/4 cup shredded cheddar melted in.",c:320,p:13}, s:[{k:"dsnack",n:"Whey shake + banana",r:"1 scoop whey blended with 1 cup water and ice. 1 banana alongside. ~225 cal, 25g protein. 3 min.",c:225,p:25}] },
+  "2026-09-22": { b:{a:"Alongside: 1 burrito-size (10-inch) flour tortilla with 1.5 tbsp peanut butter, rolled.",c:360,p:12}, l:{a:"Make it 1.5 cups cooked rice instead of 3/4 cup.",c:170,p:4}, d:{a:"Alongside: 1.5 cups broccoli tossed with 1 tsp olive oil, and 1/4 cup shredded cheddar over the bowl.",c:200,p:11}, s:[{k:"lsnack",n:"Whey shake + banana",r:"1 scoop whey blended with 1 cup water and ice. 1 banana alongside. ~225 cal, 25g protein. 3 min.",c:225,p:25}] },
+  "2026-09-23": { b:{a:"Stir 1 scoop whey in, and add another 1/4 cup crunchy granola.",c:235,p:26}, l:{a:"Add a beef stick to the bag.",c:100,p:8}, d:{a:"Make it 1.5 cups cooked rice instead of 3/4 cup.",c:170,p:4}, s:[{k:"dsnack",n:"Greek yogurt + granola + honey",r:"3/4 cup plain Greek yogurt + 1/4 cup crunchy granola + 1 tbsp honey. No-cook. ~275 cal, 19g protein. 2 min.",c:275,p:19}] },
+  "2026-09-24": { b:{a:"Alongside: 1 burrito-size (10-inch) flour tortilla with 1.5 tbsp peanut butter, rolled.",c:360,p:12}, l:{a:"Make it 1.5 cups cooked rice instead of 3/4 cup.",c:170,p:4}, s:[{k:"lsnack",n:"Whey + peanut butter shake",r:"1 scoop whey + 1 tbsp peanut butter + 1 banana, blended with water and ice. ~320 cal, 28g protein. 4 min.",c:320,p:28}] },
+  "2026-09-25": { b:{a:"Stir 1 scoop whey in, and add another 1/4 cup crunchy granola.",c:235,p:26}, d:{a:"Alongside: 1.5 cups broccoli tossed with 1 tsp olive oil.",c:90,p:4}, s:[{k:"dsnack",n:"Whey + peanut butter shake",r:"1 scoop whey + 1 tbsp peanut butter + 1 banana, blended with water and ice. ~320 cal, 28g protein. 4 min.",c:320,p:28}] },
+  "2026-09-26": { b:{a:"Alongside: 1 burrito-size (10-inch) flour tortilla with 1.5 tbsp peanut butter, rolled.",c:360,p:12}, l:{a:"Alongside: 1 cup fruit bowl.",c:80,p:1}, d:{a:"Make it 1.5 cups cooked pasta instead of 3/4 cup, and add 1/4 cup shredded cheddar over the top.",c:280,p:13}, s:[{k:"lsnack",n:"Greek yogurt + granola + honey",r:"3/4 cup plain Greek yogurt + 1/4 cup crunchy granola + 1 tbsp honey. No-cook. ~275 cal, 19g protein. 2 min.",c:275,p:19}] },
+  "2026-09-27": { b:{a:"Stir 1 scoop whey into it.",c:120,p:24}, l:{a:"Alongside: 1 apple + 1 tbsp peanut butter.",c:195,p:4}, d:{a:"Alongside: 1.5 cups broccoli tossed with 1 tsp olive oil, and 1/4 cup shredded cheddar over the bowl.",c:200,p:11}, s:[{k:"lsnack",n:"Greek yogurt + granola + honey",r:"3/4 cup plain Greek yogurt + 1/4 cup crunchy granola + 1 tbsp honey. No-cook. ~275 cal, 19g protein. 2 min.",c:275,p:19}] },
+  "2026-09-28": { b:{a:"Alongside: 3/4 cup plain Greek yogurt with a drizzle of honey.",c:160,p:17}, l:{a:"Alongside: 1 burrito-size (10-inch) flour tortilla with 1/4 cup shredded cheddar melted in.",c:320,p:13}, s:[{k:"dsnack",n:"Whey shake + banana",r:"1 scoop whey blended with 1 cup water and ice. 1 banana alongside. ~225 cal, 25g protein. 3 min.",c:225,p:25}] },
+  "2026-09-29": { b:{a:"Alongside: 1 burrito-size (10-inch) flour tortilla with 1.5 tbsp peanut butter, rolled.",c:360,p:12}, l:{a:"Make it 1.5 cups cooked rice instead of 3/4 cup.",c:170,p:4}, d:{a:"Make it 1.5 cups cooked pasta instead of 3/4 cup, and add 1/4 cup shredded cheddar over the top.",c:280,p:13}, s:[{k:"lsnack",n:"Whey shake + banana",r:"1 scoop whey blended with 1 cup water and ice. 1 banana alongside. ~225 cal, 25g protein. 3 min.",c:225,p:25}] },
+  "2026-09-30": { b:{a:"Stir 1 scoop whey in, and add another 1/4 cup crunchy granola.",c:235,p:26}, l:{a:"Add a beef stick to the bag.",c:100,p:8}, d:{a:"Make it 1.5 cups cooked rice instead of 3/4 cup.",c:170,p:4}, s:[{k:"dsnack",n:"Greek yogurt + granola + honey",r:"3/4 cup plain Greek yogurt + 1/4 cup crunchy granola + 1 tbsp honey. No-cook. ~275 cal, 19g protein. 2 min.",c:275,p:19}] }
+};
+/* ===================== TIERS, GRAB SHELF & SWAP =====================
+   Added Sept 2026 after three problems surfaced at once: meals felt slow and
+   samey, Wed/Fri lunches are eaten away from home with NO fridge and no
+   microwave, and there was nothing in the apartment that could simply be
+   picked up and eaten -- only ingredients.
+
+   The three turned out to be one problem. EVERY meal in the plan required a
+   finishing step, so a low-motivation day had no landing place except
+   quitting. The fix: every meal has an EFFORT TIER, and any meal can be
+   swapped DOWN a tier, never up. You stop deciding what to eat and start
+   deciding how much effort you have. A bad day costs a tier, not the plan.
+
+     Tier 1  DONE      cooked AND sauced Sunday. Microwave 2 min. No decisions.
+     Tier 2  ASSEMBLE  the normal model -- 5-10 min, a pan, a few components.
+     Tier 3  GRAB      zero prep, zero fridge, lives in the backpack.
+
+   FOOD SAFETY -- why the Wed/Fri lunches changed: perishable food is unsafe
+   after 2 hours between 40F and 140F, and a backpack from 8am to noon is
+   four. Anything with chicken, egg or dairy needs the frozen cold bag. The
+   shelf-stable fallback needs nothing at all, and exists for the days the bag
+   never made it to the freezer -- or the days he didn't know he was leaving.
+   ================================================================= */
+const TIERS={
+  1:{n:"Done",     e:"\u2744\uFE0F", d:"Sauced Sunday \u2014 microwave and eat"},
+  2:{n:"Assemble", e:"\uD83C\uDF73", d:"5-10 min, one pan"},
+  3:{n:"Grab",     e:"\u26A1",       d:"No prep, no fridge"}
+};
+
+/* The shelf: the list that did not exist before, and the answer to "when I'm
+   hungry all I have is ingredients". Everything here is edible in under two
+   minutes. shelf:true survives a backpack with no cold source; shelf:false
+   needs the frozen bag or the fridge and says so in the UI. */
+const GRAB=[
+  {n:"Backpack lunch \u2014 shelf-stable", r:"1 burrito-size (10-inch) flour tortilla + 1.5 tbsp peanut butter + 1 tbsp honey, rolled in foil. 1 shelf-stable chicken pouch. 1 apple. 1 shaker pre-loaded with a dry scoop of whey \u2014 add water when you get there.", c:715, p:45, shelf:true,  meal:true},
+  {n:"Backpack lunch \u2014 cold bag",     r:"The wrap you built last night + 1 string cheese + 1 apple. Needs the frozen PackIt bag \u2014 do NOT pack this without it.", c:690, p:52, shelf:false, meal:true},
+  {n:"Canned chicken quesadilla",          r:"1 can chicken drained + 1/3 cup shredded cheddar + a pinch of garlic powder in 1 burrito-size (10-inch) flour tortilla. Dry pan 2 min per side.", c:500, p:42, shelf:false, meal:true},
+  {n:"Protein oats",                       r:"1/2 cup oats + 1 scoop whey + 1 tbsp peanut butter + water, microwaved 90 sec and stirred.", c:520, p:36, shelf:false, meal:true},
+  {n:"Whey shaker",                        r:"1 scoop whey + 1 cup water, shaken. The cheapest protein you own.", c:120, p:24, shelf:true},
+  {n:"PB-honey tortilla",                  r:"1 burrito-size (10-inch) flour tortilla + 1 tbsp peanut butter + 1 tbsp honey, rolled.", c:370, p:9, shelf:true},
+  {n:"Shelf-stable chicken pouch",         r:"1 pouch, eaten straight or on a tortilla. No fridge, no opener.", c:110, p:20, shelf:true},
+  {n:"Beef stick + apple",                 r:"1 meat stick + 1 apple.", c:195, p:10, shelf:true},
+  {n:"Protein bar",                        r:"1 bar from the box on the shelf.", c:200, p:20, shelf:true},
+  {n:"Trail mix, portioned",               r:"1 of the bags you filled Sunday (1/3 cup).", c:200, p:6, shelf:true},
+  {n:"Almonds, portioned",                 r:"1 of the bags you filled Sunday (1 oz).", c:160, p:6, shelf:true},
+  {n:"Banana + peanut butter",             r:"1 banana + 1 tbsp peanut butter.", c:205, p:5, shelf:true},
+  {n:"Granola + honey",                    r:"1/4 cup crunchy granola with a drizzle of honey.", c:175, p:2, shelf:true},
+  {n:"Greek yogurt + honey",               r:"3/4 cup plain Greek yogurt + 1 tbsp honey.", c:160, p:17, shelf:false},
+  {n:"Cheddar + bacon bits on a tortilla", r:"1 burrito-size (10-inch) flour tortilla + 1/4 cup shredded cheddar + 1 tbsp real bacon bits, pressed 2 min per side.", c:350, p:16, shelf:false},
+  {n:"Hard-boiled eggs + cheddar",         r:"2 hard-boiled eggs (from Sun prep) + 1/4 cup shredded cheddar.", c:250, p:19, shelf:false}
+];
+
+/* Both shopping paths kept side by side on purpose, so the trade-off stays
+   visible instead of being decided once and quietly forgotten. Recommended
+   mix: BUY the things with no workable DIY version, PORTION everything else. */
+const SNACK_SHELF={
+  buy: [
+    {n:"Shelf-stable chicken pouches", why:"No DIY version survives a backpack. This is the one that makes the shelf-stable lunch work at all.", cost:"~$1.30 ea"},
+    {n:"Beef/meat sticks", why:"Protein with no fridge and no prep. Buy the multipack, not singles.", cost:"~$0.90 ea"},
+    {n:"Protein bars (one box)", why:"The real emergency slot \u2014 lives in the backpack permanently and never gets eaten at home.", cost:"~$1.20 ea"},
+    {n:"String cheese", why:"Cold bag only. Cheap protein, zero effort.", cost:"~$0.40 ea"}
+  ],
+  portion: [
+    {n:"Trail mix / almonds from WinCo bulk bins", why:"Roughly a third the price of pre-bagged. 10 min on Sunday into snack bags.", cost:"~$0.55/bag"},
+    {n:"Granola into bags", why:"Same jar you already buy, just pre-measured so it is a grab and not a decision.", cost:"already bought"},
+    {n:"Whey into shaker bottles", why:"Pre-load 2-3 shakers DRY. Add water anywhere. 24g protein for 120 cal.", cost:"already bought"},
+    {n:"Wed/Fri wraps built the night before", why:"6 min the night before beats 6 min you do not have in the morning.", cost:"already bought"}
+  ],
+  gear: [
+    {n:"PackIt Freezable lunch bag", why:"The whole bag goes in the freezer, so there is no separate ice pack to forget \u2014 that matters more for you than a couple of degrees. USDA wants two cold sources in an insulated bag to hold food under 40F; this is both, built in.", cost:"~$20 once"}
+  ]
+};
+
+/* Tier lookup. Explicit per-date overrides win; otherwise infer from the dish
+   itself, so meals added later get a sensible tier with no extra bookkeeping. */
+const TIER_OVERRIDE={};
+function mealTier(meal, ds, which){
+  if(!meal) return 2;
+  const key=(ds||"")+":"+(which||"");
+  if(TIER_OVERRIDE[key]) return TIER_OVERRIDE[key];
+  const n=(meal.n||"")+" "+(meal.r||"");
+  if(/DONE \u2014|sauced at prep|Already sauced/i.test(n)) return 1;
+  if(/Backpack lunch|shelf-stable pack/i.test(n)) return 3;
+  return 2;
+}
+function grabFor(shelfOnly){ return GRAB.filter(g=>!shelfOnly||g.shelf); }
+
+function plusFor(ds){ return PLUS[ds]||null; }
+/* Total a day is planned to come to, base dishes + everything PLUS adds. */
+function plannedDayTotals(ds){
+  const m=meals[ds]; let c=0,p=0;
+  if(m){ ["b","l","d"].forEach(w=>{ const x=m[w]; if(x&&!x.parents){ c+=x.c||0; p+=parseProtein(x.r); } }); }
+  const pl=plusFor(ds);
+  if(pl){
+    ["b","l","d"].forEach(w=>{ if(pl[w]){ c+=pl[w].c||0; p+=pl[w].p||0; } });
+    (pl.s||[]).forEach(sn=>{ c+=sn.c||0; p+=sn.p||0; });
+  }
+  return {cal:c, pro:p};
+}
+
 if (!meals[todayStr]) { currentMonth = 4; currentYear = 2026; }
 let selectedDate = meals[todayStr] ? todayStr : "2026-05-23";
 let expandedDish = {};
@@ -1747,7 +1928,34 @@ function buildGrocery(){
   out.push("Here's my week — build my interactive grocery checklist for "+shortPretty(wr.sunStr)+" – "+shortPretty(wr.satStr)+".");
   out.push("Cover EVERY meal below PLUS the Sunday prep ingredients. List every ingredient with the amount I need in parentheses; I'll tap off what I already have. Route it by store: Costco, WinCo, Smith's.");
   out.push("");
-  wr.days.forEach(function(ds){ const m=meals[ds]; if(!m) return; const lbl=shortPretty(ds).toUpperCase(); if(m.isPrep&&m.prep){ out.push(lbl+" - PREP: "+m.prep.join("; ")); } const parts=[]; if(m.b) parts.push("B: "+m.b.n); if(m.l) parts.push("L: "+m.l.n); if(m.d) parts.push("D: "+(m.d.parents?"parents cook":m.d.n)); out.push(lbl+" - "+parts.join(" | ")); });
+  wr.days.forEach(function(ds){ const m=meals[ds]; if(!m) return; const lbl=shortPretty(ds).toUpperCase(); if(m.isPrep&&m.prep){ out.push(lbl+" - PREP: "+m.prep.join("; ")); } const pl=plusFor(ds)||{}; const parts=[];
+    /* Dish names carry HTML entities for the in-app cards; this prompt is
+       plain text pasted into a chat, so decode them or the list reads
+       "chicken &amp; rice". */
+    const plain=t=>String(t||"").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'");
+    const wAdd=w=>pl[w]?" [PLUS: "+plain(pl[w].a)+"]":"";
+    if(m.b) parts.push("B: "+plain(m.b.n)+wAdd("b"));
+    if(m.l) parts.push("L: "+plain(m.l.n)+wAdd("l"));
+    if(m.d) parts.push("D: "+(m.d.parents?"parents cook":plain(m.d.n)+wAdd("d")));
+    (pl.s||[]).forEach(sn=>parts.push("SNACK: "+plain(sn.n)+" \u2014 "+plain(sn.r)));
+    out.push(lbl+" - "+parts.join(" | ")); });
+  out.push("");
+  out.push("NOTE \u2014 the daily target moved to ~2250 cal on 2026-09-10, so portions are bigger than older weeks. The [PLUS: ...] and SNACK lines are real ingredients, not optional: include them in the quantities.");
+  out.push("Standing new item: whey protein powder (the base meals run ~115g protein, the floor is 184g).");
+  out.push("");
+  /* The Grab shelf is the part a meal-by-meal list structurally cannot see:
+     none of it belongs to any particular day, so it never appears above and
+     would silently never get bought \u2014 which is exactly the failure that
+     left the apartment full of ingredients and nothing to eat. */
+  out.push("GRAB SHELF \u2014 none of this belongs to a specific meal, so it will not appear above. It still has to be bought.");
+  out.push("BUY (no workable DIY version):");
+  SNACK_SHELF.buy.forEach(function(g){ out.push("  \u2022 "+g.n+" ("+g.cost+") \u2014 "+g.why); });
+  out.push("BULK BINS, portioned into bags on Sunday (~1/3 the price of pre-bagged):");
+  SNACK_SHELF.portion.forEach(function(g){ out.push("  \u2022 "+g.n+" ("+g.cost+")"); });
+  out.push("ALSO: aluminium foil for the wraps, and sandwich bags for the portioned snacks.");
+  out.push("");
+  out.push("WED/FRI LUNCHES are eaten away from home with NO fridge and NO microwave. Anything with chicken, egg or dairy in it needs the frozen cold bag; quantities must also cover the shelf-stable fallback (PB-honey tortilla + chicken pouch + apple) in case the bag is not frozen.");
+  SNACK_SHELF.gear.forEach(function(g){ out.push("ONE-TIME GEAR: "+g.n+" ("+g.cost+") \u2014 "+g.why); });
   copyText(out.join("\n")); showToast("Grocery prompt copied — paste it to Claude");
 }
 const RATINGS_KEY="mealRatings_v1";
@@ -1815,10 +2023,32 @@ function renderDetail(){
       const lt=document.createElement("button"); lt.className="log-today-btn"; lt.textContent="＋ Log to today";
       lt.onclick=(ev)=>{ ev.stopPropagation(); logMealToToday(slot,meal); };
       section.appendChild(lt);
+      const pAdd=(plusFor(selectedDate)||{})[slot];
+      if(pAdd){ const ab=document.createElement("div"); ab.className="parent-note"; ab.style.background="var(--today-soft)"; ab.style.color="var(--ink)"; ab.textContent="\uFF0B "+pAdd.a+"  (+"+pAdd.c+" cal, +"+pAdd.p+"g P)"; section.appendChild(ab); }
       if(expandedDish[slot]&&meal.r){ const box=document.createElement("div"); box.className="recipe-box"; box.innerHTML=meal.r; section.appendChild(box); }
     }
     card.appendChild(section);
   });
+  const plSn=(plusFor(selectedDate)||{}).s||[];
+  const snLabel={lsnack:"Lunch snack", dsnack:"Dinner snack", bsnack:"Breakfast snack"};
+  plSn.forEach(sn=>{
+    const section=document.createElement("div"); section.className="detail-section";
+    const label=document.createElement("div"); label.className="detail-label"; label.textContent=snLabel[sn.k]||"Snack"; section.appendChild(label);
+    const row=document.createElement("div"); row.className="dish-row";
+    const name=document.createElement("span"); name.className="dish-name"; name.textContent=sn.n;
+    row.appendChild(name);
+    const cal=document.createElement("span"); cal.className="dish-cal"; cal.textContent=`~${sn.c} cal`; row.appendChild(cal);
+    section.appendChild(row);
+    section.appendChild(ratingRow(sn.n));
+    const box=document.createElement("div"); box.className="recipe-box"; box.textContent=sn.r; section.appendChild(box);
+    card.appendChild(section);
+  });
+  const tot=plannedDayTotals(selectedDate);
+  if(tot.cal){
+    const tb=document.createElement("div"); tb.className="subs-box";
+    tb.innerHTML=`<div class="subs-label">Day total as planned</div><div class="sub-item">${tot.cal} cal \u00b7 ${tot.pro}g protein \u2014 target ${plannedTarget(selectedDate)}</div>`;
+    card.appendChild(tb);
+  }
   if(m.subs&&m.subs.length){ const sb=document.createElement("div"); sb.className="subs-box"; sb.innerHTML=`<div class="subs-label">Grab-and-go subs</div>`+m.subs.map(s=>`<div class="sub-item">${s}</div>`).join(""); card.appendChild(sb); }
   panel.appendChild(card);
 }
@@ -2471,14 +2701,57 @@ $("p-settings-btn").onclick=openSettings;
    ========================================================= */
 const WG_KEY="weightGoal_v1";
 const DAY_PREFIX="day_v1_";
-let wgoal={ cur:136.2, goal:125, maintenance:1750 };
-let dayState={ daytype:"rest", misc:0, water:0, energy:"", notes:"", log:[], target:1450 };
+/* ===== body scan — Evolt 360, 2026-09-08 (EoS) =====================
+   These numbers replace the old placeholder maintenance figure. Everything
+   downstream (targets, deficit, protein, projected rate) reads from here, so
+   re-scan and edit THIS block rather than patching numbers further down.
+   Bioimpedance TEE runs generous — treat 2890 as an estimate and let 3-4
+   weeks of trend weight be the referee. */
+const BODY={ scanned:"2026-09-08", heightIn:73, weightLb:204.8, age:21,
+             leanLb:153.9, fatLb:50.9, bfPct:24.9, visceral:8,
+             bmr:1877, tee:2890 };
+/* Protein is set off BODYWEIGHT, not off the calorie target — 0.9 g/lb.
+   Tying it to a % of calories made it move whenever the target moved, which
+   is backwards: the whole point of the protein floor is that it holds while
+   calories come down. */
+const PROTEIN_TARGET_G=Math.round(BODY.weightLb*0.9);   // 184g
+let wgoal={ cur:204.8, goal:185, maintenance:2890 };
+
+/* ===== the ramp ===================================================
+   Going from ~1450 to ~2250 overnight is a bad idea twice over: the gut
+   protests, and the scale jumps 3-5 lb of glycogen water in a week, which
+   reads as failure and isn't. So the target steps up over three weeks.
+   Each phase gives a lift-day / cardio-day / rest-day figure. */
+const RAMP=[
+  { from:"2026-09-10", rest:1750, cardio:1800, lift:1900, note:"Step 1 — easing up. Uses only what's already in the kitchen." },
+  { from:"2026-09-13", rest:1950, cardio:2050, lift:2150, note:"Step 2 — most of the way there." },
+  { from:"2026-09-20", rest:2100, cardio:2250, lift:2400, note:"Full target — about a 600 cal/day deficit off a 2890 TEE." }
+];
+function rampFor(ds){
+  let cur=null;
+  for(const r of RAMP){ if(ds>=r.from) cur=r; }
+  return cur;
+}
+/* Which kind of day is it? Read it off the calendar overlay, not the log. */
+function dayKind(ds){
+  const m=meals[ds];
+  const ov=(m&&m.overlay)||"";
+  if(/Lift/i.test(ov)) return "lift";
+  if(/Cardio/i.test(ov)) return "cardio";
+  return "rest";
+}
+function plannedTarget(ds){
+  const r=rampFor(ds);
+  if(!r) return 1450;                 // historical days keep the old target
+  return r[dayKind(ds)];
+}
+let dayState={ daytype:"rest", misc:0, water:0, energy:"", notes:"", log:[], target:null };
 
 const DAYTYPES=[
-  {k:"rest", e:"😴", n:"Rest", t:1400},
-  {k:"walk", e:"🚶", n:"Walk", t:1600},
-  {k:"strength", e:"💪", n:"Strength", t:1500},
-  {k:"run", e:"🏃", n:"Run", t:1700}
+  {k:"rest", e:"😴", n:"Rest", t:2100},
+  {k:"walk", e:"🚶", n:"Walk", t:2250},
+  {k:"strength", e:"💪", n:"Strength", t:2400},
+  {k:"run", e:"🏃", n:"Run", t:2400}
 ];
 const ENERGY=[
   {k:"exhausted", e:"😮‍💨", n:"Exhausted"},
@@ -2502,7 +2775,16 @@ const SLOT_MAP={ b:"breakfast", l:"lunch", d:"dinner", any:"snacks" };
 function loadWg(){ try{ const w=JSON.parse(localStorage.getItem(WG_KEY)); if(w) wgoal=Object.assign(wgoal,w); }catch(e){} }
 function saveWg(){ try{ localStorage.setItem(WG_KEY,JSON.stringify(wgoal)); }catch(e){} }
 function dayKey(date){ return DAY_PREFIX+date; }
-function getDay(date){ try{ const d=JSON.parse(localStorage.getItem(dayKey(date))); if(d) return Object.assign({daytype:"rest",misc:0,water:0,energy:"",notes:"",log:[],target:1450},d); }catch(e){} return {daytype:"rest",misc:0,water:0,energy:"",notes:"",log:[],target:1450}; }
+function getDay(date){
+  const base={daytype:"rest",misc:0,water:0,energy:"",notes:"",log:[],target:null};
+  let d=null; try{ d=JSON.parse(localStorage.getItem(dayKey(date))); }catch(e){}
+  const out=d?Object.assign({},base,d):Object.assign({},base);
+  /* A day saved before v2.4.0 carries the old 1450 baked in. Anything at or
+     below the old ceiling is a stale default, not a deliberate choice, so let
+     the ramp speak for it. A target the user actually picked will be above it. */
+  if(out.target==null || out.target<=1500) out.target=plannedTarget(date);
+  return out;
+}
 function saveDay(date,d){
   if(date===todayStr && d && Array.isArray(d.log)){
     const hasB=d.log.some(i=>i.slot==="breakfast");
@@ -2514,7 +2796,7 @@ function saveDay(date,d){
 function loggedCalsFor(date){ try{ const d=JSON.parse(localStorage.getItem(dayKey(date))); if(d&&d.log) return d.log.reduce((s,i)=>s+(i.cal||0),0); }catch(e){} return 0; }
 
 /* ----- targets / macros ----- */
-function dayTarget(){ return dayState.target||1450; }
+function dayTarget(){ return dayState.target||plannedTarget(todayStr); }
 function logTotals(){ let c=0,p=0,cb=0,f=0; dayState.log.forEach(i=>{ c+=(i.cal||0); p+=(i.pro||0); cb+=(i.carb||0); f+=(i.fat||0); }); return {c,p,cb,f}; }
 
 /* ----- render ----- */
@@ -2561,6 +2843,7 @@ function renderToday(){
   // protein hero + macros
   renderProtein(target,tot);
   renderMacros(target,tot);
+  renderGrab();
 }
 
 function renderWeightGoal(target){
@@ -2624,13 +2907,13 @@ function renderLog(){
 /* Rough calorie/protein bands per slot, from KITCHEN_RULES. Bands are targets
    to steer by, not pass/fail lines — nothing is ever marked failed. */
 const SLOT_BANDS={
-  breakfast:{cal:[360,450], pro:[25,38]},
-  lunch:    {cal:[460,570], pro:[40,55]},
-  dinner:   {cal:[450,550], pro:[35,50]},
-  bsnack:   {cal:[100,220], pro:[8,20]},
-  lsnack:   {cal:[100,220], pro:[8,20]},
-  dsnack:   {cal:[100,220], pro:[8,20]},
-  dessert:  {cal:[100,250], pro:[0,15]}
+  breakfast:{cal:[480,600], pro:[30,45]},
+  lunch:    {cal:[580,700], pro:[45,60]},
+  dinner:   {cal:[620,760], pro:[45,60]},
+  bsnack:   {cal:[150,320], pro:[10,28]},
+  lsnack:   {cal:[150,320], pro:[10,28]},
+  dsnack:   {cal:[150,320], pro:[10,28]},
+  dessert:  {cal:[150,300], pro:[0,20]}
 };
 /* Fallback boosters when the pantry has nothing suitable. Approximate by design —
    flagged in the UI as "not in your pantry" so a suggestion never pretends to be
@@ -2677,7 +2960,7 @@ function mealStrength(cal,pro,band){
 /* How is the whole day tracking? A single meal can look fine in isolation while
    the day quietly runs 600 cal short — the sheet has to be able to see that. */
 function dayContext(){
-  const tot=logTotals(), target=dayState.target||1450;
+  const tot=logTotals(), target=dayState.target||plannedTarget(todayStr);
   const h=new Date().getHours();
   // rough share of the day's food that should be in by now
   const pace = h<10?0.15 : h<14?0.45 : h<18?0.65 : h<21?0.95 : 1;
@@ -2798,7 +3081,12 @@ function applyRefine(name,cal,pro){
 }
 
 function renderMacros(target,tot){
-  const cT=Math.round(target*0.35/4), fT=Math.round(target*0.25/9);
+  /* Protein is fixed at bodyweight x 0.9 and fat at 25% of calories (below
+     ~50g/day fat, male hormone production takes a hit). Carbs take whatever
+     is left, so the three always add back up to the target instead of the
+     old percentages quietly summing to less than the day. */
+  const fT=Math.round(target*0.25/9);
+  const cT=Math.max(0,Math.round((target-PROTEIN_TARGET_G*4-fT*9)/4));
   const rows=[
     {n:"Carbs", v:tot.cb, t:cT, col:"var(--blue)"},
     {n:"Fat", v:Math.round(tot.f*10)/10, t:fT, col:"var(--orange)"}
@@ -2812,7 +3100,7 @@ function renderMacros(target,tot){
 /* ----- protein hero (the priority) ----- */
 function renderProtein(target,tot){
   const host=$("t-protein"); if(!host) return;
-  const pT=Math.round(target*0.40/4);
+  const pT=PROTEIN_TARGET_G;
   const now=Math.round(tot.p||0);
   const pct=pT>0?Math.min(100,now/pT*100):0;
   const hit=now>=pT && pT>0;
@@ -2843,8 +3131,17 @@ function renderDayChip(){
 /* ----- target chips (fixed deficit, no eat-back) ----- */
 function renderTargetChips(){
   const host=$("t-target-chips"); if(!host) return;
-  const cur=dayState.target||1450;
-  host.innerHTML=[1400,1450,1500].map(v=>`<button class="${v===cur?'on':''}" onclick="setTarget(${v})">${v}</button>`).join("");
+  const cur=dayState.target||plannedTarget(todayStr);
+  const r=rampFor(todayStr)||{rest:2100,cardio:2250,lift:2400,note:""};
+  const opts=[r.rest,r.cardio,r.lift].filter((v,i,a)=>a.indexOf(v)===i);
+  if(opts.indexOf(cur)<0) opts.push(cur);
+  opts.sort((a,b)=>a-b);
+  const kindLabel={rest:"rest",cardio:"cardio",lift:"lift"};
+  host.innerHTML=opts.map(v=>{
+    let tag=""; for(const k in kindLabel){ if(r[k]===v) tag=kindLabel[k]; }
+    return `<button class="${v===cur?'on':''}" onclick="setTarget(${v})">${v}${tag?`<span style="opacity:.6;font-size:10px"> ${tag}</span>`:''}</button>`;
+  }).join("")
+   + (r.note?`<div style="width:100%;margin-top:7px;font-size:11px;line-height:1.45;color:var(--ink-faded)">${r.note}</div>`:"");
 }
 function setTarget(v){ dayState.target=v; saveDay(todayStr,dayState); renderToday(); }
 
@@ -2865,17 +3162,84 @@ function renderTodayMeals(){
       return;
     }
     const nut=mealNutrition(meal);
-    const cal=nut.cal||meal.c||0, pro=nut.pro||parseProtein(meal.r);
+    let cal=nut.cal||meal.c||0, pro=nut.pro||parseProtein(meal.r);
+    const pAdd=(plusFor(todayStr)||{})[which];
+    if(pAdd){ cal+=pAdd.c||0; pro+=pAdd.p||0; }
     const isJM=/JM tub/i.test(meal.n||"");
     const logged=dayState.log.some(x=>x.name===meal.n && x.slot===slotKey[which]);
     const calLine=`${cal?cal+' cal':''}${cal&&pro?' \u00b7 ':''}${pro?pro+'g P':''}${nut.fromLabels?' \u2713':''}${nut.fromEatingOut?' \u00b7 saved \u2713':''}${nut.partial?' \u00b7 est':''}`;
+    const tr=mealTier(meal,todayStr,which), tinfo=TIERS[tr]||TIERS[2];
     if(isJM){
       html+=`<div class="tmeal note"><div class="nt"><b>${sn}:</b> ${esc(meal.n)}<br><span style="color:var(--ink-faded);font-size:12px">${calLine}</span></div><button class="tmeal-log ${logged?'done':''}" onclick="logTodayMeal('${which}')">${logged?'Logged \u2713':'\uFF0B Log'}</button></div>`;
     } else {
-      html+=`<div class="tmeal"><div class="tmeal-eyebrow"><span>${sn}</span>${calLine?`<span class="cals">${calLine}</span>`:''}</div><div class="tmeal-body">${meal.r||esc(meal.n)}</div><div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap"><button class="tmeal-log" style="background:var(--accent);color:#fff;border-color:var(--accent)" onclick="openCook('${which}')">\uD83C\uDF73 Steps &amp; timers</button><button class="tmeal-log ${logged?'done':''}" onclick="logTodayMeal('${which}')">${logged?'Logged \u2713':'\uFF0B Log'}</button></div></div>`;
+      const addHtml=pAdd?`<div style="margin-top:9px;padding:9px 11px;border-radius:9px;background:var(--today-soft);font-size:13px;line-height:1.5"><b style="font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-faded);display:block;margin-bottom:3px">Building it up</b>${esc(pAdd.a)}</div>`:'';
+      html+=`<div class="tmeal"><div class="tmeal-eyebrow"><span>${sn} <span style="opacity:.75;font-weight:600">${tinfo.e} ${tinfo.n}</span></span>${calLine?`<span class="cals">${calLine}</span>`:''}</div><div class="tmeal-body">${meal.r||esc(meal.n)}${addHtml}</div><div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap"><button class="tmeal-log" style="background:var(--accent);color:#fff;border-color:var(--accent)" onclick="openCook('${which}')">\uD83C\uDF73 Steps &amp; timers</button><button class="tmeal-log ${logged?'done':''}" onclick="logTodayMeal('${which}')">${logged?'Logged \u2713':'\uFF0B Log'}</button>${tr>1?`<button class="tmeal-log" onclick="openSwap('${which}')">\u21CA Not today</button>`:''}</div></div>`;
     }
   });
+  /* Snacks are standing slots now, not extras — they carry ~400-550 cal and
+     ~30-45g protein a day, which is a big share of what the new target added. */
+  const snList=(plusFor(todayStr)||{}).s||[];
+  const snName={lsnack:"Lunch snack", dsnack:"Dinner snack", bsnack:"Breakfast snack"};
+  snList.forEach((sn,i)=>{
+    const logged=dayState.log.some(x=>x.name===sn.n && x.slot===sn.k);
+    html+=`<div class="tmeal"><div class="tmeal-eyebrow"><span>${snName[sn.k]||"Snack"}</span><span class="cals">${sn.c} cal \u00b7 ${sn.p}g P</span></div><div class="tmeal-body"><strong>${esc(sn.n)}.</strong> ${esc(sn.r)}</div><div style="margin-top:11px"><button class="tmeal-log ${logged?'done':''}" onclick="logPlusSnack(${i})">${logged?'Logged \u2713':'\uFF0B Log'}</button></div></div>`;
+  });
   host.innerHTML=html;
+}
+/* ----- the grab shelf ----------------------------------------------
+   swapTarget is null when the panel is just the standing shelf, or a slot
+   key ("b"/"l"/"d") when the user tapped "Not today" on a meal. Same list
+   either way -- swapping down IS reaching for the shelf, so there is no
+   reason for them to be two different screens. */
+let swapTarget=null, grabShelfOnly=false;
+function openSwap(which){
+  swapTarget=which;
+  /* Wed/Fri lunch is eaten away from home with no fridge, so default that one
+     case to shelf-stable only rather than offering food that would not
+     survive the morning in a backpack. */
+  const dow=todayDate.getDay();
+  grabShelfOnly = (which==="l" && (dow===3||dow===5));
+  renderGrab();
+  const el=$("t-grab-label"); if(el&&el.scrollIntoView) el.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function cancelSwap(){ swapTarget=null; renderGrab(); }
+function toggleShelfOnly(){ grabShelfOnly=!grabShelfOnly; renderGrab(); }
+function takeGrab(i){
+  const g=grabFor(grabShelfOnly)[i]; if(!g) return;
+  const slot = swapTarget ? ({b:"breakfast",l:"lunch",d:"dinner"})[swapTarget] : "lsnack";
+  dayState.log.push({name:g.n, slot:slot, cal:g.c, pro:g.p});
+  saveDay(todayStr,dayState);
+  const was=swapTarget; swapTarget=null;
+  renderToday();
+  showToast(was?"Swapped \u2014 "+g.n:"Logged \u2014 "+g.n);
+}
+function renderGrab(){
+  const host=$("t-grab"), lab=$("t-grab-label"); if(!host) return;
+  const list=grabFor(grabShelfOnly);
+  const slotName={b:"breakfast",l:"lunch",d:"dinner"};
+  if(lab) lab.textContent = swapTarget ? ("\u21CA Swapping "+slotName[swapTarget]) : "\u26A1 Grab & go";
+  let h="";
+  if(swapTarget){
+    h+=`<div class="tmeal note"><div class="nt">Pick anything below and it replaces ${slotName[swapTarget]}. Nothing is lost \u2014 the planned meal keeps in the fridge.<br><button class="tmeal-log" style="margin-top:9px" onclick="cancelSwap()">\u2190 Never mind</button></div></div>`;
+  } else {
+    h+=`<div class="tmeal note"><div class="nt">Things you can eat right now with no cooking. Tap one to log it.<br><span style="color:var(--ink-faded);font-size:12px">Any meal can be swapped DOWN a tier, never up \u2014 a bad day costs a tier, not the plan.</span></div></div>`;
+  }
+  h+=`<div style="margin:0 0 10px"><button class="tmeal-log ${grabShelfOnly?'done':''}" onclick="toggleShelfOnly()">${grabShelfOnly?'\u2713 ':''}\uD83C\uDF92 Backpack-safe only</button></div>`;
+  list.forEach((g,i)=>{
+    h+=`<div class="tmeal"><div class="tmeal-eyebrow"><span>${esc(g.n)}${g.meal?' <span style="opacity:.7">\u00b7 full meal</span>':''}</span><span class="cals">${g.c} cal \u00b7 ${g.p}g P</span></div><div class="tmeal-body">${esc(g.r)}${g.shelf?'':'<br><span style="color:var(--orange);font-size:12px">\u2744\uFE0F Needs the fridge or the frozen bag \u2014 not backpack-safe.</span>'}</div><div style="margin-top:11px"><button class="tmeal-log" onclick="takeGrab(${i})">${swapTarget?'Use this':'\uFF0B Log'}</button></div></div>`;
+  });
+  if(!swapTarget){
+    const g=SNACK_SHELF.gear[0];
+    h+=`<div class="tmeal note"><div class="nt"><b>\uD83E\uDDCA ${esc(g.n)} \u2014 ${esc(g.cost)}</b><br><span style="color:var(--ink-faded);font-size:12px">${esc(g.why)}</span></div></div>`;
+  }
+  host.innerHTML=h;
+}
+
+function logPlusSnack(i){
+  const sn=((plusFor(todayStr)||{}).s||[])[i]; if(!sn) return;
+  if(dayState.log.some(x=>x.name===sn.n && x.slot===sn.k)){ showToast("Already logged"); return; }
+  dayState.log.push({name:sn.n, slot:sn.k, cal:sn.c, pro:sn.p});
+  saveDay(todayStr,dayState); renderToday(); showToast("Logged \u2014 "+sn.n);
 }
 function prepTitle(txt){
   txt=(txt||"").trim();
@@ -4158,7 +4522,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v2.3.1 · 2026-09-06";   // bump this each time you upload a new index.html
+const APP_VERSION="v2.5.0 · 2026-09-10";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
