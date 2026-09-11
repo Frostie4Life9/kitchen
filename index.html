@@ -825,8 +825,8 @@ const STARTER_KIT = [
    To add a week: upload the file, then add a row here. Newest first.
    ================================================================= */
 const WEEK_LISTS = [
-  {file:"grocery-sep6-12.html", dates:"Sun Sep 6 \u2013 Sat Sep 12", items:41,
-   note:"Department-walk order. 9 chicken portions, 2 steaks, 4.5 cups cooked rice."}
+  {file:"grocery-sep13.html", dates:"Sun Sep 13 \u2013 Sat Sep 19", items:45,
+   note:"First list under the ~2250 cal plan. Every item names the exact product, tagged \u2018researched\u2019 where the brand matters or \u2018store brand\u2019 where it does not. Rice doubled to 3 cups dry, 6 eggs hard-boiled, plus the grab shelf."}
 ];
 
 /* ---------- rendering ---------- */
@@ -4522,7 +4522,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v2.5.0 · 2026-09-10";   // bump this each time you upload a new index.html
+const APP_VERSION="v2.5.1 · 2026-09-11";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
