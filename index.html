@@ -833,6 +833,13 @@ const STARTER_KIT = [
    locations saved on one list carry to every future list automatically.
    To add a week: upload the file, then add a row here. Newest first.
    ================================================================= */
+/* The current week always lives at this one permanent filename. Overwrite it in the
+   repo each week — nothing in index.html needs to change. The file carries its own
+   dates, so this app never has to know them. */
+const CURRENT_LIST = "grocery.html";
+
+/* Optional archive of older weeks. Only add a row here if you want to keep a past
+   week reachable; it is never required for the current list to work. */
 const WEEK_LISTS = [
   {file:"grocery-sep13.html", dates:"Sun Sep 13 \u2013 Sat Sep 19", items:45,
    note:"First list under the ~2250 cal plan. Every item names the exact product, tagged \u2018researched\u2019 where the brand matters or \u2018store brand\u2019 where it does not. Rice doubled to 3 cups dry, 6 eggs hard-boiled, plus the grab shelf."}
@@ -917,25 +924,27 @@ function renderShop(){
 
 function renderWeekLists(host){
   const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  let html='<p class="shop-intro">The specific list for a single week \\u2014 every ingredient for all 21 meals plus Sunday prep, ordered the way you walk each store. Tap a week to open it.</p>';
+  let html='<p class="shop-intro">The specific list for a single week \u2014 every ingredient for all 21 meals plus Sunday prep, ordered the way you walk each store. Tap a week to open it.</p>';
 
-  if(!WEEK_LISTS.length){
-    html+='<div class="shop-note">No week lists uploaded yet. Ask Claude for one, drop the file in this repo, and add a row to <b>WEEK_LISTS</b>.</div>';
-    host.innerHTML=html;
-    return;
+  html+='<a class="wk-card now" href="'+esc(CURRENT_LIST)+'?t='+Date.now()+'">'
+      + '<div class="wk-top"><div class="wk-dates">This week\u2019s list</div>'
+      + '<span class="wk-tag">Current</span></div>'
+      + '<div class="wk-note">Dates and item count live inside the list itself.</div>'
+      + '</a>';
+
+  if(WEEK_LISTS.length){
+    html+='<div class="detail-label" style="margin:18px 0 8px">Past weeks</div>';
+    WEEK_LISTS.forEach(w=>{
+      html+='<a class="wk-card" href="'+esc(w.file)+'">'
+          + '<div class="wk-top"><div class="wk-dates">'+esc(w.dates)+'</div></div>'
+          + '<div class="wk-meta">'+w.items+' items</div>'
+          + (w.note?'<div class="wk-note">'+esc(w.note)+'</div>':'')
+          + '</a>';
+    });
   }
 
-  WEEK_LISTS.forEach((w,i)=>{
-    html+='<a class="wk-card'+(i===0?' now':'')+'" href="'+esc(w.file)+'">'
-        + '<div class="wk-top"><div class="wk-dates">'+esc(w.dates)+'</div>'
-        + (i===0?'<span class="wk-tag">Current</span>':'')+'</div>'
-        + '<div class="wk-meta">'+w.items+' items</div>'
-        + (w.note?'<div class="wk-note">'+esc(w.note)+'</div>':'')
-        + '</a>';
-  });
-
   html+='<div class="shop-note"><b>Locations carry over.</b> Every list lives on this same address, so an aisle you save on one week shows up pre-filled on every list after it. Save it once, never type it again.<br><br>'
-      + '<b>Adding next week.</b> Upload the new HTML file here in the repo, then add a row to <b>WEEK_LISTS</b> near the top of the Shop script. Newest goes first.</div>';
+      + '<b>Adding next week.</b> Overwrite <b>'+esc(CURRENT_LIST)+'</b> in the repo. That is the whole step \u2014 this app never needs editing. To keep an old week reachable, rename it to a dated filename first and add a row to <b>WEEK_LISTS</b>.</div>';
 
   host.innerHTML=html;
 }
@@ -4792,7 +4801,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v2.8.1 · 2026-09-15";   // bump this each time you upload a new index.html
+const APP_VERSION="v2.9.0 · 2026-09-18";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
