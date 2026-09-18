@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Grocery — Sun Sep 20 to Sat Sep 26</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FAF6EF;
+  --card:#FFFDF9;
+  --ink:#24221E;
+  --muted:#7A756B;
+  --line:#E6DDCE;
+  --green:#3F6642;
+  --amber:#B8761F;
+  --done:#A9A296;
+  --serif:"Fraunces",Georgia,"Times New Roman",serif;
+  --sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#1A1917; --card:#221F1C; --ink:#F2ECE2; --muted:#9A9387;
+    --line:#35312C; --green:#8FBA8C; --amber:#DDA64E; --done:#6A645B;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#1A1917; --card:#221F1C; --ink:#F2ECE2; --muted:#9A9387;
+  --line:#35312C; --green:#8FBA8C; --amber:#DDA64E; --done:#6A645B;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:var(--sans); font-size:16px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  padding:0 0 4rem;
+}
+.wrap{max-width:46rem;margin:0 auto;padding:0 1.15rem}
+
+/* ---- masthead ---- */
+header.top{padding:2.6rem 0 1.4rem}
+h1{
+  font-family:var(--serif); font-weight:600;
+  font-size:clamp(2rem,7vw,2.9rem); line-height:1.05;
+  margin:0 0 .35rem; letter-spacing:-.015em;
+}
+.dates{font-family:var(--serif);font-size:1.05rem;color:var(--muted);margin:0 0 1.25rem}
+.lede{color:var(--muted);font-size:.93rem;max-width:34rem;margin:0 0 1.5rem}
+
+/* ---- sticky status bar ---- */
+.bar{
+  position:sticky; top:0; z-index:20;
+  background:var(--paper); border-bottom:1px solid var(--line);
+  padding:.7rem 0; margin-bottom:1.5rem;
+}
+.bar-inner{max-width:46rem;margin:0 auto;padding:0 1.15rem;
+  display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+.count{font-family:var(--serif);font-size:1.5rem;font-weight:600;line-height:1;color:var(--amber)}
+.count-label{font-size:.82rem;color:var(--muted);flex:1;min-width:7rem}
+.btn{
+  font-family:var(--sans);font-size:.8rem;font-weight:600;
+  background:none;border:1px solid var(--line);color:var(--ink);
+  border-radius:999px;padding:.42rem .85rem;cursor:pointer;
+}
+.btn:hover{border-color:var(--ink)}
+.btn:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+
+/* ---- stores ---- */
+section.store{margin:0 0 2.4rem}
+.store-head{display:flex;align-items:baseline;gap:.6rem;
+  padding-bottom:.5rem;border-bottom:2px solid var(--ink);margin-bottom:.2rem}
+.store-name{font-family:var(--serif);font-size:1.45rem;font-weight:600;margin:0}
+.store-loc{font-size:.8rem;color:var(--muted)}
+.store-note{font-size:.84rem;color:var(--muted);margin:.55rem 0 .9rem;font-style:italic}
+.group{font-size:.78rem;font-weight:700;color:var(--green);
+  margin:1.25rem 0 .35rem;letter-spacing:.02em}
+
+/* ---- items ---- */
+ul{list-style:none;margin:0;padding:0}
+li.item{
+  display:flex;gap:.7rem;align-items:flex-start;
+  padding:.72rem .55rem;border-bottom:1px solid var(--line);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+  border-radius:4px;
+}
+li.item:hover{background:var(--card)}
+li.item:focus-visible{outline:2px solid var(--amber);outline-offset:-2px}
+.box{
+  flex:0 0 auto;width:1.1rem;height:1.1rem;margin-top:.22rem;
+  border:1.5px solid var(--muted);border-radius:3px;position:relative;
+}
+.box::after{
+  content:"";position:absolute;left:.3rem;top:.05rem;width:.28rem;height:.6rem;
+  border:solid var(--paper);border-width:0 2px 2px 0;transform:rotate(45deg) scale(0);
+  transition:transform .13s ease-out;
+}
+li.done .box{background:var(--green);border-color:var(--green)}
+li.done .box::after{transform:rotate(45deg) scale(1)}
+.body{flex:1;min-width:0}
+.name{font-weight:600;font-size:.97rem}
+.amt{font-weight:400;color:var(--amber)}
+.why{font-size:.83rem;color:var(--muted);margin-top:.12rem}
+li.done .name,li.done .amt,li.done .why{color:var(--done);text-decoration:line-through;
+  text-decoration-thickness:1px}
+li.done .amt{color:var(--done)}
+
+/* ---- aisle notes (shared across every week on this origin) ---- */
+.aisle{
+  display:inline-block;margin-top:.3rem;font-size:.75rem;font-weight:600;
+  color:var(--green);border:1px dashed var(--line);border-radius:999px;
+  padding:.12rem .55rem;cursor:text;background:none;font-family:var(--sans);
+}
+.aisle.empty{color:var(--muted);opacity:.65}
+li.done .aisle{opacity:.4}
+.aisle-input{
+  margin-top:.3rem;font-size:.75rem;font-family:var(--sans);
+  border:1px solid var(--green);border-radius:999px;padding:.12rem .55rem;
+  background:var(--card);color:var(--ink);width:11rem;max-width:100%;
+}
+.aisle-input:focus{outline:2px solid var(--amber);outline-offset:1px}
+
+/* ---- gear + footer ---- */
+.gear{background:var(--card);border:1px solid var(--line);border-radius:8px;
+  padding:1.1rem 1.15rem;margin:0 0 2.4rem}
+.gear h3{font-family:var(--serif);font-size:1.1rem;margin:0 0 .4rem;font-weight:600}
+.gear p{font-size:.87rem;color:var(--muted);margin:.4rem 0 0}
+.gear a{color:var(--green)}
+footer{font-size:.8rem;color:var(--muted);border-top:1px solid var(--line);padding-top:1.1rem}
+.toast{
+  position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);
+  background:var(--ink);color:var(--paper);font-size:.85rem;font-weight:600;
+  padding:.6rem 1.1rem;border-radius:999px;opacity:0;pointer-events:none;
+  transition:opacity .2s;z-index:50;
+}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <h1>Grocery run</h1>
+    <p class="dates">Sun Sep 20 &ndash; Sat Sep 26 &middot; 21 meals, 7 snacks, Sunday prep</p>
+    <p class="lede">Every ingredient the week needs, with the amount the plan actually consumes in parentheses. Tap anything you already have &mdash; it stays crossed off if you close the page. Tap the aisle chip under an item to note where it lives; those notes carry over to next week's list.</p>
+  </header>
+</div>
+
+<div class="bar">
+  <div class="bar-inner">
+    <span class="count" id="count">0</span>
+    <span class="count-label" id="countLabel">items still to buy</span>
+    <button class="btn" id="copyBtn" type="button">Copy what's left</button>
+    <button class="btn" id="resetBtn" type="button">Reset</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div id="stores"></div>
+
+  <div class="gear">
+    <h3>One-time gear</h3>
+    <p><strong>PackIt Freezable Lunch Bag</strong> — the whole bag freezes, so there's no separate ice pack to forget. Street price runs about $20–24: <a href="https://www.walmart.com/ip/44130645">Walmart ~$19.99</a> (verify the seller is Walmart, not a marketplace reseller) or Amazon around $23.99. Not stocked at Costco, WinCo or Smith's — order it so it lands before a Wednesday.</p>
+  </div>
+
+  <footer>
+    Chicken math checks out: 8 portions cooked, 8 portions eaten (6 weekday meals + the 2 sauced dinners). Rice math too — 3 cups dry makes ~9 cups cooked, and the week uses exactly 9.
+  </footer>
+</div>
+
+<div class="toast" id="toast">Copied</div>
+
+<script>
+var DATA = [
+  {
+    store:"Costco",
+    loc:"Orem",
+    note:"Bulk proteins and the Kirkland staples. One trip covers the whole protein base.",
+    groups:[
+      {name:"Protein base", items:[
+        {n:"Jumbo chicken breasts", a:"2, ~20 oz raw each", w:"The entire week's 8 portions — 6 weekday meals plus the 2 dinners you sauce at prep"},
+        {n:"Whey protein powder", a:"1 tub, ~2 lb", w:"7 scoops this week; standing item now that the floor is 184g protein"},
+        {n:"Large eggs", a:"18", w:"6 hard-boiled Sunday + 3 each for Tue, Thu and Sat breakfast"}
+      ]},
+      {name:"Dairy", items:[
+        {n:"Plain 2% Greek yogurt", a:"48 oz tub — ~4.75 cups needed", w:"Sun/Mon/Wed breakfasts, 3 yogurt snacks, and the shawarma sauce Tuesday"},
+        {n:"Shredded cheddar", a:"16 oz — ~2.75 cups needed", w:"Every egg breakfast, the Mon tortilla melt, Tue flatbread, Sat lunch and Sat dinner"}
+      ]},
+      {name:"Frozen", items:[
+        {n:"Frozen broccoli", a:"4 lb bag — 7.5 cups needed", w:"Sun and Fri dinners, Tue side, plus the 3 cups that go into the sauced prep containers"},
+        {n:"Frozen stir-fry mix", a:"~4 cups needed", w:"Tue breakfast skillet, Wed pepper steak, Fri turkey sausage bowl"},
+        {n:"Frozen mixed veg", a:"~1 cup needed", w:"Thursday lemon-pepper chicken bowl"}
+      ]},
+      {name:"Fruit", items:[
+        {n:"Fresh strawberries", a:"1 lb — ~1.5 cups needed", w:"Sunday snack, Wednesday parfait, Friday egg plate"},
+        {n:"Fruit bowl (pineapple/melon)", a:"32 oz — 2.5 cups needed", w:"Thu, Fri and Sat breakfasts plus the Saturday lunch side"}
+      ]},
+      {name:"Backpack shelf", items:[
+        {n:"Protein bars", a:"1 box", w:"Permanent backpack slot — the emergency meal, never eaten at home"},
+        {n:"String cheese", a:"12-ct bag", w:"Cold-bag protein, zero prep"},
+        {n:"Beef / meat sticks", a:"12-ct multipack", w:"Wednesday lunch bag plus backpack spares — singles cost double"}
+      ]},
+      {name:"Non-food", items:[
+        {n:"Aluminum foil", a:"1 roll", w:"Wrapping the Wed and Fri wraps you build the night before"},
+        {n:"Sandwich bags", a:"1 box", w:"Sunday snack portioning — trail mix, almonds, granola"}
+      ]}
+    ]
+  },
+  {
+    store:"WinCo",
+    loc:"Provo",
+    note:"Bulk bins, the spice rack, and the markdown meat rack. Bins run about a third the price of pre-bagged.",
+    groups:[
+      {name:"Markdown meat rack", items:[
+        {n:"Chuck eye steaks", a:"2", w:"One gets cubed Sunday for Wednesday's pepper steak; the second stays raw and is Sunday dinner. Freeze on arrival Friday, thaw Saturday night — markdown meat is already near the end of its window. If the rack is empty, use Smith's self-serve case."}
+      ]},
+      {name:"Bulk bins", items:[
+        {n:"Trail mix", a:"~2 cups (five 1/3-cup bags)", w:"Portioned into sandwich bags Sunday"},
+        {n:"Almonds", a:"~2 cups (five 1/3-cup bags)", w:"Portioned into sandwich bags Sunday"},
+        {n:"Jasmine rice", a:"~2 lb — 3 cups dry needed", w:"3 cups dry cooks into the ~9 cups the week eats. Double the old amount; 1.5 cups dry runs out Wednesday."}
+      ]},
+      {name:"Pantry", items:[
+        {n:"Pasta", a:"1 lb box — ~1.5 cups dry needed", w:"Thursday's sauced parm bake and Saturday's marinara bowl, both at 1.5 cups cooked"},
+        {n:"Crunchy granola", a:"1 box — ~2 cups needed", w:"Three parfaits, the Mon wrap, two snacks, plus the pre-bagged 1/4-cup portions"},
+        {n:"Canned chicken", a:"2 cans", w:"Sunday salad wrap and Saturday quesadilla"},
+        {n:"Shelf-stable chicken pouches", a:"3", w:"Friday's no-fridge lunch, plus 2 spares — this is the item that makes the shelf-stable pack work at all"},
+        {n:"Marinara (Prego)", a:"24 oz jar — ~1 cup needed", w:"The Thursday parm bake you sauce at prep, and Saturday's dinner"},
+        {n:"Less-sodium soy sauce", a:"~7 tbsp needed", w:"Sun honey-garlic steak, Mon teriyaki prep sauce, Wed pepper steak, Fri stir-fry"},
+        {n:"BBQ sauce", a:"~2 tbsp needed", w:"Tuesday's chicken and cheddar flatbread"},
+        {n:"Honey", a:"~6 tbsp needed", w:"Parfait drizzles, the steak glazes, and the Friday PB-honey tortilla"},
+        {n:"Peanut butter", a:"~11 tbsp needed", w:"Four tortilla sides, two shakes, the Sunday apple, the Friday shelf-stable tortilla"},
+        {n:"Olive oil", a:"~2 tsp needed", w:"Broccoli sides Tuesday and Friday"}
+      ]},
+      {name:"Dressings (small amounts — skip any you have)", items:[
+        {n:"Light mayo", a:"1 tbsp needed", w:"Sunday canned chicken salad wrap"},
+        {n:"Light Caesar", a:"1 tbsp needed", w:"Wednesday backpack Caesar wrap"},
+        {n:"Light Italian dressing", a:"1 tbsp needed", w:"Monday Italian chicken and provolone bowl"}
+      ]},
+      {name:"Spice rack (bulk — buy only what's out)", items:[
+        {n:"Lemon-pepper seasoning", a:"1 tsp needed", w:"Thursday lunch bowl"},
+        {n:"Garlic powder", a:"several pinches", w:"Steak glazes, shawarma, Caesar chicken"},
+        {n:"Ground cumin + paprika", a:"1/2 tsp each", w:"Tuesday shawarma bowl"},
+        {n:"Cinnamon", a:"2 pinches", w:"Sunday apple parfait, Tuesday shawarma"},
+        {n:"Ground ginger", a:"1 pinch", w:"Monday's teriyaki prep sauce"},
+        {n:"Italian seasoning", a:"~1 tsp", w:"Tuesday flatbread"},
+        {n:"Salt + pepper", a:"restock if low", w:"The only seasoning that touches Sunday's chicken and steak"}
+      ]}
+    ]
+  },
+  {
+    store:"Smith's",
+    loc:"Provo",
+    note:"Produce, dairy fill-ins, and the self-serve meat case as steak backup. No service butcher counter here.",
+    groups:[
+      {name:"Produce", items:[
+        {n:"Romaine hearts", a:"3-pack — ~4 cups chopped", w:"Sun wrap, Mon bowl (2 cups), Wed wrap, Sat quesadilla. Wash and chop Sunday."},
+        {n:"Cucumbers", a:"2 — 2 cups diced", w:"Sun wrap, Mon bowl, and 1 full cup in Tuesday's shawarma"},
+        {n:"Bananas", a:"6", w:"Mon breakfast wrap plus four shakes Mon/Tue/Thu/Fri"},
+        {n:"Apples", a:"3", w:"Sunday parfait (half), Sunday lunch side, Friday shelf-stable pack"},
+        {n:"Lemon", a:"1", w:"Tuesday shawarma yogurt sauce"}
+      ]},
+      {name:"Dairy + deli", items:[
+        {n:"Provolone slices", a:"1 slice needed — smallest pack", w:"Monday Italian chicken bowl"},
+        {n:"Grated parmesan", a:"~3 tbsp needed", w:"Mon bowl, Wed Caesar wrap, Sat marinara bowl"},
+        {n:"Turkey sausage patties", a:"2 needed — 1 box", w:"Friday stir-fry bowl (Hillshire, 130 cal / 13g P per 2)"},
+        {n:"Real bacon bits", a:"1 tbsp needed", w:"Thursday bacon-cheddar scramble"}
+      ]},
+      {name:"Burrito tortillas", items:[
+        {n:"Burrito-size (10-inch) flour tortillas", a:"10", w:"Sun lunch, Mon breakfast + Mon cheddar melt, Tue breakfast + Tue flatbread, Wed wrap, Thu breakfast, Fri shelf-stable tortilla, Sat breakfast + Sat quesadilla. That's the whole pack — don't buy an 8-count."}
+      ]}
+    ]
+  }
+];
+
+var KEY = "grocery_2026_09_20";      // checkmarks — this week only
+var AISLE_KEY = "groceryAisles_v1";  // aisle notes — shared by every week on this origin
+var state = {};
+var aisles = {};
+
+function noteKey(name){
+  return String(name).toLowerCase().replace(/[^a-z0-9]+/g, "_");
+}
+
+function load(){
+  try{
+    var raw = localStorage.getItem(KEY);
+    if(raw){ var o = JSON.parse(raw); if(o && typeof o === "object") state = o; }
+  }catch(e){ state = {}; }
+  try{
+    var rawA = localStorage.getItem(AISLE_KEY);
+    if(rawA){ var a = JSON.parse(rawA); if(a && typeof a === "object") aisles = a; }
+  }catch(e){ aisles = {}; }
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
+}
+function saveAisles(){
+  try{ localStorage.setItem(AISLE_KEY, JSON.stringify(aisles)); }catch(e){}
+}
+
+function esc(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+
+function render(){
+  var host = document.getElementById("stores");
+  var html = "";
+  DATA.forEach(function(st, si){
+    html += '<section class="store">';
+    html += '<div class="store-head"><h2 class="store-name">' + esc(st.store) +
+            '</h2><span class="store-loc">' + esc(st.loc) + '</span></div>';
+    html += '<p class="store-note">' + esc(st.note) + '</p>';
+    st.groups.forEach(function(g, gi){
+      html += '<p class="group">' + esc(g.name) + '</p><ul>';
+      g.items.forEach(function(it, ii){
+        var id = si + "-" + gi + "-" + ii;
+        var done = state[id] ? " done" : "";
+        var key = noteKey(it.n);
+        var note = aisles[key] || "";
+        html += '<li class="item' + done + '" data-id="' + id + '" role="checkbox" tabindex="0" aria-checked="' +
+                (state[id] ? "true" : "false") + '">' +
+                '<span class="box"></span><span class="body">' +
+                '<span class="name">' + esc(it.n) + ' <span class="amt">(' + esc(it.a) + ')</span></span>' +
+                '<span class="why" style="display:block">' + esc(it.w) + '</span>' +
+                '<button type="button" class="aisle' + (note ? "" : " empty") +
+                '" data-note="' + esc(key) + '">' + esc(note || "add aisle") + '</button>' +
+                '</span></li>';
+      });
+      html += '</ul>';
+    });
+    html += '</section>';
+  });
+  host.innerHTML = html;
+  updateCount();
+}
+
+function allIds(){
+  var ids = [];
+  DATA.forEach(function(st,si){ st.groups.forEach(function(g,gi){ g.items.forEach(function(it,ii){
+    ids.push(si + "-" + gi + "-" + ii);
+  });});});
+  return ids;
+}
+
+function updateCount(){
+  var ids = allIds();
+  var left = 0;
+  ids.forEach(function(id){ if(!state[id]) left++; });
+  document.getElementById("count").textContent = left;
+  document.getElementById("countLabel").textContent =
+    left === 0 ? "everything's checked off" :
+    (left === 1 ? "item still to buy" : "items still to buy") + " of " + ids.length;
+}
+
+function toggle(li){
+  var id = li.getAttribute("data-id");
+  if(state[id]){ delete state[id]; li.classList.remove("done"); li.setAttribute("aria-checked","false"); }
+  else { state[id] = 1; li.classList.add("done"); li.setAttribute("aria-checked","true"); }
+  save();
+  updateCount();
+}
+
+function editAisle(btn){
+  var key = btn.getAttribute("data-note");
+  var input = document.createElement("input");
+  input.type = "text";
+  input.className = "aisle-input";
+  input.value = aisles[key] || "";
+  input.placeholder = "e.g. back wall, freezer 3";
+  input.setAttribute("aria-label", "Aisle note");
+  btn.replaceWith(input);
+  input.focus();
+  input.select();
+  var closed = false;
+  function commit(){
+    if(closed) return;
+    closed = true;
+    var v = input.value.trim();
+    if(v) aisles[key] = v; else delete aisles[key];
+    saveAisles();
+    render();
+  }
+  input.addEventListener("blur", commit);
+  input.addEventListener("keydown", function(ev){
+    if(ev.key === "Enter"){ ev.preventDefault(); commit(); }
+    if(ev.key === "Escape"){ closed = true; render(); }
+  });
+  input.addEventListener("click", function(ev){ ev.stopPropagation(); });
+}
+
+document.getElementById("stores").addEventListener("click", function(e){
+  var chip = e.target.closest(".aisle");
+  if(chip){ e.stopPropagation(); editAisle(chip); return; }
+  var li = e.target.closest("li.item");
+  if(li) toggle(li);
+});
+document.getElementById("stores").addEventListener("keydown", function(e){
+  if(e.key !== " " && e.key !== "Enter") return;
+  var li = e.target.closest("li.item");
+  if(li){ e.preventDefault(); toggle(li); }
+});
+
+function buildText(){
+  var out = ["Still need to buy — Sun Sep 20 to Sat Sep 26", ""];
+  DATA.forEach(function(st,si){
+    var lines = [];
+    st.groups.forEach(function(g,gi){
+      g.items.forEach(function(it,ii){
+        var id = si + "-" + gi + "-" + ii;
+        if(!state[id]){
+          var note = aisles[noteKey(it.n)];
+          lines.push("  - " + it.n + " (" + it.a + ")" + (note ? " [" + note + "]" : ""));
+        }
+      });
+    });
+    if(lines.length){
+      out.push(st.store.toUpperCase() + " — " + st.loc);
+      out = out.concat(lines);
+      out.push("");
+    }
+  });
+  if(out.length <= 2) return "Nothing left to buy for Sep 20-26.";
+  return out.join("\n").trim();
+}
+
+function toast(msg){
+  var t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(function(){ t.classList.remove("show"); }, 1600);
+}
+
+document.getElementById("copyBtn").addEventListener("click", function(){
+  var text = buildText();
+  function fallback(){
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand("copy"); toast("Copied"); }
+    catch(e){ toast("Copy failed — select the text manually"); }
+    document.body.removeChild(ta);
+  }
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(text).then(function(){ toast("Copied"); }, fallback);
+  } else { fallback(); }
+});
+
+document.getElementById("resetBtn").addEventListener("click", function(){
+  state = {};
+  save();
+  render();
+  toast("List reset");
+});
+
+load();
+render();
+</script>
+</body>
+</html>
