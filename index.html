@@ -434,14 +434,22 @@
   </div>
 
   <div class="digest-badge" id="digestBadge"></div>
-  <div class="sec-label">This week's batch</div>
+  <div id="t-win"></div>
+
+  <div class="sec-label">🧊 What you actually have</div>
   <div id="t-batch"></div>
 
   <div class="sec-label" id="t-rollover-label" style="display:none">↻ Rolled over</div>
   <div id="t-rollover"></div>
 
-  <div class="sec-label">Today's meals</div>
+  <div class="sec-label">💡 Ideas from your pool</div>
   <div id="t-meals"></div>
+
+  <div class="sec-label">🍟 Craving something?</div>
+  <div id="t-craving"></div>
+
+  <div class="sec-label">🧂 Finish the plate</div>
+  <div id="t-finish"></div>
 
   <div class="sec-label" id="t-grab-label">⚡ Grab &amp; go</div>
   <div id="t-grab"></div>
@@ -1424,11 +1432,14 @@ function showTab(name){
 const KITCHEN_RULES = {
   _meta: {
     note: "Single source of truth for diet rules, pantry, exact nutrition, and meal/grocery workflow.",
-    updated: "2026-09-10"
+    updated: "2026-09-20"
   },
 
   diet: {
-    dailyCalories: "2100-2400 by day type (rest 2100 / cardio 2250 / lift 2400)",
+    dailyCalories: "2300 flat, every day — training or not (was 2100-2400 by day type until 2026-09-21)",
+    flatTargetWhy: "Tiering by day type was precision we do not have. A Tonal session is ~200-300 cal over baseline, elliptical ~250-400, the bioimpedance TEE carries about ±200, and volume-measured portions carry more — so three tiers meant a daily decision chasing a number smaller than the error bars. Training is 6 days a week anyway, so there was never a big population of low days to average down. One number removes a decision, and decisions are what have been breaking.",
+    floor: "1900/day. Land under it and that is the day — do NOT eat less the next day to make up for it. That compounding is what produced the craving in the first place.",
+    winCondition: "A day counts if he ATE, not if he ate the plan. Fast food counts. Eating at a friend's counts. Scoring against 21 planned meals made a normal week read as failure, and failure is not motivating.",
     revisedOn: "2026-09-10",
     whyRevised: "Evolt 360 scan 2026-09-08 put TEE at 2890 kcal and BMR at 1877. The old 1400-1500 target was a ~1440/day deficit \u2014 roughly half of maintenance, below BMR, and about 1.5x the outer edge of what is considered safe (500-1000/day). Held there while lifting 3x and doing cardio 3x a week, that costs muscle, recovery and hormones. The new band is a ~600/day deficit, ~1.2 lb/week.",
     ramp: "Stepped up over three weeks rather than all at once: 1750-1900 from 09-10, 1950-2150 from 09-13, full 2100-2400 from 09-20. Expect 3-5 lb of glycogen water on the scale in the first ten days \u2014 that is not fat and it is not a setback.",
@@ -1508,6 +1519,10 @@ const KITCHEN_RULES = {
   ],
 
   weekdaySimplicity: "Mon-Sat meals = assembly/reheat only, zero motivation to cook. ALL raw-protein cooking happens on Sunday prep exclusively.",
+  reheatRule: "Re-crisp protein in the AIR FRYER, 380F for 3-4 min — never the microwave. Plain cooked chicken, refrigerated then microwaved, is the worst version of chicken that exists: grey, watery, rubbery. This single change does more for how the food tastes than anything else in this file.",
+  sauceAndCrunch: "EVERY plate requires a sauce AND a crunch, both bottled or cupboard-stable. They are components, not garnish — a plate without them is ingredients, and ingredients lose to the drive-thru. Salt harder than feels right; finish with acid.",
+  plainIsNotHealthy: "Healthy and plain are not the same thing and were wrongly conflated by the original prep-plain rule. Fast food wins on salt, fat, crunch, browning and acid — four of the five are free. Do not ask a virtuous plate to beat a craving; pick the craving and build the healthier version of that exact dish (see CRAVINGS).",
+  sidesNotPrepped: "Sides moved OUT of Sunday prep as of 2026-09-21. Weeks of evidence: the protein prep survives, everything after it dies. Rice pouches, steamable veg bags and instant potatoes are stocked, not cooked. Costs ~$7-10/week over bulk jasmine and is worth it, because batch rice had close to a 0% completion rate.",
 
   effortTiers: {
     added: "2026-09-10",
@@ -1641,7 +1656,7 @@ function renderRules(){
     return '<p class="rule-p">'+esc(val)+'</p>';
   }
   const labels={ dislikes_neverUse:'Dislikes / Never Use', useSparingly:'Use Sparingly', cardRules:'Recipe Card Rules', lunchRule:'Lunch Rule', dinnerRule:'Dinner Rule', sundaySteakNight:'Sunday Steak Night', kitchenEquipment:'Kitchen Equipment', eggBreakfastRule:'Egg Breakfast Rule', preLiftBreakfastRotation:'Pre-Lift Breakfast Rotation', weekdaySimplicity:'Weekday Simplicity', weeklyCycle:'Weekly Cycle', groceryList:'Grocery List', dishRatings:'Dish Ratings', exactNutrition:'Exact Nutrition', portionMath:'Portion Math' };
-  const order=['diet','dislikes_neverUse','useSparingly','cardRules','measurement','lunchRule','dinnerRule','sundaySteakNight','eggBreakfastRule','preLiftBreakfastRotation','weekdaySimplicity','weeklyCycle','groceryList','dishRatings','kitchenEquipment','pantry','exactNutrition','portionMath'];
+  const order=['diet','dislikes_neverUse','useSparingly','cardRules','measurement','lunchRule','dinnerRule','sundaySteakNight','eggBreakfastRule','preLiftBreakfastRotation','weekdaySimplicity','reheatRule','sauceAndCrunch','plainIsNotHealthy','sidesNotPrepped','weeklyCycle','groceryList','dishRatings','kitchenEquipment','pantry','exactNutrition','portionMath'];
   let html='<p class="rules-meta">Source of truth for diet rules, pantry &amp; workflow. Last updated '+esc((R._meta&&R._meta.updated)||'')+'.</p>';
   order.forEach(key=>{
     if(!(key in R)) return;
@@ -1887,6 +1902,169 @@ const GRAB=[
   {n:"Hard-boiled eggs + cheddar",         r:"2 hard-boiled eggs (from Sun prep) + 1/4 cup shredded cheddar.", c:250, p:19, shelf:false}
 ];
 
+
+/* ==================== CRAVINGS, FINISHERS & INSTANT SIDES ====================
+   Sept 2026, after the real failure got named: driving home from therapy,
+   choosing between Raising Cane's and a plain chicken-rice-veg plate. Plain
+   loses that fight every time, for everyone. That is not a discipline gap.
+
+   The bug was mine. "Prep is plain by default, flavor added at assembly"
+   sounded efficient, and what it actually guaranteed was that the thing in
+   the fridge is never the thing you want. A plain plate is not a meal, it is
+   ingredients. No amount of encouragement makes ingredients beat Cane's.
+
+   Healthy and plain got conflated somewhere. They are not the same thing.
+   Fast food wins on five mechanics and only ONE of them is unhealthy:
+
+     SALT      restaurants salt 2-3x harder than home cooking. Zero calories.
+     FAT       carries flavour, creates the mouthfeel that reads as satisfying.
+               Plain grilled chicken has ~3g. At 2300 against a 2890 TEE there
+               is obvious room for a tbsp of oil, real cheese, avocado.
+               Treating fat as contraband costs the meal and buys nothing.
+     CRUNCH    chicken + rice + steamed veg is soft on soft on soft. The mouth
+               gets bored before the stomach gets full.
+     BROWNING  hard sear or air-fry colour is where flavour lives. Plain-cooked,
+               refrigerated, then MICROWAVED chicken is the worst version of
+               chicken that exists.
+     ACID      a squeeze of lemon or splash of vinegar makes food taste finished.
+
+   Four of the five are free. So the strategy is not willpower, it is MIMICRY:
+   never ask a virtuous plate to beat a crave. Pick the craving first, then
+   build the healthier version of that exact thing.
+   ========================================================================= */
+
+const CRAVINGS=[
+  {
+    want:"Raising Cane’s",
+    make:"Air-fryer tenders + Cane’s-style sauce",
+    r:"6 frozen breaded chicken tenders straight from the freezer, air fryer 400°F for 12-14 min, shaking once — genuinely crunchy, no thawing, no breading station. Sauce: 2 tbsp mayo + 1 tbsp ketchup + ½ tsp Worcestershire + a pinch of garlic powder + a lot of black pepper, stirred. 1 slice of buttered toast and a handful of coleslaw mix alongside.",
+    c:680, p:46, mins:14,
+    vs:"Box Combo runs ~1300 cal for about the same protein. You are not giving anything up except the fries."
+  },
+  {
+    want:"Chick-fil-A sandwich",
+    make:"Honey-butter chicken sandwich",
+    r:"3 frozen breaded tenders, air fryer 400°F 12 min. Toast a bun, spread 1 tsp butter + 1 tsp honey on the bottom, stack the tenders, a slice of cheddar on top. Nothing else on it.",
+    c:620, p:42, mins:13,
+    vs:"Deluxe + waffle fries + drink is ~1100. This lands the same craving at a bit over half."
+  },
+  {
+    want:"Chipotle bowl",
+    make:"Chicken fajita bowl",
+    r:"1 microwave rice pouch (90 sec). 1 chicken portion re-crisped in the air fryer 3 min, sliced. 1 cup frozen fajita pepper-and-onion mix, hard-seared in a dry hot pan 4 min until it takes colour. ¼ cup shredded cheddar, 2 tbsp guacamole, a hard squeeze of lime, salt.",
+    c:700, p:48, mins:9,
+    vs:"A real Chipotle bowl with guac is ~1000-1100. The lime and the sear are doing most of the work here — do not skip either."
+  },
+  {
+    want:"Smash burger",
+    make:"Two-patty smash burger",
+    r:"Split ⅓ lb of 85/15 ground beef into 2 balls. Screaming-hot dry pan, smash each flat HARD with a spatula for 10 seconds, salt heavily, 2 min, flip, cheddar on each. Stack both on a toasted bun with burger sauce: 1 tbsp mayo + 1 tbsp ketchup + a pinch of garlic powder.",
+    c:740, p:45, mins:10,
+    vs:"A double from anywhere is 900-1200 before fries. The crust from the smash IS the whole thing — a thick pan-fried patty does not scratch this itch."
+  },
+  {
+    want:"Panda Express orange chicken",
+    make:"Orange chicken bowl",
+    r:"5 frozen breaded tenders, air fryer 400°F 12 min, then chopped and tossed in 2 tbsp bottled orange sauce OFF the heat so the coating stays crisp. Over 1 rice pouch + 1 steamable broccoli bag (4 min in the bag).",
+    c:710, p:44, mins:14,
+    vs:"Orange chicken + fried rice is ~1000 with far less protein. Tossing off-heat is the trick — sauce in a hot pan turns the crust to mush."
+  },
+  {
+    want:"Wingstop",
+    make:"Honey-garlic or lemon-pepper tenders",
+    r:"6 frozen breaded tenders, air fryer 400°F 12-14 min. Toss in either 2 tbsp bottled honey-garlic, or 1 tsp melted butter + a heavy shake of lemon pepper. Coleslaw mix on the side with a squeeze of lemon.",
+    c:660, p:46, mins:14,
+    vs:"A 10-piece with fries and a dip clears 1400. Both of these tosses are mild — the spicy ones are off the table anyway."
+  },
+  {
+    want:"Crunchwrap",
+    make:"Chicken crunchwrap",
+    r:"1 chicken portion re-crisped 3 min in the air fryer and chopped, ¼ cup cheddar, a big handful of coleslaw mix for crunch, a crushed handful of tortilla chips, folded into 1 burrito-size (10-inch) tortilla and pressed in a dry pan 2 min per side until the outside is properly browned.",
+    c:640, p:45, mins:9,
+    vs:"The crushed chips are not optional — they are the entire reason this dish exists."
+  },
+  {
+    want:"Cafe Rio sweet chicken salad",
+    make:"Sweet chicken tortilla bowl",
+    r:"1 chicken portion re-crisped and shredded, tossed with 1 tbsp BBQ sauce + 1 tsp honey. Over romaine + ½ rice pouch + ¼ cup cheddar + crushed tortilla chips + 2 tbsp guacamole + a squeeze of lime. Crisp a tortilla in the air fryer 4 min at 375°F to use as the bowl.",
+    c:720, p:47, mins:11,
+    vs:"A real sweet pork salad is 1100-1400. This is the Utah one — worth owning since it is everywhere here."
+  }
+];
+
+/* ---- FINISHERS: the two things every plate now REQUIRES ----------------
+   Not garnish. A meal without a sauce and without a crunch is ingredients,
+   and ingredients lose to the drive-thru. Both live in the cupboard, both
+   take ten seconds, neither needs Sunday to have happened. */
+const FINISHERS={
+  sauce:[
+    {n:"Teriyaki", c:35, u:"per tbsp"},
+    {n:"BBQ", c:60, u:"per tbsp"},
+    {n:"Bottled honey-garlic", c:50, u:"per tbsp"},
+    {n:"Orange sauce", c:70, u:"per tbsp"},
+    {n:"Sweet chilli", c:45, u:"per tbsp"},
+    {n:"Pesto", c:80, u:"per tbsp"},
+    {n:"Caesar", c:80, u:"per tbsp"},
+    {n:"Cane’s-style (2 tbsp mayo + 1 tbsp ketchup + Worcestershire + garlic + pepper)", c:210, u:"whole batch"},
+    {n:"Burger sauce (1 tbsp mayo + 1 tbsp ketchup + garlic powder)", c:115, u:"whole batch"},
+    {n:"Honey + soy glaze (½ tbsp each)", c:35, u:"per plate"}
+  ],
+  crunch:[
+    {n:"French fried onions", c:45, u:"per 2 tbsp"},
+    {n:"Crushed tortilla chips", c:70, u:"per small handful"},
+    {n:"Coleslaw mix, plain", c:10, u:"per cup"},
+    {n:"Toasted panko (dry pan, 2 min)", c:55, u:"per 2 tbsp"},
+    {n:"Croutons", c:60, u:"per small handful"},
+    {n:"Chopped almonds", c:80, u:"per tbsp"},
+    {n:"Real bacon bits", c:45, u:"per tbsp"},
+    {n:"Parmesan, crisped in the pan", c:40, u:"per tbsp"}
+  ]
+};
+
+/* ---- INSTANT SIDES ----------------------------------------------------
+   These used to be Sunday prep tasks. They are not any more. The experiment
+   ran for weeks and the result was clean: the protein prep survives, the
+   sides die. So sides stop being something Sunday has to produce and become
+   something the cupboard already holds.
+
+   Yes, a rice pouch is ~$1.25 against ~$0.15 for bulk jasmine, call it
+   $7-10 a week. Worth it, because batch rice currently has close to a 0%
+   completion rate — you are not saving money on rice you do not eat, you
+   are spending it at the drive-thru instead. Revisit in a month if the rest
+   of the system holds. */
+const INSTANT_SIDES=[
+  {n:"Microwave rice pouch", mins:2, c:220, p:4, r:"90 sec in the bag. One pouch is one bigger portion."},
+  {n:"Steamable frozen veg bag", mins:4, c:60, p:4, r:"Straight in the microwave in its own bag. Salt and a squeeze of lemon after."},
+  {n:"Instant mashed potatoes", mins:3, c:200, p:4, r:"⅔ cup flakes + ⅔ cup hot water + a pat of butter. Salt hard."},
+  {n:"Frozen fries, air fryer", mins:14, c:290, p:4, r:"400°F 14 min, shake twice. Salt the second they come out, not before."},
+  {n:"Tortilla, warmed", mins:1, c:210, p:6, r:"Burrito-size (10-inch), 20 sec a side in a dry pan."}
+];
+
+/* ---- REHEAT RULE ------------------------------------------------------
+   Probably the single highest-leverage line in this whole file. Plain cooked
+   chicken out of the fridge and into the microwave comes out grey, watery and
+   rubbery — it is the worst version of chicken that exists, and it is what
+   the plan has been asking you to eat since August. */
+const REHEAT_RULE="Re-crisp protein in the air fryer, 380°F for 3-4 min — not the microwave. It costs two extra minutes and changes the food more than anything else on this list.";
+
+/* ---- WIN CONDITION ----------------------------------------------------
+   The old scoring measured you against 21 planned meals, so a normal week
+   — a day in Salt Lake, a busy Sunday, dinner at a friend's — read as a
+   failure. Failure is not motivating, and the plan was never going to win
+   21 out of 21. So the day counts if you ATE, not if you ate the plan.
+   Cane's counts. Your friend's kitchen counts. */
+function dayWin(ds){
+  const d = ds ? getDay(ds) : dayState;
+  const log = d.log || [];
+  const cals = log.reduce(function(a,i){ return a+(i.cal||0); }, 0);
+  const meals_ = log.filter(function(i){ return ["breakfast","lunch","dinner"].indexOf(i.slot)>=0; }).length;
+  const prot = log.reduce(function(a,i){ return a+(i.p||0); }, 0);
+  if(cals>=CAL_FLOOR && meals_>=2) return {ok:true, why:"Ate properly today. That is the win \u2014 whatever it was."};
+  if(meals_>=2)                    return {ok:true, why:"Two meals in. Under the floor, but the day counts."};
+  if(cals>0)                       return {ok:false, why:"One meal so far. Anything else today beats nothing \u2014 the grab shelf is right below."};
+  return {ok:false, why:"Nothing logged yet. Lowest bar available: pick anything off the grab shelf."};
+}
+
 /* Both shopping paths kept side by side on purpose, so the trade-off stays
    visible instead of being decided once and quietly forgotten. Recommended
    mix: BUY the things with no workable DIY version, PORTION everything else. */
@@ -1947,8 +2125,14 @@ const PREP_TIER={
 /* Classified from the step text so new prep lists tier themselves. */
 function prepTier(step){
   const t=String(step||"");
-  if(/Batch chicken|Steak bites|FROZEN\?|SAUCE TWO DINNERS/i.test(t)) return "must";
-  if(/Cook the rice/i.test(t)) return "high";
+  if(/Batch chicken|Steak bites|FROZEN\?/i.test(t)) return "must";
+  /* Saucing two dinners at prep was demoted Sept 2026. It was extra Sunday
+     work sitting in exactly the zone that collapses every week \u2014 the
+     protein gets cooked, everything after it does not. Bottled sauce at
+     assembly takes ten seconds and never depends on Sunday happening.
+     Likewise the rice: sides moved out of prep and into INSTANT_SIDES. */
+  if(/SAUCE TWO DINNERS/i.test(t)) return "extra";
+  if(/Cook the rice/i.test(t)) return "extra";
   if(/BUILD TUESDAY NIGHT|FREEZE THE LUNCH BAG/i.test(t)) return "high";
   return "extra";
 }
@@ -2004,7 +2188,47 @@ function setPrepDone(v){
 }
 
 /* ---- how much of the batch is left ---- */
-const PORTION_PLAN={chicken:8, rice:12, steak:2};
+/* ===== THE POOL ====================================================
+   Rebuilt Sept 2026. The old counter tracked {chicken, rice, steak} as a
+   flat tally. Two things were wrong with it.
+
+   1. RICE DOES NOT BELONG HERE any more. Sides moved out of Sunday prep
+      into INSTANT_SIDES \u2014 pouches and steamable bags off the shelf. A
+      cupboard item does not need a depletion counter.
+
+   2. IT IGNORED THE CLOCK. Cooked chicken keeps 3-4 days. Cooking on
+      Sunday to eat through Saturday means the back half of every week is
+      already past its window at 100% compliance \u2014 the plan was quietly
+      asking for something unappetising, every single week, and then the
+      missed days pushed it to seven or eight.
+
+   So: half the chicken goes STRAIGHT TO THE FREEZER on Sunday. The fridge
+   half covers Mon-Wed inside its window; the freezer half is pulled the
+   night before and eats fresh on Thu-Sat. A portion that does not get
+   eaten does not age out \u2014 it just stays in the pool. */
+const PORTION_PLAN={chicken:4, chickenFrozen:4, steak:2, eggs:3};
+const POOL_ROWS=[
+  {k:"chicken",       n:"Chicken \u2014 fridge",  cold:"fridge", makes:1},
+  {k:"chickenFrozen", n:"Chicken \u2014 freezer", cold:"freezer", makes:1},
+  {k:"steak",         n:"Steak portions",     cold:"fridge", makes:1},
+  {k:"eggs",          n:"Hard-boiled eggs",   cold:"fridge", makes:0}
+];
+/* How many meals a week actually get eaten AT HOME. The plan assumed 21 and
+   then read every ordinary week \u2014 a day out, dinner at a friend's, a busy
+   morning \u2014 as a failure. Buying and cooking for 21 while eating maybe 14
+   is also what generates the surplus that sits in the fridge and makes the
+   next week's shop feel pointless. Adjust this once a couple of weeks of
+   real counts are in; it is an estimate, not a measurement. */
+const HOME_MEALS_TARGET=14;
+function homeMealsThisWeek(ds){
+  const wr=weekRange(ds||todayStr); let n=0;
+  wr.days.forEach(function(d){
+    if(d>(ds||todayStr)) return;
+    const log=(getDay(d).log||[]);
+    n+=log.filter(function(i){ return ["breakfast","lunch","dinner"].indexOf(i.slot)>=0; }).length;
+  });
+  return n;
+}
 function portionKey(ds){ return "portions-"+weekRange(ds||todayStr).sunStr; }
 function portionsLeft(){
   let d=null; try{ d=JSON.parse(localStorage.getItem(portionKey())); }catch(e){}
@@ -2081,10 +2305,12 @@ function renderRollover(){
 function buildLeftovers(){
   const p=portionsLeft(), rs=rollovers(todayStr), slots={b:"breakfast",l:"lunch",d:"dinner"};
   const out=["Here's what I have left going into next week:",""];
-  out.push("Still in the fridge (my count):");
-  out.push("  - Chicken portions: "+(p.chicken||0));
-  out.push("  - Rice servings: "+(p.rice||0));
+  out.push("Still in the pool (my count):");
+  out.push("  - Chicken portions, fridge: "+(p.chicken||0));
+  out.push("  - Chicken portions, freezer: "+(p.chickenFrozen||0));
   out.push("  - Steak portions: "+(p.steak||0));
+  out.push("  - Hard-boiled eggs: "+(p.eggs||0));
+  out.push("  - Home meals eaten this week: "+homeMealsThisWeek(todayStr)+" (planning for about "+HOME_MEALS_TARGET+")");
   if(rs.length){
     out.push("");
     out.push("Meals I never got to ("+rs.length+"), so those components may still be around:");
@@ -2093,7 +2319,7 @@ function buildLeftovers(){
   out.push("");
   out.push("Prep status: "+(prepDone(todayStr)?"prepped as planned":"prep was skipped or only partial"));
   out.push("");
-  out.push("Take this into account for next week's list \u2014 don't have me buy protein or grains I already have. Cooked chicken and steak only keep 3-4 days, so treat anything older than that as gone rather than counting it.");
+  out.push("Take this into account for next week's list \u2014 don't have me buy protein I already have, and size the list to the home meals I actually ate rather than 21 slots. Cooked chicken and steak only keep 3-4 days, so treat anything older than that as gone rather than counting it.");
   copyText(out.join("\n"));
   showToast("Copied \u2014 paste it to Claude");
 }
@@ -2927,8 +3153,31 @@ let wgoal={ cur:204.8, goal:185, maintenance:2890 };
 const RAMP=[
   { from:"2026-09-10", rest:1750, cardio:1800, lift:1900, note:"Step 1 — easing up. Uses only what's already in the kitchen." },
   { from:"2026-09-13", rest:1950, cardio:2050, lift:2150, note:"Step 2 — most of the way there." },
-  { from:"2026-09-20", rest:2100, cardio:2250, lift:2400, note:"Full target — about a 600 cal/day deficit off a 2890 TEE." }
+  { from:"2026-09-20", rest:2100, cardio:2250, lift:2400, note:"Full target — about a 600 cal/day deficit off a 2890 TEE." },
+  { from:"2026-09-21", rest:2300, cardio:2300, lift:2300, note:"Flat target, every day. See FLAT_TARGET below." }
 ];
+/* ===== why one number instead of three ============================
+   Tiering by day type was precision we do not actually have. A Tonal
+   session is worth ~200-300 cal over baseline and elliptical ~250-400;
+   the bioimpedance TEE itself carries about +/-200, and portions measured
+   by volume with no scale carry more. So the three tiers were a daily
+   decision chasing a number smaller than the error bars.
+
+   It also cost something real: every extra decision is another place the
+   system fails, and decisions are what have been breaking. Training is 6
+   days a week anyway (elliptical Mon/Wed/Fri, Tonal Tue/Thu/Sat), so there
+   was never a large population of low days to average down.
+
+   One number, every day. ~2300 against a 2890 TEE is ~590/day under,
+   roughly a pound a week, which is already the top of what is sustainable
+   while lifting. Going lower does not speed it up. It just loses the
+   Thursday-night fight against the drive-thru. */
+const FLAT_TARGET=2300;
+/* The floor: land under this and that is the day. You do NOT eat less
+   tomorrow to make up for it. That compounding is what dug the hole the
+   first time \u2014 a deep erratic deficit is the mechanism that produces the
+   craving, not the cure for it. */
+const CAL_FLOOR=1900;
 function rampFor(ds){
   let cur=null;
   for(const r of RAMP){ if(ds>=r.from) cur=r; }
@@ -2950,10 +3199,10 @@ function plannedTarget(ds){
 let dayState={ daytype:"rest", misc:0, water:0, energy:"", notes:"", log:[], target:null };
 
 const DAYTYPES=[
-  {k:"rest", e:"😴", n:"Rest", t:2100},
-  {k:"walk", e:"🚶", n:"Walk", t:2250},
-  {k:"strength", e:"💪", n:"Strength", t:2400},
-  {k:"run", e:"🏃", n:"Run", t:2400}
+  {k:"rest", e:"😴", n:"Rest", t:FLAT_TARGET},
+  {k:"walk", e:"🚶", n:"Walk", t:FLAT_TARGET},
+  {k:"strength", e:"💪", n:"Strength", t:FLAT_TARGET},
+  {k:"run", e:"🏃", n:"Run", t:FLAT_TARGET}
 ];
 const ENERGY=[
   {k:"exhausted", e:"😮‍💨", n:"Exhausted"},
@@ -3045,6 +3294,9 @@ function renderToday(){
   // protein hero + macros
   renderProtein(target,tot);
   renderMacros(target,tot);
+  renderWin();
+  renderCraving();
+  renderFinish();
   renderGrab();
   renderBatch();
   renderRollover();
@@ -3355,14 +3607,14 @@ function renderTodayMeals(){
   const host=$("t-meals"); if(!host) return;
   const m=meals[todayStr];
   if(!m){ host.innerHTML='<div class="tmeal"><div class="tmeal-body">No meal plan saved for today. Open the <b>Calendar</b> tab to browse, or ask Claude for today\'s cards.</div></div>'; return; }
-  let html="";
+  let html='<div class="tmeal note"><div class="nt">Ideas for what to do with the pool above \u2014 not a schedule you owe. Take one, take none, swap any of them for the shelf, or build a craving instead. Nothing here expires because you ignored it.</div></div>';
   const slotName={b:"Breakfast",l:"Lunch",d:"Dinner"};
   const slotKey={b:"breakfast",l:"lunch",d:"dinner"};
   ["b","l","d"].forEach(which=>{
     const meal=m[which]; if(!meal) return;
-    const sn=slotName[which];
+    const sn="Idea \u00b7 "+slotName[which];
     if(meal.parents){
-      html+=`<div class="tmeal note parents"><div class="nt"><b>${sn}:</b> Parents cook tonight \u2014 no plan needed.</div></div>`;
+      html+=`<div class="tmeal note parents"><div class="nt"><b>${slotName[which]}:</b> Parents cook tonight \u2014 no plan needed.</div></div>`;
       return;
     }
     const nut=mealNutrition(meal);
@@ -3390,7 +3642,7 @@ function renderTodayMeals(){
       html+=`<div class="tmeal note"><div class="nt"><b>${sn}:</b> ${esc(meal.n)}<br><span style="color:var(--ink-faded);font-size:12px">${calLine}</span></div><button class="tmeal-log ${logged?'done':''}" onclick="logTodayMeal('${which}')">${logged?'Logged \u2713':'\uFF0B Log'}</button></div>`;
     } else {
       const addHtml=pAdd?`<div style="margin-top:9px;padding:9px 11px;border-radius:9px;background:var(--today-soft);font-size:13px;line-height:1.5"><b style="font-size:10px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-faded);display:block;margin-bottom:3px">Building it up</b>${esc(pAdd.a)}</div>`:'';
-      html+=`<div class="tmeal"><div class="tmeal-eyebrow"><span>${sn} <span style="opacity:.75;font-weight:600">${tinfo.e} ${tinfo.n}</span></span>${calLine?`<span class="cals">${calLine}</span>`:''}</div><div class="tmeal-body">${meal.r||esc(meal.n)}${addHtml}${scratchHtml}</div><div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap"><button class="tmeal-log" style="background:var(--accent);color:#fff;border-color:var(--accent)" onclick="openCook('${which}')">\uD83C\uDF73 Steps &amp; timers</button><button class="tmeal-log ${logged?'done':''}" onclick="logTodayMeal('${which}')">${logged?'Logged \u2713':'\uFF0B Log'}</button>${tr>1?`<button class="tmeal-log ${swapTarget===which?'done':''}" onclick="openSwap('${which}')">\u21CA Not today</button>`:''}</div>${swapTarget===which?swapPanelHTML():''}</div>`;
+      html+=`<div class="tmeal"><div class="tmeal-eyebrow"><span>${sn} <span style="opacity:.75;font-weight:600">${tinfo.e} ${tinfo.n}</span></span>${calLine?`<span class="cals">${calLine}</span>`:''}</div><div class="tmeal-body">${meal.r||esc(meal.n)}${addHtml}${scratchHtml}</div><div style="display:flex;gap:8px;margin-top:11px;flex-wrap:wrap"><button class="tmeal-log" style="background:var(--accent);color:#fff;border-color:var(--accent)" onclick="openCook('${which}')">\uD83C\uDF73 Steps &amp; timers</button><button class="tmeal-log ${logged?'done':''}" onclick="logTodayMeal('${which}')">${logged?'Logged \u2713':'\uFF0B Log'}</button><button class="tmeal-log ${swapTarget===which?'done':''}" onclick="openSwap('${which}')">\u21CA Not today</button></div>${swapTarget===which?swapPanelHTML():''}</div>`;
     }
   });
   /* Snacks are standing slots now, not extras — they carry ~400-550 cal and
@@ -3468,6 +3720,67 @@ function renderGrab(){
   host.innerHTML=h;
 }
 
+
+/* ---- the day-status line: did you eat, not did you obey ---- */
+function renderWin(){
+  const host=$("t-win"); if(!host) return;
+  const w=dayWin(null);
+  const col = w.ok ? "var(--green,#4a7c59)" : "var(--ink-faded)";
+  host.innerHTML='<div class="tmeal note"><div class="nt"><b style="color:'+col+'">'+
+    (w.ok?"\u2713 Today counts":"\u25CB Today so far")+'</b><br><span style="color:var(--ink-faded);font-size:12px">'+
+    esc(w.why)+'</span></div></div>';
+}
+
+/* ---- cravings: pick the craving first, then build that exact thing ---- */
+let cravingOpen=-1;
+function toggleCraving(i){ cravingOpen = (cravingOpen===i? -1 : i); renderCraving(); }
+function renderCraving(){
+  const host=$("t-craving"); if(!host) return;
+  let h='<div class="tmeal note"><div class="nt">Wanting fast food is information, not weakness \u2014 it usually means you are under-fuelled. Pick what you are actually craving and build that, rather than asking a plain plate to beat it.<br><span style="color:var(--ink-faded);font-size:12px">'+esc(REHEAT_RULE)+'</span></div></div>';
+  CRAVINGS.forEach(function(cv,i){
+    const open = cravingOpen===i;
+    h+='<div class="tmeal"><div class="tmeal-eyebrow"><span>'+esc(cv.want)+' \u2192 '+esc(cv.make)+'</span><span class="cals">'+cv.c+' cal \u00b7 '+cv.p+'g P</span></div>';
+    if(open){
+      h+='<div class="tmeal-body">'+esc(cv.r)+
+         '<br><span style="color:var(--ink-faded);font-size:12px">\u23F1 '+cv.mins+' min \u00b7 '+esc(cv.vs)+'</span></div>'+
+         '<div style="margin-top:11px;display:flex;gap:8px;flex-wrap:wrap">'+
+         '<button class="tmeal-log" onclick="logCraving('+i+')">\uFF0B Log it</button>'+
+         '<button class="tmeal-log" onclick="toggleCraving('+i+')">\u2190 Close</button></div>';
+    } else {
+      h+='<div style="margin-top:9px"><button class="tmeal-log" onclick="toggleCraving('+i+')">Show me how</button></div>';
+    }
+    h+='</div>';
+  });
+  host.innerHTML=h;
+}
+function logCraving(i){
+  const cv=CRAVINGS[i]; if(!cv) return;
+  const hr=new Date().getHours();
+  const slot = hr<11 ? "breakfast" : (hr<16 ? "lunch" : "dinner");
+  dayState.log=dayState.log||[];
+  dayState.log.push({n:cv.make, cal:cv.c, p:cv.p, slot:slot});
+  saveDay(todayStr,dayState);
+  cravingOpen=-1;
+  renderToday();
+  showToast("Logged \u2014 "+cv.make);
+}
+
+/* ---- finishers: a sauce and a crunch are components, not garnish ---- */
+function renderFinish(){
+  const host=$("t-finish"); if(!host) return;
+  let h='<div class="tmeal note"><div class="nt"><b>Every plate gets a sauce AND a crunch.</b><br><span style="color:var(--ink-faded);font-size:12px">Not optional extras \u2014 they are what separates a meal from a pile of ingredients. Salt harder than feels right, and finish with acid: a squeeze of lemon or a splash of vinegar costs nothing and makes food taste finished.</span></div></div>';
+  h+='<div class="tmeal"><div class="tmeal-eyebrow"><span>\uD83E\uDD62 Sauce \u2014 pick one</span></div><div class="tmeal-body">'+
+     FINISHERS.sauce.map(function(x){ return esc(x.n)+' <span style="color:var(--ink-faded)">'+x.c+' cal '+esc(x.u)+'</span>'; }).join('<br>')+
+     '</div></div>';
+  h+='<div class="tmeal"><div class="tmeal-eyebrow"><span>\uD83E\uDD68 Crunch \u2014 pick one</span></div><div class="tmeal-body">'+
+     FINISHERS.crunch.map(function(x){ return esc(x.n)+' <span style="color:var(--ink-faded)">'+x.c+' cal '+esc(x.u)+'</span>'; }).join('<br>')+
+     '</div></div>';
+  h+='<div class="tmeal"><div class="tmeal-eyebrow"><span>\u23F1 Instant sides</span><span class="cals">no prep needed</span></div><div class="tmeal-body">'+
+     INSTANT_SIDES.map(function(x){ return '<b>'+esc(x.n)+'</b> \u00b7 '+x.mins+' min \u00b7 '+x.c+' cal<br><span style="color:var(--ink-faded);font-size:12px">'+esc(x.r)+'</span>'; }).join('<br><br>')+
+     '</div></div>';
+  host.innerHTML=h;
+}
+
 /* The batch panel: whether prep happened, and what's left of it. The counter
    is manual on purpose — inferring it from the meal log would drift silently,
    and being wrong about how much chicken is left is worse than not knowing. */
@@ -3484,19 +3797,34 @@ function renderBatch(){
       : 'Every meal now shows how to make the missing pieces, and what it adds in time.'}</div>
   </div></div>`;
   if(done){
-    const rows=[["chicken","Chicken portions"],["rice","Rice servings"],["steak","Steak portions"]];
-    h+=`<div class="tmeal"><div class="tmeal-eyebrow"><span>Left in the fridge</span></div><div class="tmeal-body">`;
+    const rows=POOL_ROWS;
+    const mealsLeft=(p.chicken||0)+(p.chickenFrozen||0)+(p.steak||0);
+    const useBy=isoAddDays(weekRange(todayStr).sunStr, COOKED_KEEPS_DAYS);
+    const past=todayStr>useBy;
+    const eaten=homeMealsThisWeek(todayStr);
+    h+=`<div class="tmeal"><div class="tmeal-eyebrow"><span>In the fridge &amp; freezer</span><span class="cals">${mealsLeft} meal${mealsLeft===1?'':'s'} in hand</span></div><div class="tmeal-body">`;
     rows.forEach(function(r){
-      const n=p[r[0]]||0;
-      h+=`<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:6px 0">
-        <span style="font-size:14px">${r[1]}</span>
-        <span style="display:flex;align-items:center;gap:9px">
-          <button class="tmeal-log" style="padding:4px 11px" onclick="bumpPortion('${r[0]}',-1)">\u2212</button>
-          <b style="font-size:17px;min-width:20px;text-align:center;${n===0?'color:var(--orange)':''}">${n}</b>
-          <button class="tmeal-log" style="padding:4px 11px" onclick="bumpPortion('${r[0]}',1)">+</button>
-        </span></div>`;
+      const n=p[r.k]||0;
+      const warn = (r.cold==="fridge" && n>0 && past);
+      const sub = r.cold==="freezer"
+        ? 'Keeps indefinitely \u2014 pull one the night before.'
+        : (n>0 ? ('Use by '+isoNiceDay(useBy)+(warn?' \u2014 past its window, freeze or bin it':'')) : '');
+      h+=`<div style="padding:6px 0">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <span style="font-size:14px">${r.n}</span>
+          <span style="display:flex;align-items:center;gap:9px">
+            <button class="tmeal-log" style="padding:4px 11px" onclick="bumpPortion('${r.k}',-1)">\u2212</button>
+            <b style="font-size:17px;min-width:20px;text-align:center;${n===0?'color:var(--orange)':''}">${n}</b>
+            <button class="tmeal-log" style="padding:4px 11px" onclick="bumpPortion('${r.k}',1)">+</button>
+          </span></div>
+        ${sub?`<div style="font-size:12px;color:${warn?'var(--orange)':'var(--ink-faded)'};margin-top:2px">${sub}</div>`:''}
+      </div>`;
     });
-    h+=`<div style="margin-top:6px;font-size:12.5px;color:var(--ink-faded)">Tap minus as you eat them. Eight chicken portions cover eight meals with no slack \u2014 better to find that out on Wednesday than Friday.</div>
+    h+=`<div style="margin-top:9px;padding:9px 11px;border-radius:9px;background:var(--today-soft);font-size:12.5px;line-height:1.5;color:var(--ink-faded)">
+      <b style="color:var(--ink)">${eaten} home meals so far this week</b>, planning for about ${HOME_MEALS_TARGET}.
+      Not 21 \u2014 you are out, with people, or skipping some of those, and a plan built for 21 reads every ordinary week as a failure while quietly buying food you will not eat.
+      <br><br>Half the chicken goes in the freezer on Sunday on purpose: the fridge half covers the first few days inside its window, the freezer half comes out the night before and eats fresh later in the week. A portion you skip does not age out \u2014 it just stays in the pool.
+      <br><br>Tap minus as you eat them.</div>
     <div style="margin-top:11px"><button class="tmeal-log" onclick="buildLeftovers()">\uD83D\uDCCB What&#39;s left for next week</button></div>
     <div style="margin-top:6px;font-size:12px;color:var(--ink-faded)">Copies your counts and any missed meals, so next week&#39;s list doesn&#39;t buy what you already have.</div>
     </div></div>`;
@@ -4801,7 +5129,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v2.9.0 · 2026-09-18";   // bump this each time you upload a new index.html
+const APP_VERSION="v2.11.0 · 2026-09-20";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
