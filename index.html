@@ -442,17 +442,12 @@
   <div class="sec-label" id="t-rollover-label" style="display:none">↻ Rolled over</div>
   <div id="t-rollover"></div>
 
-  <div class="sec-label">💡 Ideas from your pool</div>
-  <div id="t-meals"></div>
-
-  <div class="sec-label">🍟 Craving something?</div>
-  <div id="t-craving"></div>
-
-  <div class="sec-label">🧂 Finish the plate</div>
-  <div id="t-finish"></div>
-
-  <div class="sec-label" id="t-grab-label">⚡ Grab &amp; go</div>
-  <div id="t-grab"></div>
+  <div class="sec-label">How much effort have you got?</div>
+  <div id="t-modes"></div>
+  <div id="sec-ideas"><div id="t-meals"></div></div>
+  <div id="sec-craving"><div id="t-craving"></div></div>
+  <div id="sec-finish"><div id="t-finish"></div></div>
+  <div id="sec-grab" style="display:none"><div id="t-grab-label" style="display:none"></div><div id="t-grab"></div></div>
 
   <div id="t-prep-wrap" style="display:none">
     <div class="sec-label">Today's prep</div>
@@ -653,6 +648,8 @@
     <button data-shopview="weekly" onclick="setShopView('weekly')">Every week</button>
     <button data-shopview="week" onclick="setShopView('week')">This week</button>
   </div>
+  <div class="sec-label">🧾 Restock — what's below par</div>
+  <div id="shopStock"></div>
   <div id="shopBody"></div>
 </div>
 
@@ -866,6 +863,7 @@ function shopState(){ try{ return JSON.parse(localStorage.getItem(shopKey())||'{
 function shopSave(st){ try{ localStorage.setItem(shopKey(), JSON.stringify(st)); }catch(e){} }
 
 function renderShop(){
+  renderStock();
   const host=document.getElementById('shopBody'); if(!host) return;
   if(shopView==='week'){ renderWeekLists(host); return; }
   const DATA = shopView==='kit' ? STARTER_KIT : STORE_GUIDE;
@@ -1795,16 +1793,16 @@ const meals = {
   "2026-09-18": { dow:"Fri", overlay:"Cardio", b:{n:"Hard-boiled egg & cheddar plate + apple",c:415,r:"<strong>Hard-boiled egg &amp; cheddar plate + apple.</strong> 3 hard-boiled eggs (from Sun) halved + 1/4 cup shredded cheddar + 1 apple sliced. No-cook. ~415 cal, 25g protein. 2 min."}, l:{n:"Backpack lunch — turkey sausage + cheddar wrap",c:575,r:"<strong>Backpack lunch — turkey sausage &amp; cheddar wrap.</strong> Built THURSDAY NIGHT. 2 turkey sausage patties browned and chopped + 1/4 cup shredded cheddar + romaine in 1 burrito-size (10-inch) flour tortilla, rolled in foil. 1 apple. <em>Needs the frozen PackIt bag.</em> SHELF-STABLE SWAP: PB-honey wrap + chicken pouch + apple. Friday is the 5-minute day — this is one-handed on purpose. ~575 cal, 33g protein. 8 min the night before."}, d:{n:"Honey-soy turkey sausage rice bowl",c:480,r:"<strong>Honey-soy turkey sausage rice bowl (NEW).</strong> Brown 2 turkey sausage patties chopped ~5 min, glaze off the heat with 1 tbsp soy + 1 tsp honey + a pinch of garlic powder. Over 3/4 cup cooked rice + 1.5 cups broccoli. ~480 cal, 29g protein. 12 min."}, subs:[] },
   "2026-09-19": { dow:"Sat", overlay:"Lift \u2014 Legs", b:{n:"Strawberry-banana smoothie + granola",c:390,r:"<strong>Strawberry-banana smoothie + granola.</strong> 1 cup frozen strawberries + 1 banana + 3/4 cup plain 2% Greek yogurt + splash water, blended. 1/4 cup granola on top. ~390 cal, 26g protein. 4 min."}, l:{n:"Canned chicken quesadilla",c:500,r:"<strong>Canned chicken quesadilla.</strong> 1 can chicken drained, 1/3 cup shredded cheddar, pinch garlic powder in 1 burrito-size (10-inch) flour tortilla. Press in a dry pan 2 min per side. ~500 cal, 42g protein. 8 min."}, d:{n:"Chicken, bacon & cheddar quesadilla",c:550,r:"<strong>Chicken, bacon &amp; cheddar quesadilla.</strong> 1 plain chicken portion (from Sun) shredded with 1 tbsp bacon bits + 1/3 cup shredded cheddar + a pinch of garlic powder and Italian herbs in 1 burrito-size (10-inch) flour tortilla. Press 2 min per side. ~550 cal, 47g protein. 8 min."}, subs:[] },
   "2026-09-20": { dow:"Sun", overlay:"PREP DAY \u2014 Steak night", isPrep:true, prep:["FROZEN? Check the chicken and steak first thing. Thaw overnight in the fridge, OR seal and submerge in cold water ~1 hr, OR cook from frozen adding ~50% time to 165\u00b0F chicken / steak cooked through.","Batch chicken PLAIN \u2014 2 jumbo chicken breasts (~20 oz raw each = 8 portions, ~5 oz each). Salt + pepper ONLY, no sauces. Air fry 380\u00b0F ~22 min to 165\u00b0F; rest; slice into 8 portions. Flavor each the day you eat it.","Steak bites PLAIN \u2014 cube ONE chuck eye, sear hard 2 min per side, salt + pepper only. Fridge for Wednesday. The SECOND chuck eye stays raw \u2014 that one is tonight's dinner, cooked fresh.","Cook the rice \u2014 3 cups dry jasmine rice makes ~9 cups cooked. That is DOUBLE what this step used to say: rice and pasta portions went from 3/4 cup to 1.5 cups cooked when the calorie target moved up on 09-10, so the old 1.5 cups dry now runs out by Wednesday. Portion into containers; it reheats all week.","Hard-boil 6 eggs \u2014 3 for Friday breakfast, and 2 more for the egg-and-cheddar snack, with one spare.","SAUCE TWO DINNERS NOW \u2014 this is the change that buys back your worst two weeknights. Take 2 chicken portions, 3 cups cooked rice or pasta and 3 cups broccoli, split into 2 containers, and sauce them FULLY (BBQ, teriyaki, Alfredo, marinara or honey-garlic \u2014 rotate week to week). Those two are DONE: microwave 2 min and eat, no pan, no step. Every OTHER portion still stays plain.","PORTION THE SNACKS \u2014 10 min, and it is the difference between having food and having ingredients. Fill snack bags: trail mix and almonds from the WinCo bulk bins (1/3 cup each), granola (1/4 cup each). Pre-load 2-3 shaker bottles with a DRY scoop of whey \u2014 they live in the backpack and you add water wherever you are.","FREEZE THE LUNCH BAG \u2014 put the PackIt in the freezer tonight so it is ready for Wednesday. If it is not frozen, Wednesday lunch becomes the shelf-stable pack instead; chicken does NOT go out in a bare backpack.","BUILD TUESDAY NIGHT, not Wednesday morning \u2014 the Wed/Fri wraps take 6 min the night before and zero minutes on a morning you do not have.","Wash and chop romaine, slice cucumber, portion fruit."], b:{n:"Apple-cinnamon yogurt parfait",c:370,r:"<strong>Apple-cinnamon yogurt parfait.</strong> 3/4 cup plain 2% Greek yogurt + 1 diced apple + 1/4 cup granola + a pinch of cinnamon + a drizzle of honey. ~370 cal, 24g protein. 3 min."}, l:{n:"Canned chicken salad wrap",c:440,r:"<strong>Canned chicken salad wrap.</strong> 1 can chicken drained + 1 tbsp mayo + 1/2 cup diced cucumber + romaine in 1 burrito-size (10-inch) flour tortilla. No-cook. ~440 cal, 38g protein. 5 min."}, d:{n:"Honey-garlic steak bites",c:540,r:"<strong>Honey-garlic steak bites \u2014 STEAK NIGHT.</strong> Cube a chuck eye and cook FRESH tonight: sear hard 2 min per side. Glaze off the heat with 2 tbsp soy + 1 tsp honey + a pinch of garlic. Over 3/4 cup cooked rice + 1.5 cups broccoli. ~540 cal, 42g protein. 16 min."}, subs:[] },
-  "2026-09-21": { dow:"Mon", overlay:"Cardio", b:{n:"PB-banana-granola wrap",c:400,r:"<strong>PB-banana-granola wrap.</strong> 1 burrito-size (10-inch) flour tortilla + 1.5 tbsp peanut butter + sliced banana + a sprinkle of granola. Roll up. ~400 cal, 14g protein. 3 min."}, l:{n:"Italian chicken & provolone bowl",c:480,r:"<strong>Italian chicken &amp; provolone bowl.</strong> 1 plain chicken portion (from Sun) sliced over 2 cups romaine + cucumber, 1 slice provolone torn over the top, dressed with 1 tsp olive oil + 1 tsp red wine vinegar + a pinch of Italian seasoning. ~480 cal, 45g protein. 6 min."}, d:{n:"DONE — Teriyaki chicken &amp; rice, sauced at prep",c:700,r:"<strong>DONE — Teriyaki chicken &amp; rice.</strong> Already sauced Sunday. Microwave 2 min and eat. 1.5 cups rice + teriyaki chicken + broccoli in one container. ~700 cal, 48g protein. 2 min."}, subs:[] },
-  "2026-09-22": { dow:"Tue", overlay:"Lift \u2014 Push", b:{n:"Cheesy egg & veggie skillet",c:380,r:"<strong>Cheesy egg &amp; veggie skillet.</strong> Saut&eacute; 1 cup frozen stir-fry mix ~4 min until the water cooks off, add 3 beaten eggs, finish with 1/4 cup shredded cheddar. ~380 cal, 26g protein. 8 min."}, l:{n:"Chicken shawarma bowl",c:490,r:"<strong>Chicken shawarma bowl.</strong> 1 plain chicken portion (from Sun) tossed with a pinch each of cumin, smoked paprika and garlic powder + 1 tsp olive oil, warmed 90 sec. Over 3/4 cup cooked rice with romaine and cucumber. ~490 cal, 45g protein. 7 min."}, d:{n:"BBQ chicken & cheddar flatbread",c:520,r:"<strong>BBQ chicken &amp; cheddar flatbread (NEW).</strong> Lay 1 burrito-size (10-inch) flour tortilla flat, spread 1.5 tbsp BBQ sauce, top with 1 plain chicken portion (from Sun) shredded + 1/4 cup shredded cheddar + a pinch of onion powder. Air fry 350\u00b0F ~5 min until the edges crisp. ~520 cal, 46g protein. 8 min."}, subs:[] },
-  "2026-09-23": { dow:"Wed", overlay:"Cardio", b:{n:"Greek yogurt parfait",c:360,r:"<strong>Greek yogurt parfait.</strong> 3/4 cup plain 2% Greek yogurt + 1/2 cup fresh strawberries + 1/4 cup granola + a drizzle of honey. ~360 cal, 24g protein. 2 min."}, l:{n:"Backpack lunch — chicken Caesar wrap",c:600,r:"<strong>Backpack lunch — chicken Caesar wrap.</strong> Built TUESDAY NIGHT. 1 plain chicken portion (from Sun) chopped + 1 tbsp Caesar dressing + 1 tbsp parmesan + 1 cup coleslaw mix in 1 burrito-size (10-inch) flour tortilla, rolled tight in foil. 1 apple. <em>Needs the frozen PackIt bag.</em> SHELF-STABLE SWAP: PB-honey wrap + chicken pouch + apple. ~600 cal, 48g protein. 6 min the night before."}, d:{n:"Pepper steak rice bowl",c:530,r:"<strong>Pepper steak rice bowl.</strong> Reheat the plain steak bites (from Sun) 2 min with 1 cup stir-fry veg + 1.5 tbsp soy + plenty of cracked pepper. Over 3/4 cup cooked rice. ~530 cal, 41g protein. 8 min."}, subs:[] },
-  "2026-09-24": { dow:"Thu", overlay:"Lift \u2014 Pull", b:{n:"Bacon-cheddar egg scramble",c:400,r:"<strong>Bacon-cheddar egg scramble.</strong> Scramble 3 eggs, fold in 1/4 cup shredded cheddar + 1 tbsp real bacon bits off the heat. ~400 cal, 28g protein. 6 min."}, l:{n:"Lemon-pepper chicken rice bowl",c:480,r:"<strong>Lemon-pepper chicken rice bowl.</strong> 1 plain chicken portion (from Sun) tossed with a pinch of lemon-pepper + a squeeze of lemon, over 3/4 cup cooked rice with 1 cup broccoli. ~480 cal, 44g protein. 7 min."}, d:{n:"DONE — Marinara chicken parm bake, sauced at prep",c:720,r:"<strong>DONE — Marinara chicken parm bake.</strong> Already sauced Sunday. Microwave 2 min and eat. 1.5 cups pasta + marinara chicken + cheddar and parmesan, one container. ~720 cal, 50g protein. 2 min."}, subs:[] },
-  "2026-09-25": { dow:"Fri", overlay:"Cardio", b:{n:"Hard-boiled egg & cheddar plate + fruit",c:400,r:"<strong>Hard-boiled egg &amp; cheddar plate + fruit.</strong> 3 hard-boiled eggs (from Sun) halved + 1/4 cup shredded cheddar + 1/2 cup fruit bowl. No-cook. ~400 cal, 25g protein. 2 min."}, l:{n:"Backpack lunch — shelf-stable pack",c:715,r:"<strong>Backpack lunch — shelf-stable pack.</strong> NO cold bag, NO fridge, nothing to build the night before — this is the one to keep on the Fridays that get away from you. 1 burrito-size (10-inch) flour tortilla + 1.5 tbsp peanut butter + 1 tbsp honey, rolled in foil. 1 shelf-stable chicken pouch. 1 apple. 1 shaker pre-loaded with a dry scoop of whey — add water when you get there. ~715 cal, 45g protein. 3 min to pack."}, d:{n:"Turkey sausage stir-fry bowl",c:480,r:"<strong>Turkey sausage stir-fry bowl.</strong> Brown 2 turkey sausage patties chopped ~5 min, add 1.5 cups frozen stir-fry mix, cook 5 min, finish with 1 tbsp soy. Over 3/4 cup cooked rice. ~480 cal, 28g protein. 12 min."}, subs:[] },
-  "2026-09-26": { dow:"Sat", overlay:"Lift \u2014 Legs", b:{n:"Cheddar omelet + fruit",c:370,r:"<strong>Cheddar omelet + fruit.</strong> Beat 3 eggs, pour into a nonstick pan over medium-low, fold in 1/4 cup shredded cheddar as it sets. 1/2 cup fruit on the side. ~370 cal, 25g protein. 7 min."}, l:{n:"Canned chicken quesadilla",c:500,r:"<strong>Canned chicken quesadilla.</strong> 1 can chicken drained, 1/3 cup shredded cheddar, pinch garlic powder in 1 burrito-size (10-inch) flour tortilla. Press in a dry pan 2 min per side. ~500 cal, 42g protein. 8 min."}, d:{n:"Marinara chicken parmesan bowl",c:530,r:"<strong>Marinara chicken parmesan bowl.</strong> 1 plain chicken portion (from Sun) sliced, simmered 3 min in 1/2 cup marinara, topped with 1/4 cup shredded cheddar + parmesan, over 3/4 cup cooked pasta. ~530 cal, 47g protein. 9 min."}, subs:[] },
+  "2026-09-21": { dow:"Mon", overlay:"Cardio", b:{n:"PB-banana-granola wrap",c:400,r:"<strong>PB-banana-granola wrap.</strong> 1 burrito-size (10-inch) flour tortilla + 1.5 tbsp peanut butter + sliced banana + a sprinkle of granola. Roll up. ~400 cal, 14g protein. 3 min."}, l:{n:"Italian chicken & provolone bowl",c:480,r:"<strong>Italian chicken &amp; provolone bowl.</strong> 1 plain chicken portion (from the pool) sliced over 2 cups romaine + cucumber, 1 slice provolone torn over the top, dressed with 1 tsp olive oil + 1 tsp red wine vinegar + a pinch of Italian seasoning. ~480 cal, 45g protein. 6 min."}, d:{n:"DONE — Teriyaki chicken &amp; rice, sauced at prep",c:700,r:"<strong>DONE — Teriyaki chicken &amp; rice.</strong> Already sauced Sunday. Microwave 2 min and eat. 1.5 cups rice + teriyaki chicken + broccoli in one container. ~700 cal, 48g protein. 2 min."}, subs:[] },
+  "2026-09-22": { dow:"Tue", overlay:"Lift \u2014 Push", b:{n:"Cheesy egg & veggie skillet",c:380,r:"<strong>Cheesy egg &amp; veggie skillet.</strong> Saut&eacute; 1 cup frozen stir-fry mix ~4 min until the water cooks off, add 3 beaten eggs, finish with 1/4 cup shredded cheddar. ~380 cal, 26g protein. 8 min."}, l:{n:"Chicken shawarma bowl",c:490,r:"<strong>Chicken shawarma bowl.</strong> 1 plain chicken portion (from the pool) tossed with a pinch each of cumin, smoked paprika and garlic powder + 1 tsp olive oil, warmed 90 sec. Over 3/4 cup cooked rice with romaine and cucumber. ~490 cal, 45g protein. 7 min."}, d:{n:"BBQ chicken & cheddar flatbread",c:520,r:"<strong>BBQ chicken &amp; cheddar flatbread (NEW).</strong> Lay 1 burrito-size (10-inch) flour tortilla flat, spread 1.5 tbsp BBQ sauce, top with 1 plain chicken portion (from the pool) shredded + 1/4 cup shredded cheddar + a pinch of onion powder. Air fry 350\u00b0F ~5 min until the edges crisp. ~520 cal, 46g protein. 8 min."}, subs:[] },
+  "2026-09-23": { dow:"Wed", overlay:"Cardio", b:{n:"Greek yogurt parfait",c:360,r:"<strong>Greek yogurt parfait.</strong> 3/4 cup plain 2% Greek yogurt + 1/2 cup fresh strawberries + 1/4 cup granola + a drizzle of honey. ~360 cal, 24g protein. 2 min."}, l:{n:"Backpack lunch — chicken Caesar wrap",c:600,r:"<strong>Backpack lunch — chicken Caesar wrap.</strong> Built TUESDAY NIGHT. 1 plain chicken portion (from the pool) chopped + 1 tbsp Caesar dressing + 1 tbsp parmesan + 1 cup coleslaw mix in 1 burrito-size (10-inch) flour tortilla, rolled tight in foil. 1 apple. <em>Needs the frozen PackIt bag.</em> SHELF-STABLE SWAP: PB-honey wrap + chicken pouch + apple. ~600 cal, 48g protein. 6 min the night before."}, d:{n:"Pepper steak rice bowl",c:530,r:"<strong>Pepper steak rice bowl.</strong> Re-crisp the plain steak bites in the air fryer (400°F, 3 min) (from the pool) 2 min with 1 cup stir-fry veg + 1.5 tbsp soy + plenty of cracked pepper. Over 3/4 cup cooked rice. ~530 cal, 41g protein. 8 min."}, subs:[] },
+  "2026-09-24": { dow:"Thu", overlay:"Lift \u2014 Pull", b:{n:"Bacon-cheddar egg scramble",c:400,r:"<strong>Bacon-cheddar egg scramble.</strong> Scramble 3 eggs, fold in 1/4 cup shredded cheddar + 1 tbsp real bacon bits off the heat. ~400 cal, 28g protein. 6 min."}, l:{n:"Lemon-pepper chicken rice bowl",c:480,r:"<strong>Lemon-pepper chicken rice bowl.</strong> 1 plain chicken portion (from the pool) tossed with a pinch of lemon-pepper + a squeeze of lemon, over 3/4 cup cooked rice with 1 cup broccoli. ~480 cal, 44g protein. 7 min."}, d:{n:"DONE — Marinara chicken parm bake, sauced at prep",c:720,r:"<strong>DONE — Marinara chicken parm bake.</strong> Already sauced Sunday. Microwave 2 min and eat. 1.5 cups pasta + marinara chicken + cheddar and parmesan, one container. ~720 cal, 50g protein. 2 min."}, subs:[] },
+  "2026-09-25": { dow:"Fri", overlay:"Cardio", b:{n:"Hard-boiled egg & cheddar plate + fruit",c:400,r:"<strong>Hard-boiled egg &amp; cheddar plate + fruit.</strong> 3 hard-boiled eggs (from the pool) halved + 1/4 cup shredded cheddar + 1/2 cup fruit bowl. No-cook. ~400 cal, 25g protein. 2 min."}, l:{n:"Backpack lunch — shelf-stable pack",c:715,r:"<strong>Backpack lunch — shelf-stable pack.</strong> NO cold bag, NO fridge, nothing to build the night before — this is the one to keep on the Fridays that get away from you. 1 burrito-size (10-inch) flour tortilla + 1.5 tbsp peanut butter + 1 tbsp honey, rolled in foil. 1 shelf-stable chicken pouch. 1 apple. 1 shaker pre-loaded with a dry scoop of whey — add water when you get there. ~715 cal, 45g protein. 3 min to pack."}, d:{n:"Turkey sausage stir-fry bowl",c:480,r:"<strong>Turkey sausage stir-fry bowl.</strong> Brown 2 turkey sausage patties chopped ~5 min, add 1.5 cups frozen stir-fry mix, cook 5 min, finish with 1 tbsp soy. Over 3/4 cup cooked rice. ~480 cal, 28g protein. 12 min."}, subs:[] },
+  "2026-09-26": { dow:"Sat", overlay:"Lift \u2014 Legs", b:{n:"Cheddar omelet + fruit",c:370,r:"<strong>Cheddar omelet + fruit.</strong> Beat 3 eggs, pour into a nonstick pan over medium-low, fold in 1/4 cup shredded cheddar as it sets. 1/2 cup fruit on the side. ~370 cal, 25g protein. 7 min."}, l:{n:"Canned chicken quesadilla",c:500,r:"<strong>Canned chicken quesadilla.</strong> 1 can chicken drained, 1/3 cup shredded cheddar, pinch garlic powder in 1 burrito-size (10-inch) flour tortilla. Press in a dry pan 2 min per side. ~500 cal, 42g protein. 8 min."}, d:{n:"Marinara chicken parmesan bowl",c:530,r:"<strong>Marinara chicken parmesan bowl.</strong> 1 plain chicken portion (from the pool) sliced, simmered 3 min in 1/2 cup marinara, topped with 1/4 cup shredded cheddar + parmesan, over 3/4 cup cooked pasta. ~530 cal, 47g protein. 9 min."}, subs:[] },
   "2026-09-27": { dow:"Sun", overlay:"PREP DAY \u2014 Steak night \u2014 SHORT WEEK", isPrep:true, prep:["FROZEN? Check the chicken and steak first thing. Thaw overnight in the fridge, OR seal and submerge in cold water ~1 hr, OR cook from frozen adding ~50% time to 165\u00b0F chicken / steak cooked through.","Batch chicken PLAIN \u2014 1 jumbo chicken breast (~20 oz raw = 4 portions, ~5 oz each). Salt + pepper ONLY, no sauces. Air fry 380\u00b0F ~22 min to 165\u00b0F; rest; slice into 4 portions. Flavor each the day you eat it.","Steak bites PLAIN \u2014 cube ONE chuck eye, sear hard 2 min per side, salt + pepper only. Fridge for Wednesday. The SECOND chuck eye stays raw \u2014 that one is tonight's dinner, cooked fresh.","Cook the rice \u2014 1.5 cups dry jasmine rice makes ~4.5 cups cooked. Portion into containers; it reheats all week.","Hard-boil 3 eggs if a no-cook breakfast lands this week.","SAUCE TWO DINNERS NOW \u2014 this is the change that buys back your worst two weeknights. Take 2 chicken portions, 3 cups cooked rice or pasta and 3 cups broccoli, split into 2 containers, and sauce them FULLY (BBQ, teriyaki, Alfredo, marinara or honey-garlic \u2014 rotate week to week). Those two are DONE: microwave 2 min and eat, no pan, no step. Every OTHER portion still stays plain.","PORTION THE SNACKS \u2014 10 min, and it is the difference between having food and having ingredients. Fill snack bags: trail mix and almonds from the WinCo bulk bins (1/3 cup each), granola (1/4 cup each). Pre-load 2-3 shaker bottles with a DRY scoop of whey \u2014 they live in the backpack and you add water wherever you are.","FREEZE THE LUNCH BAG \u2014 put the PackIt in the freezer tonight so it is ready for Wednesday. If it is not frozen, Wednesday lunch becomes the shelf-stable pack instead; chicken does NOT go out in a bare backpack.","BUILD TUESDAY NIGHT, not Wednesday morning \u2014 the Wed/Fri wraps take 6 min the night before and zero minutes on a morning you do not have.","Wash and chop romaine, slice cucumber, portion fruit.","SHORT WEEK \u2014 September ends Wednesday. One jumbo breast (4 portions) still covers it: the calorie increase came from carbs, dairy and fat, NOT from more chicken, so protein portions per meal did not change."], b:{n:"Greek yogurt + banana + granola",c:380,r:"<strong>Greek yogurt + banana + granola.</strong> 3/4 cup plain 2% Greek yogurt + 1 sliced banana + 1/4 cup granola + a thin drizzle of peanut butter. ~380 cal, 24g protein. 2 min."}, l:{n:"Canned chicken salad wrap",c:440,r:"<strong>Canned chicken salad wrap.</strong> 1 can chicken drained + 1 tbsp mayo + 1/2 cup diced cucumber + romaine in 1 burrito-size (10-inch) flour tortilla. No-cook. ~440 cal, 38g protein. 5 min."}, d:{n:"Steak & cheddar quesadilla",c:560,r:"<strong>Steak &amp; cheddar quesadilla \u2014 STEAK NIGHT.</strong> Cook a chuck eye FRESH tonight: salt + pepper, sear 3-4 min per side, rest, then slice thin. Fold into 1 burrito-size (10-inch) flour tortilla with 1/3 cup shredded cheddar. Press 2 min per side. ~560 cal, 44g protein. 20 min."}, subs:["Short week \u2014 only 3 days left in September. Prep light: 1 breast, not 2."] },
-  "2026-09-28": { dow:"Mon", overlay:"Cardio", b:{n:"Three-egg fried rice bowl",c:420,r:"<strong>Three-egg fried rice bowl.</strong> Fry 3/4 cup cooked rice in 1 tsp sesame oil ~3 min, push aside, scramble 3 eggs into the pan, toss with 1 tbsp soy. ~420 cal, 24g protein. 8 min."}, l:{n:"Honey-garlic chicken wrap",c:470,r:"<strong>Honey-garlic chicken wrap.</strong> 1 plain chicken portion (from Sun) sliced, tossed with 1 tbsp soy + 1 tsp honey + a pinch of garlic powder. Into 1 burrito-size (10-inch) flour tortilla with romaine and cucumber. ~470 cal, 44g protein. 6 min."}, d:{n:"DONE — Honey-garlic chicken &amp; rice, sauced at prep",c:700,r:"<strong>DONE — Honey-garlic chicken &amp; rice.</strong> Already sauced Sunday. Microwave 2 min and eat. 1.5 cups rice + honey-garlic chicken + broccoli in one container. ~700 cal, 48g protein. 2 min."}, subs:[] },
-  "2026-09-29": { dow:"Tue", overlay:"Lift \u2014 Push", b:{n:"Cheddar egg scramble + fruit",c:360,r:"<strong>Cheddar egg scramble + fruit.</strong> Scramble 3 eggs, fold in 1/4 cup shredded cheddar off the heat. 1/2 cup fruit bowl on the side. ~360 cal, 25g protein. 6 min."}, l:{n:"Canned chicken quesadilla",c:500,r:"<strong>Canned chicken quesadilla.</strong> 1 can chicken drained, 1/3 cup shredded cheddar, pinch garlic powder in 1 burrito-size (10-inch) flour tortilla. Press in a dry pan 2 min per side. ~500 cal, 42g protein. 8 min."}, d:{n:"Chicken Alfredo & broccoli pasta",c:540,r:"<strong>Chicken Alfredo &amp; broccoli pasta.</strong> 3/4 cup cooked pasta + 1.5 cups broccoli tossed with 1/3 cup Alfredo sauce and 1 plain chicken portion (from Sun) sliced. Warm through. ~540 cal, 46g protein. 9 min."}, subs:[] },
-  "2026-09-30": { dow:"Wed", overlay:"Cardio", b:{n:"Peach & honey yogurt parfait",c:370,r:"<strong>Peach &amp; honey yogurt parfait.</strong> 3/4 cup plain 2% Greek yogurt + 1 diced peach + 1/4 cup granola + 1 tbsp honey. ~370 cal, 24g protein. 3 min."}, l:{n:"Backpack lunch — chicken Caesar wrap",c:600,r:"<strong>Backpack lunch — chicken Caesar wrap.</strong> Built TUESDAY NIGHT. 1 plain chicken portion (from Sun) chopped + 1 tbsp Caesar dressing + 1 tbsp parmesan + 1 cup coleslaw mix in 1 burrito-size (10-inch) flour tortilla, rolled tight in foil. 1 apple. <em>Needs the frozen PackIt bag.</em> SHELF-STABLE SWAP: PB-honey wrap + chicken pouch + apple. ~600 cal, 48g protein. 6 min the night before."}, d:{n:"Pepper steak rice bowl",c:530,r:"<strong>Pepper steak rice bowl.</strong> Reheat the plain steak bites (from Sun) 2 min with 1 cup stir-fry veg + 1.5 tbsp soy + plenty of cracked pepper. Over 3/4 cup cooked rice. ~530 cal, 41g protein. 8 min."}, subs:["Last day of September \u2014 one spare chicken portion carries into October."] }
+  "2026-09-28": { dow:"Mon", overlay:"Cardio", b:{n:"Three-egg fried rice bowl",c:420,r:"<strong>Three-egg fried rice bowl.</strong> Fry 3/4 cup cooked rice in 1 tsp sesame oil ~3 min, push aside, scramble 3 eggs into the pan, toss with 1 tbsp soy. ~420 cal, 24g protein. 8 min."}, l:{n:"Honey-garlic chicken wrap",c:470,r:"<strong>Honey-garlic chicken wrap.</strong> 1 plain chicken portion (from the pool) sliced, tossed with 1 tbsp soy + 1 tsp honey + a pinch of garlic powder. Into 1 burrito-size (10-inch) flour tortilla with romaine and cucumber. ~470 cal, 44g protein. 6 min."}, d:{n:"DONE — Honey-garlic chicken &amp; rice, sauced at prep",c:700,r:"<strong>DONE — Honey-garlic chicken &amp; rice.</strong> Already sauced Sunday. Microwave 2 min and eat. 1.5 cups rice + honey-garlic chicken + broccoli in one container. ~700 cal, 48g protein. 2 min."}, subs:[] },
+  "2026-09-29": { dow:"Tue", overlay:"Lift \u2014 Push", b:{n:"Cheddar egg scramble + fruit",c:360,r:"<strong>Cheddar egg scramble + fruit.</strong> Scramble 3 eggs, fold in 1/4 cup shredded cheddar off the heat. 1/2 cup fruit bowl on the side. ~360 cal, 25g protein. 6 min."}, l:{n:"Canned chicken quesadilla",c:500,r:"<strong>Canned chicken quesadilla.</strong> 1 can chicken drained, 1/3 cup shredded cheddar, pinch garlic powder in 1 burrito-size (10-inch) flour tortilla. Press in a dry pan 2 min per side. ~500 cal, 42g protein. 8 min."}, d:{n:"Chicken Alfredo & broccoli pasta",c:540,r:"<strong>Chicken Alfredo &amp; broccoli pasta.</strong> 3/4 cup cooked pasta + 1.5 cups broccoli tossed with 1/3 cup Alfredo sauce and 1 plain chicken portion (from the pool) sliced. Warm through. ~540 cal, 46g protein. 9 min."}, subs:[] },
+  "2026-09-30": { dow:"Wed", overlay:"Cardio", b:{n:"Peach & honey yogurt parfait",c:370,r:"<strong>Peach &amp; honey yogurt parfait.</strong> 3/4 cup plain 2% Greek yogurt + 1 diced peach + 1/4 cup granola + 1 tbsp honey. ~370 cal, 24g protein. 3 min."}, l:{n:"Backpack lunch — chicken Caesar wrap",c:600,r:"<strong>Backpack lunch — chicken Caesar wrap.</strong> Built TUESDAY NIGHT. 1 plain chicken portion (from the pool) chopped + 1 tbsp Caesar dressing + 1 tbsp parmesan + 1 cup coleslaw mix in 1 burrito-size (10-inch) flour tortilla, rolled tight in foil. 1 apple. <em>Needs the frozen PackIt bag.</em> SHELF-STABLE SWAP: PB-honey wrap + chicken pouch + apple. ~600 cal, 48g protein. 6 min the night before."}, d:{n:"Pepper steak rice bowl",c:530,r:"<strong>Pepper steak rice bowl.</strong> Re-crisp the plain steak bites in the air fryer (400°F, 3 min) (from the pool) 2 min with 1 cup stir-fry veg + 1.5 tbsp soy + plenty of cracked pepper. Over 3/4 cup cooked rice. ~530 cal, 41g protein. 8 min."}, subs:["Last day of September \u2014 one spare chicken portion carries into October."] }
 };
 
 const todayDate = new Date();
@@ -2150,8 +2148,8 @@ const COMPONENTS={
     n:"A chicken portion", mins:25,
     r:"Season a ~5 oz raw breast with salt and pepper only. Air fry 380\u00b0F for 18-20 min to 165\u00b0F, rest 3 min, slice. Cook two while the fryer is hot and you have tomorrow covered."},
   rice:{
-    n:"Cooked rice", mins:20,
-    r:"\u00bd cup dry jasmine rice + 1 cup water, lid on, low, 15 min, then 5 min off the heat without lifting the lid. Makes about 1.5 cups cooked \u2014 one of the bigger portions."},
+    n:"Cooked rice", mins:2,
+    r:"A microwave pouch, 90 sec in the bag. If you would rather cook it: \u00bd cup dry jasmine + 1 cup water, lid on, low, 15 min, then 5 min off the heat without lifting the lid \u2014 about 20 min and a pan to wash."},
   steak:{
     n:"Steak bites", mins:12,
     r:"Cube a chuck eye, pat it dry, sear hard 2 min per side in a hot dry pan. Salt and pepper only. Rest 3 min."},
@@ -2167,7 +2165,7 @@ const COMPONENTS={
 function mealNeeds(meal){
   const t=((meal&&meal.n)||"")+" "+((meal&&meal.r)||"");
   const out=[];
-  if(/chicken portion|plain chicken|chicken \(from Sun\)|sauced at prep/i.test(t)) out.push("chicken");
+  if(/chicken portion|plain chicken|chicken \(from the pool\)|sauced at prep/i.test(t)) out.push("chicken");
   if(/cooked rice|cups rice|rice bowl|fried rice/i.test(t)) out.push("rice");
   if(/steak bites|cubed chuck|pepper steak/i.test(t)) out.push("steak");
   if(/hard-boiled egg/i.test(t)) out.push("eggs");
@@ -2230,16 +2228,16 @@ function homeMealsThisWeek(ds){
   return n;
 }
 function portionKey(ds){ return "portions-"+weekRange(ds||todayStr).sunStr; }
+/* The Today pool and the Shop shelf were two counters for the same chicken.
+   Two counters always drift apart, and then neither is trusted. The pool now
+   reads the stock record directly, so a portion eaten on Today is the same
+   portion missing on Shop. */
 function portionsLeft(){
-  let d=null; try{ d=JSON.parse(localStorage.getItem(portionKey())); }catch(e){}
-  return Object.assign({}, PORTION_PLAN, d||{});
+  const st=loadStock();
+  return {chicken:st.qty.chicken||0, chickenFrozen:st.qty.chickenFrozen||0,
+          steak:st.qty.steak||0, eggs:st.qty.eggs||0};
 }
-function bumpPortion(k,delta){
-  const p=portionsLeft();
-  p[k]=Math.max(0,(p[k]||0)+delta);
-  try{ localStorage.setItem(portionKey(), JSON.stringify(p)); }catch(e){}
-  renderToday();
-}
+function bumpPortion(k,delta){ bumpStock(k,delta); }
 
 /* ============ ROLLOVER + END-OF-WEEK LEFTOVERS ============
    Two gaps that showed up in practice.
@@ -2275,7 +2273,9 @@ function rollovers(ds){
     ["b","l","d"].forEach(function(w){
       const meal=m[w];
       if(!meal||meal.parents||mealWasLogged(d,w)) return;
-      const needs=mealNeeds(meal).filter(function(k){ return k!=="eggs"; });
+      /* Rice left the pool in v2.11 \u2014 it is a cupboard item now, so a
+         skipped meal does not leave a rice portion sitting in the fridge. */
+      const needs=mealNeeds(meal).filter(function(k){ return k!=="eggs" && k!=="rice"; });
       if(!needs.length) return;
       out.push({date:d, which:w, name:meal.n, needs:needs, useBy:isoAddDays(wr.sunStr,COOKED_KEEPS_DAYS)});
     });
@@ -2324,7 +2324,85 @@ function buildLeftovers(){
   showToast("Copied \u2014 paste it to Claude");
 }
 
-function plusFor(ds){ return PLUS[ds]||null; }
+/* ============ GENERATED TOP-UPS ===================================
+   v2.14. PLUS was a hand-authored table of per-day "building it up" adds
+   running to 2026-09-30 and then stopping dead. On Oct 1 every day would
+   quietly lose 300-500 cal and 20-40g of protein with no warning at all
+   \u2014 the cards would still look complete while the day silently came in
+   under, which is the exact failure the whole calorie rework exists to
+   prevent. A plan that expires without saying so is worse than one that
+   is visibly wrong.
+
+   So top-ups are now DERIVED. Take the day's planned dishes, compare the
+   total to that day's target, and close the gap from the staples. No
+   expiry date, and it self-corrects when a dish changes.
+
+   The hand-written entries are kept and still win where they exist: they
+   were written with more context than an algorithm has (what was in the
+   fridge that week, what he had not eaten recently). This only fills the
+   silence after them. */
+function hashDay(ds){ let h=0; for(let i=0;i<ds.length;i++) h=(h*31+ds.charCodeAt(i))|0; return Math.abs(h); }
+const GEN_SNACKS=[
+  {k:"lsnack", n:"Greek yogurt + granola + honey", r:"3/4 cup plain 2% Greek yogurt + 1/4 cup crunchy granola + 1 tbsp honey. No-cook. 2 min.", c:305, p:19},
+  {k:"dsnack", n:"Whey shake + banana",            r:"1 scoop whey blended with 1 cup water and ice. 1 banana alongside. 3 min.", c:225, p:25},
+  {k:"lsnack", n:"Apple + peanut butter",          r:"1 apple sliced + 2 tbsp peanut butter. No-cook. 2 min.", c:295, p:8},
+  {k:"dsnack", n:"Whey + peanut butter shake",     r:"1 scoop whey + 1 tbsp peanut butter + 1 banana, blended with water and ice. 4 min.", c:320, p:28},
+  {k:"lsnack", n:"Greek yogurt + strawberries",    r:"3/4 cup plain 2% Greek yogurt + 1/2 cup fresh strawberries + a drizzle of honey. 2 min.", c:215, p:17},
+  {k:"dsnack", n:"Beef stick + apple",             r:"1 meat stick + 1 apple. Nothing to make.", c:195, p:10}
+];
+/* Base total from the dishes alone, with no PLUS of any kind \u2014 the
+   figure the gap is measured against. Separate from plannedDayTotals(),
+   which includes top-ups and would otherwise reason in a circle. */
+function baseDayTotals(ds){
+  const m=meals[ds]; let c=0,p=0;
+  if(m){ ["b","l","d"].forEach(function(w){ const x=m[w]; if(x&&!x.parents){ c+=x.c||0; p+=parseProtein(x.r); } }); }
+  return {cal:c, pro:p};
+}
+function generatedPlus(ds){
+  const m=meals[ds]; if(!m) return null;
+  /* Past days are a record, not a plan. Generating top-ups backwards would
+     pad days that are already over and done with \u2014 and the pre-ramp days
+     carry the old low target, so it would invent food against a number that
+     is no longer the plan. Today forward only. */
+  if(ds<todayStr) return null;
+  const base=baseDayTotals(ds);
+  const target=plannedTarget(ds);
+  let calGap=target-base.cal, proGap=PROTEIN_TARGET_G-base.pro;
+  if(calGap<120 && proGap<10) return null;          // day already lands where it should
+  const out={s:[]};
+  /* Snacks first: they carry the biggest share and need no cooking. Keep
+     adding until the gap is actually closed rather than stopping at a fixed
+     count \u2014 a top-up that leaves the day 300 under is the same silent
+     shortfall the hand-written table was about to cause. */
+  const start=hashDay(ds)%GEN_SNACKS.length;
+  for(let i=0;i<GEN_SNACKS.length && out.s.length<3; i++){
+    if(calGap<120 && proGap<10) break;
+    const sn=GEN_SNACKS[(start+i)%GEN_SNACKS.length];
+    if(out.s.some(function(x){return x.n===sn.n;})) continue;
+    if(sn.c>calGap+140) continue;              // don't overshoot the day
+    out.s.push(sn); calGap-=sn.c; proGap-=sn.p;
+  }
+  /* Then boosters onto meals, still short. Up to two, never on a parents
+     night, never twice on the same slot. */
+  const slots=["b","l","d"];
+  for(let j=0;j<slots.length && (calGap>110 || proGap>8); j++){
+    const slot=slots[(hashDay(ds+"s")+j)%3];
+    if(out[slot] || !m[slot] || m[slot].parents) continue;
+    const pool=STAPLE_BOOSTERS.filter(function(b){ return b.cal<=Math.max(140,calGap+90); });
+    if(!pool.length) break;
+    const b=pool[hashDay(ds+"b"+j)%pool.length];
+    out[slot]={a:"Alongside: "+b.name+".", c:b.cal, p:Math.round(b.pro)};
+    calGap-=b.cal; proGap-=b.pro;
+  }
+  return (out.s.length||out.b||out.l||out.d)?out:null;
+}
+const _genCache={};
+function plusFor(ds){
+  if(PLUS[ds]) return PLUS[ds];                     // hand-written wins
+  if(!(ds in _genCache)) _genCache[ds]=generatedPlus(ds);
+  return _genCache[ds];
+}
+
 /* Total a day is planned to come to, base dishes + everything PLUS adds. */
 function plannedDayTotals(ds){
   const m=meals[ds]; let c=0,p=0;
@@ -2354,7 +2432,8 @@ function copyText(t){ if(navigator.clipboard&&navigator.clipboard.writeText){ na
 function buildGrocery(){
   const wr=weekRange(selectedDate); const out=[];
   out.push("Here's my week — build my interactive grocery checklist for "+shortPretty(wr.sunStr)+" – "+shortPretty(wr.satStr)+".");
-  out.push("Cover EVERY meal below PLUS the Sunday prep ingredients. List every ingredient with the amount I need in parentheses; I'll tap off what I already have. Route it by store: Costco, WinCo, Smith's.");
+  out.push("Size this to about "+HOME_MEALS_TARGET+" home meals, NOT 21 - I am out or eating with people for the rest. Subtract what the Restock panel says I already have (pasted below if I included it). List every ingredient with the amount in parentheses; route it by store: Costco, WinCo, Smith's.");
+  out.push("Sunday prep is protein only - chicken and steak. Sides are cupboard stock (rice pouches, steamable veg), sauces are bottled. Do not put prep tasks for sides on the list.");
   out.push("");
   wr.days.forEach(function(ds){ const m=meals[ds]; if(!m) return; const lbl=shortPretty(ds).toUpperCase(); if(m.isPrep&&m.prep){ out.push(lbl+" - PREP: "+m.prep.join("; ")); } const pl=plusFor(ds)||{}; const parts=[];
     /* Dish names carry HTML entities for the in-app cards; this prompt is
@@ -3295,6 +3374,7 @@ function renderToday(){
   renderProtein(target,tot);
   renderMacros(target,tot);
   renderWin();
+  renderModes();
   renderCraving();
   renderFinish();
   renderGrab();
@@ -3663,6 +3743,7 @@ function renderTodayMeals(){
 let swapTarget=null, grabShelfOnly=false;
 function openSwap(which){
   if(swapTarget===which){ swapTarget=null; renderToday(); return; }  // tap again to close
+  todayMode="ideas";   // keep the swap list under the card that was tapped
   swapTarget=which;
   /* Wed/Fri lunch is eaten away from home with no fridge, so default that one
      case to shelf-stable only rather than offering food that would not
@@ -3693,6 +3774,7 @@ function takeGrab(i){
   const g=grabFor(grabShelfOnly)[i]; if(!g) return;
   const slot = swapTarget ? ({b:"breakfast",l:"lunch",d:"dinner"})[swapTarget] : "lsnack";
   dayState.log.push({name:g.n, slot:slot, cal:g.c, pro:g.p});
+  depleteFromText(g.n+" "+g.r);
   saveDay(todayStr,dayState);
   const was=swapTarget; swapTarget=null; grabShelfOnly=false;
   renderToday();
@@ -3720,6 +3802,289 @@ function renderGrab(){
   host.innerHTML=h;
 }
 
+
+
+/* ================= THE MODE SWITCHER ===============================
+   v2.12. Four full panels had stacked up on Today \u2014 ideas, cravings,
+   finishers, grab shelf \u2014 each individually justified and collectively
+   a wall. Scrolling past three things you are not doing to reach the one
+   you are is its own small tax, and this app has lost to small taxes
+   before.
+
+   So it asks the one question the whole system is actually built on, and
+   which the tier model already argued for: not WHAT do you want to eat,
+   but HOW MUCH EFFORT have you got. One tap picks the panel.
+
+     Cook      the pool ideas \u2014 a real plate, 5-10 min
+     Craving   the fast-food builds \u2014 when plain will not win
+     Grab      zero prep, zero fridge, backpack-safe
+     Finish    the sauce/crunch/sides shelf, on its own
+
+   Not remembered between days on purpose. Yesterday's energy is not
+   today's, and a stale mode would show you the wrong shelf first. */
+const TODAY_MODES=[
+  {k:"ideas",   n:"Cook",    d:"From your pool"},
+  {k:"craving", n:"Craving", d:"Fast food, built better"},
+  {k:"grab",    n:"Grab",    d:"No prep, no fridge"},
+  {k:"finish",  n:"Finish",  d:"Sauce, crunch, sides"}
+];
+let todayMode="ideas";
+function setTodayMode(k){
+  todayMode=k;
+  if(k!=="ideas") { swapTarget=null; }
+  renderModes();
+}
+function renderModes(){
+  const host=$("t-modes"); if(!host) return;
+  host.innerHTML='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px">'+
+    TODAY_MODES.map(function(m){
+      return '<button class="tmeal-log '+(todayMode===m.k?'done':'')+'" onclick="setTodayMode(\''+m.k+'\')">'+
+             (todayMode===m.k?'\u2713 ':'')+esc(m.n)+'</button>';
+    }).join("")+
+    '</div><div style="font-size:12px;color:var(--ink-faded);margin-bottom:10px">'+
+    esc((TODAY_MODES.filter(function(m){return m.k===todayMode;})[0]||TODAY_MODES[0]).d)+'</div>';
+  const map={ideas:"sec-ideas", craving:"sec-craving", grab:"sec-grab", finish:"sec-finish"};
+  for(const k in map){
+    const el=$(map[k]); if(el) el.style.display = (k===todayMode) ? "block" : "none";
+  }
+}
+
+
+/* ==================== STOCK, DEPLETION & RESTOCK =====================
+   v2.13. The ask was: know how much of everything is in the apartment,
+   watch it go down as meals get logged, and generate the week's list from
+   what is actually missing.
+
+   WHY THIS IS NOT TRACKED PER TABLESPOON. The obvious build \u2014 every
+   pantry item with a real quantity, every logged meal subtracting its
+   exact amounts \u2014 fails within about two weeks, and it fails quietly,
+   which is worse. There is no kitchen scale here, so portions are eyeballed
+   in cups and spoons; snacks and off-plan food never get logged in full;
+   a "1 tbsp honey" subtraction is a guess multiplied by a guess. Drift
+   compounds, and then the list confidently says there is chicken when
+   there is not. A wrong inventory is worse than no inventory, because you
+   stop checking the fridge.
+
+   So stock is tracked at the precision each thing actually deserves:
+
+     COUNT     whole units that decide whether a meal can happen \u2014
+               chicken portions, tortillas, rice pouches, tenders, buns.
+               These auto-decrement on log, and they are countable by
+               eye, so the number stays honest.
+     LOW       things that last weeks and get used in splashes \u2014 soy
+               sauce, honey, oil, bottled sauces, spices. No quantity at
+               all. One tap marks it running low. Counting tablespoons of
+               teriyaki buys nothing and breaks constantly.
+     FRESH     produce and dairy that does not survive the week anyway.
+               Assumed gone every Friday; bought to a standing amount.
+
+   The list is then par-level restocking, the way an actual kitchen does
+   it: buy the gap between what is on the shelf and what the shelf should
+   hold. Not a fixed weekly list, and not a guess. */
+
+const STOCK_TIER={ count:"Counted", low:"Mark when low", fresh:"Fresh weekly" };
+
+/* par = what the shelf should hold coming out of a shop. */
+const STOCK=[
+  {k:"chicken",      n:"Chicken portions \u2014 fridge",  tier:"count", par:4,  unit:"portion", buy:"1 jumbo breast = 4 portions"},
+  {k:"chickenFrozen",n:"Chicken portions \u2014 freezer", tier:"count", par:4,  unit:"portion", buy:"1 jumbo breast = 4 portions"},
+  {k:"steak",        n:"Steak portions",              tier:"count", par:2,  unit:"portion", buy:"WinCo markdown rack, chuck eye"},
+  {k:"eggs",         n:"Eggs",                        tier:"count", par:18, unit:"egg"},
+  {k:"tenders",      n:"Frozen breaded tenders",      tier:"count", par:24, unit:"tender", buy:"the big bag \u2014 this is the craving answer"},
+  {k:"ricePouch",    n:"Microwave rice pouches",      tier:"count", par:6,  unit:"pouch"},
+  {k:"vegBag",       n:"Steamable veg servings",      tier:"count", par:8,  unit:"serving"},
+  {k:"tortilla",     n:"Burrito-size tortillas",      tier:"count", par:10, unit:"tortilla"},
+  {k:"bun",          n:"Burger buns",                 tier:"count", par:4,  unit:"bun"},
+  {k:"chickenPouch", n:"Shelf-stable chicken pouches",tier:"count", par:4,  unit:"pouch", buy:"makes the backpack lunch work at all"},
+  {k:"beefStick",    n:"Beef sticks",                 tier:"count", par:6,  unit:"stick"},
+  {k:"proteinBar",   n:"Protein bars",                tier:"count", par:5,  unit:"bar"},
+  {k:"yogurt",       n:"Greek yogurt cups",           tier:"count", par:6,  unit:"cup"},
+  {k:"banana",       n:"Bananas",                     tier:"count", par:5,  unit:"banana"},
+  {k:"apple",        n:"Apples",                      tier:"count", par:5,  unit:"apple"},
+
+  {k:"sauceTeriyaki",n:"Teriyaki",          tier:"low"},
+  {k:"sauceBBQ",     n:"BBQ sauce",         tier:"low"},
+  {k:"sauceHG",      n:"Honey-garlic",      tier:"low"},
+  {k:"sauceOrange",  n:"Orange sauce",      tier:"low"},
+  {k:"pesto",        n:"Pesto",             tier:"low"},
+  {k:"caesar",       n:"Caesar dressing",   tier:"low"},
+  {k:"soy",          n:"Soy sauce",         tier:"low"},
+  {k:"honey",        n:"Honey",             tier:"low"},
+  {k:"oil",          n:"Olive oil",         tier:"low"},
+  {k:"mayo",         n:"Mayo",              tier:"low"},
+  {k:"ketchup",      n:"Ketchup",           tier:"low"},
+  {k:"worcester",    n:"Worcestershire",    tier:"low"},
+  {k:"friedOnions",  n:"French fried onions",tier:"low"},
+  {k:"chips",        n:"Tortilla chips",    tier:"low"},
+  {k:"panko",        n:"Panko",             tier:"low"},
+  {k:"cheddar",      n:"Shredded cheddar",  tier:"low"},
+  {k:"pb",           n:"Peanut butter",     tier:"low"},
+  {k:"granola",      n:"Crunchy granola",   tier:"low"},
+  {k:"whey",         n:"Whey protein",      tier:"low"},
+  {k:"lemonPepper",  n:"Lemon pepper",      tier:"low"},
+
+  {k:"coleslaw",     n:"Coleslaw mix",      tier:"fresh", par:2, unit:"bag"},
+  {k:"romaine",      n:"Romaine",           tier:"fresh", par:1, unit:"head"},
+  {k:"cucumber",     n:"Persian cucumbers", tier:"fresh", par:1, unit:"bag"},
+  {k:"guac",         n:"Guacamole",         tier:"fresh", par:1, unit:"pack"},
+  {k:"lime",         n:"Limes",             tier:"fresh", par:3, unit:"lime"},
+  {k:"beef",         n:"Ground beef 85/15", tier:"fresh", par:1, unit:"lb"}
+];
+function stockDef(k){ return STOCK.filter(function(x){return x.k===k;})[0]||null; }
+
+/* ---- what a logged meal takes off the shelf ----------------------------
+   Whole units only, matched on the dish text. Anything measured in spoons
+   is deliberately absent: see the note above. A rule that cannot be
+   counted by looking in the cupboard does not belong here. */
+const DEPLETES=[
+  {rx:/(\d+)\s+frozen breaded (?:chicken )?tenders?/i, k:"tenders", num:1},
+  {rx:/breaded (?:chicken )?tenders?/i,                k:"tenders", n:5},
+  {rx:/chicken portion|plain chicken/i,                k:"chicken", n:1},
+  {rx:/steak bites|chuck eye/i,                        k:"steak",   n:1},
+  {rx:/(\d+)\s+(?:hard-boiled )?eggs?\b/i,             k:"eggs",    num:1},
+  {rx:/rice pouch|microwave rice/i,                    k:"ricePouch",n:1},
+  {rx:/steamable|frozen broccoli|stir-fry mix|frozen mixed veg|veg bag/i, k:"vegBag", n:1},
+  {rx:/burrito-size|10-inch|\btortilla\b/i,            k:"tortilla",n:1},
+  {rx:/\bbun\b/i,                                     k:"bun",     n:1},
+  {rx:/shelf-stable chicken|chicken pouch|can chicken|canned chicken/i, k:"chickenPouch", n:1},
+  {rx:/beef stick|meat stick/i,                        k:"beefStick",n:1},
+  {rx:/protein bar/i,                                  k:"proteinBar",n:1},
+  {rx:/greek yogurt|yoplait/i,                         k:"yogurt",  n:1},
+  {rx:/\bbanana\b/i,                                  k:"banana",  n:1},
+  {rx:/\bapple\b/i,                                   k:"apple",   n:1},
+  {rx:/coleslaw/i,                                     k:"coleslaw",n:0},
+  {rx:/ground beef|smash/i,                            k:"beef",    n:0}
+];
+
+const STOCK_KEY="stock_v1";
+function loadStock(){
+  let d=null; try{ d=JSON.parse(localStorage.getItem(STOCK_KEY)); }catch(e){}
+  const base={qty:{}, low:{}, lastShop:null};
+  const out=Object.assign({},base,d||{});
+  STOCK.forEach(function(x){
+    if(x.tier!=="low" && out.qty[x.k]==null) out.qty[x.k]=x.par;
+  });
+  return out;
+}
+function saveStock(st){ try{ localStorage.setItem(STOCK_KEY,JSON.stringify(st)); }catch(e){} }
+function bumpStock(k,d){
+  const st=loadStock();
+  const def=stockDef(k); if(!def) return;
+  st.qty[k]=Math.max(0,(st.qty[k]||0)+d);
+  saveStock(st); renderToday(); if(typeof renderShop==="function") renderShop();
+}
+function toggleLow(k){
+  const st=loadStock(); st.low[k]=!st.low[k]; saveStock(st);
+  if(typeof renderShop==="function") renderShop();
+}
+/* Called after a meal is logged. Silent by design \u2014 a toast per item
+   would be four toasts for one dinner. The Shop tab is where it shows up. */
+function depleteFromText(text){
+  const t=String(text||""); if(!t) return [];
+  const st=loadStock(); const hit=[];
+  const seen={};
+  DEPLETES.forEach(function(d){
+    if(seen[d.k]) return;
+    const m=t.match(d.rx); if(!m) return;
+    let n=d.n;
+    if(d.num!=null){ const v=parseInt(m[d.num],10); n=isNaN(v)?1:v; }
+    if(!n) { seen[d.k]=1; return; }              // n:0 = fresh, consumed but not counted
+    seen[d.k]=1;
+    /* Fridge chicken first; fall through to the freezer when it runs out,
+       which is what actually happens in the kitchen. */
+    let key=d.k;
+    if(key==="chicken" && (st.qty.chicken||0)<n && (st.qty.chickenFrozen||0)>0) key="chickenFrozen";
+    const before=st.qty[key]||0;
+    st.qty[key]=Math.max(0,before-n);
+    if(before!==st.qty[key]) hit.push({k:key,n:before-st.qty[key]});
+  });
+  if(hit.length) saveStock(st);
+  return hit;
+}
+function depleteForMeal(meal){
+  if(!meal) return [];
+  return depleteFromText(((meal.n||"")+" "+(meal.r||"")));
+}
+
+/* ---- the list: par minus shelf ---------------------------------------- */
+function restockList(){
+  const st=loadStock(), out={count:[],low:[],fresh:[]};
+  STOCK.forEach(function(x){
+    if(x.tier==="low"){ if(st.low[x.k]) out.low.push(x); return; }
+    const have=st.qty[x.k]||0, gap=x.par-have;
+    if(gap>0) out[x.tier].push(Object.assign({have:have,gap:gap},x));
+  });
+  return out;
+}
+function buildRestock(){
+  const r=restockList(), L=["Here's what I still need to buy this week:",""];
+  if(r.count.length){
+    L.push("Running low (counted):");
+    r.count.forEach(function(x){
+      L.push("  - "+x.n+": have "+x.have+", need "+x.gap+" more"+(x.buy?"  ("+x.buy+")":""));
+    });
+    L.push("");
+  }
+  if(r.fresh.length){
+    L.push("Fresh, buy to standing amount:");
+    r.fresh.forEach(function(x){ L.push("  - "+x.n+": "+x.par+" "+x.unit+(x.par>1?"s":"")); });
+    L.push("");
+  }
+  if(r.low.length){
+    L.push("Flagged as running out:");
+    r.low.forEach(function(x){ L.push("  - "+x.n); });
+    L.push("");
+  }
+  if(!r.count.length && !r.fresh.length && !r.low.length) L.push("Nothing is below par \u2014 the kitchen is stocked.");
+  L.push("Stores: Costco (Orem) bulk protein, WinCo (Provo) bulk bins and markdown meat, Smith's (Provo) produce and dairy.");
+  L.push("Sized to about "+HOME_MEALS_TARGET+" home meals, not 21.");
+  copyText(L.join("\n"));
+  showToast("Copied \u2014 paste it to Claude");
+}
+/* Friday: the shop happened, everything goes back to par. */
+function resetToPar(){
+  const st=loadStock();
+  STOCK.forEach(function(x){ if(x.tier!=="low") st.qty[x.k]=x.par; });
+  st.low={}; st.lastShop=todayStr; saveStock(st);
+  if(typeof renderShop==="function") renderShop();
+  renderToday(); showToast("Shelf reset to par");
+}
+
+function renderStock(){
+  const host=$("shopStock"); if(!host) return;
+  const st=loadStock(), r=restockList();
+  const need=r.count.length+r.fresh.length+r.low.length;
+  let h='<div class="tmeal note"><div class="nt"><b>'+(need?need+" thing"+(need===1?"":"s")+" below par":"Nothing below par")+'</b><br><span style="color:var(--ink-faded);font-size:12px">Counted items go down on their own as you log meals. Sauces and oils are not counted \u2014 tap one when it is running out. Everything else is bought to a standing amount each week.</span></div></div>';
+  h+='<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">'+
+     '<button class="tmeal-log" onclick="buildRestock()">\uD83D\uDCCB Copy the list</button>'+
+     '<button class="tmeal-log" onclick="resetToPar()">\u2713 Shopped \u2014 reset to par</button></div>';
+
+  h+='<div class="tmeal"><div class="tmeal-eyebrow"><span>Counted</span></div><div class="tmeal-body">';
+  STOCK.filter(function(x){return x.tier==="count";}).forEach(function(x){
+    const have=st.qty[x.k]||0, low=have<x.par;
+    h+='<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 0">'+
+       '<span style="font-size:13.5px">'+esc(x.n)+'</span>'+
+       '<span style="display:flex;align-items:center;gap:8px">'+
+       '<button class="tmeal-log" style="padding:3px 10px" onclick="bumpStock(\''+x.k+'\',-1)">\u2212</button>'+
+       '<b style="font-size:15px;min-width:26px;text-align:center;'+(have===0?'color:var(--orange)':'')+'">'+have+'</b>'+
+       '<button class="tmeal-log" style="padding:3px 10px" onclick="bumpStock(\''+x.k+'\',1)">+</button>'+
+       '<span style="font-size:11.5px;color:'+(low?'var(--orange)':'var(--ink-faded)')+';min-width:44px">of '+x.par+'</span>'+
+       '</span></div>';
+  });
+  h+='</div></div>';
+
+  h+='<div class="tmeal"><div class="tmeal-eyebrow"><span>Tap when running out</span></div><div class="tmeal-body"><div style="display:flex;gap:6px;flex-wrap:wrap">';
+  STOCK.filter(function(x){return x.tier==="low";}).forEach(function(x){
+    h+='<button class="tmeal-log '+(st.low[x.k]?'done':'')+'" onclick="toggleLow(\''+x.k+'\')">'+(st.low[x.k]?'\u2713 ':'')+esc(x.n)+'</button>';
+  });
+  h+='</div></div></div>';
+
+  h+='<div class="tmeal"><div class="tmeal-eyebrow"><span>Fresh \u2014 bought to a standing amount</span></div><div class="tmeal-body" style="font-size:13px;line-height:1.7">'+
+     STOCK.filter(function(x){return x.tier==="fresh";}).map(function(x){
+       return esc(x.n)+' <span style="color:var(--ink-faded)">'+x.par+' '+esc(x.unit)+(x.par>1?'s':'')+'</span>'; }).join("<br>")+
+     '</div></div>';
+  host.innerHTML=h;
+}
 
 /* ---- the day-status line: did you eat, not did you obey ---- */
 function renderWin(){
@@ -3759,6 +4124,7 @@ function logCraving(i){
   const slot = hr<11 ? "breakfast" : (hr<16 ? "lunch" : "dinner");
   dayState.log=dayState.log||[];
   dayState.log.push({n:cv.make, cal:cv.c, p:cv.p, slot:slot});
+  depleteFromText(cv.make+" "+cv.r);
   saveDay(todayStr,dayState);
   cravingOpen=-1;
   renderToday();
@@ -3996,6 +4362,7 @@ function logTodayMeal(which){
   if(dayState.log.some(x=>x.name===meal.n && x.slot===slot)){ showToast("Already logged"); return; }
   const nut=mealNutrition(meal);
   dayState.log.push({id:uid(), slot, name:meal.n, cal:nut.cal||meal.c||0, pro:nut.pro||parseProtein(meal.r), carb:nut.carb||0, fat:nut.fat||0});
+  depleteForMeal(meal);
   saveDay(todayStr,dayState); renderToday(); if(typeof renderCalendar==="function") renderCalendar(); showToast("Logged "+meal.n);
 }
 
@@ -4023,37 +4390,37 @@ const RECIPE_LIB={
     ingredients:[{id:"eggs",amt:3,name:"large eggs"},{id:"ched",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"avo",amt:0.25,name:"avocado"}],
     steps:[{title:"Scramble",text:"Beat {eggs} and cook in a nonstick pan over medium-low heat, stirring gently, until just set, ~2 minutes.",timer:120},{title:"Melt the cheese",text:"Off the heat, fold in {ched} and let it melt ~30 seconds.",timer:30},{title:"Top",text:"Slice {avo} and lay it over the eggs. Salt and pepper to finish."}] },
   "Hard-boiled egg & cheddar plate + apple":{ servings:1,
-    ingredients:[{id:"eggs",amt:3,name:"large eggs, hard-boiled (from Sun prep)"},{id:"ched",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"apple",amt:1,name:"apple"}],
+    ingredients:[{id:"eggs",amt:3,name:"large eggs, hard-boiled (from the pool)"},{id:"ched",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"apple",amt:1,name:"apple"}],
     steps:[{title:"Plate it",text:"Peel and halve {eggs}, pile {ched} alongside, and core and slice {apple}. Cold assembly, no cooking."}] },
   "Hard-boiled egg & cheddar plate + fruit":{ servings:1,
-    ingredients:[{id:"eggs",amt:3,name:"large eggs, hard-boiled (from Sun prep)"},{id:"ched",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"fruit",amt:0.5,unit:"cup",name:"fruit bowl (pineapple/melon/banana)"},{id:"straw",amt:0.25,unit:"cup",name:"fresh strawberries"}],
+    ingredients:[{id:"eggs",amt:3,name:"large eggs, hard-boiled (from the pool)"},{id:"ched",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"fruit",amt:0.5,unit:"cup",name:"fruit bowl (pineapple/melon/banana)"},{id:"straw",amt:0.25,unit:"cup",name:"fresh strawberries"}],
     steps:[{title:"Plate it",text:"Peel and halve {eggs}, pile {ched} alongside, and add {fruit} and {straw}. Cold assembly, no cooking."}] },
   "Three-egg fried rice bowl":{ servings:1,
-    ingredients:[{id:"oil",amt:1,unit:"tsp",name:"olive oil"},{id:"rice",amt:0.75,unit:"cup",name:"cooked Minute rice"},{id:"veg",amt:0.5,unit:"cup",name:"frozen mixed vegetables"},{id:"eggs",amt:3,name:"large eggs"},{id:"soy",amt:1,unit:"tbsp",name:"less-sodium soy sauce"}],
+    ingredients:[{id:"oil",amt:1,unit:"tsp",name:"olive oil"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"veg",amt:0.5,unit:"cup",name:"frozen mixed vegetables"},{id:"eggs",amt:3,name:"large eggs"},{id:"soy",amt:1,unit:"tbsp",name:"less-sodium soy sauce"}],
     steps:[{title:"Heat the base",text:"Warm {oil} in a nonstick pan over medium-high, add {rice} and {veg}, and stir 2 minutes until heated through.",timer:120},{title:"Scramble in",text:"Push everything to one side, pour {eggs} beaten into the empty space, and stir gently ~1 minute until just set.",timer:60},{title:"Finish",text:"Fold it all together with {soy} and cook 1 more minute.",timer:60}] },
   "Hard-boiled eggs + cheddar + apple":{ servings:1,
-    ingredients:[{id:"eggs",amt:2,name:"large eggs, hard-boiled (from Sun prep)"},{id:"cheddar",amt:1,name:"cheddar slice"},{id:"apple",amt:1,name:"apple"}],
+    ingredients:[{id:"eggs",amt:2,name:"large eggs, hard-boiled (from the pool)"},{id:"cheddar",amt:1,name:"cheddar slice"},{id:"apple",amt:1,name:"apple"}],
     steps:[{title:"Plate it",text:"Peel {eggs} and slice them, lay out {cheddar}, and core and slice {apple}. Cold assembly, no cooking."}] },
   "Honey-garlic chicken wrap":{ servings:1,
-    ingredients:[{id:"chicken",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"honey",amt:0.5,unit:"tbsp",name:"honey"},{id:"soy",amt:0.5,unit:"tbsp",name:"soy sauce"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"cheddar",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"tortilla",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"romaine",amt:1,unit:"handful",name:"romaine"},{id:"cucumber",amt:0.5,unit:"cup",name:"cucumber, diced"}],
+    ingredients:[{id:"chicken",amt:1,name:"plain chicken portion (from the pool)"},{id:"honey",amt:0.5,unit:"tbsp",name:"honey"},{id:"soy",amt:0.5,unit:"tbsp",name:"soy sauce"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"cheddar",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"tortilla",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"romaine",amt:1,unit:"handful",name:"romaine"},{id:"cucumber",amt:0.5,unit:"cup",name:"cucumber, diced"}],
     steps:[{title:"Glaze the chicken",text:"Put {chicken} on a microwave-safe plate, cover with a damp paper towel, and microwave ~1 minute until hot, then toss with {honey}, {soy}, and {garlic} until evenly coated and glossy.",timer:60},{title:"Build the wrap",text:"Warm {tortilla} in a dry skillet over medium heat ~15 seconds per side (or microwave it wrapped in a damp paper towel ~15 seconds) until soft, then lay {cheddar} down the center with the glazed chicken, {romaine}, and {cucumber}."},{title:"Roll it",text:"Fold in the sides and roll up tight, then slice in half."}] },
   "PB banana tortilla":{ servings:1,
     ingredients:[{id:"tortilla",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"pb",amt:1.5,unit:"tbsp",name:"peanut butter"},{id:"banana",amt:1,name:"banana, sliced"}],
     steps:[{title:"Spread",text:"Spread {pb} evenly across {tortilla}, all the way to the edges."},{title:"Fill and roll",text:"Lay {banana} down the center and roll the tortilla up tightly."},{title:"Crisp it (optional)",text:"For a crisp finish, set it seam-down in the air fryer at 350\u00b0F ~3 minutes, then slice on the diagonal.",timer:180}] },
   "Pesto chicken pasta":{ servings:1,
-    ingredients:[{id:"pasta",amt:0.75,unit:"cup",name:"pasta (dry)"},{id:"pesto",amt:2,unit:"tbsp",name:"jarred pesto"},{id:"chicken",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"}],
+    ingredients:[{id:"pasta",amt:0.75,unit:"cup",name:"pasta (dry)"},{id:"pesto",amt:2,unit:"tbsp",name:"jarred pesto"},{id:"chicken",amt:1,name:"plain chicken portion (from the pool)"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"}],
     steps:[{title:"Boil the pasta",text:"Bring a small pot of water to a rolling boil, add {pasta}, and cook ~9-10 minutes until tender, then drain.",timer:600},{title:"Toss with pesto",text:"Return the drained pasta to the pot off the heat and toss with {pesto} until every piece is coated."},{title:"Top it",text:"Microwave {chicken} on a covered plate ~1 minute until hot, slice or shred over the pasta, and finish with {parm}.",timer:60}] },
   "Strawberry-banana smoothie + granola":{ servings:1,
     ingredients:[{id:"banana",amt:1,name:"banana"},{id:"straw",amt:0.5,unit:"cup",name:"frozen strawberries"},{id:"yog",amt:0.75,unit:"cup",name:"plain 2% Greek yogurt"},{id:"water",amt:1,name:"splash of water"},{id:"granola",amt:0.25,unit:"cup",name:"crunchy granola"}],
     steps:[{title:"Blend",text:"Add {banana}, {straw}, {yog}, and {water} to a blender and blend until smooth and thick."},{title:"Serve",text:"Pour into a glass and serve {granola} on the side so it stays crunchy."}] },
   "Honey-garlic chicken + rice":{ servings:1,
-    ingredients:[{id:"chicken",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"honey",amt:1,unit:"tsp",name:"honey"},{id:"soy",amt:0.5,unit:"tbsp",name:"soy sauce"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"}],
+    ingredients:[{id:"chicken",amt:1,name:"plain chicken portion (from the pool)"},{id:"honey",amt:1,unit:"tsp",name:"honey"},{id:"soy",amt:0.5,unit:"tbsp",name:"soy sauce"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"}],
     steps:[{title:"Start the rice",text:"Combine {rice} with an equal amount of water in a microwave-safe bowl, microwave ~5 minutes, then fluff with a fork.",timer:300},{title:"Steam the broccoli",text:"Put {broc} in a covered bowl with a splash of water and microwave ~4 minutes until tender.",timer:240},{title:"Glaze the chicken",text:"The chicken was prepped plain, so flavor it now: reheat {chicken} in a pan (or microwave ~1 min), then toss with {honey}, {soy}, and {garlic} until hot and glossy.",timer:120},{title:"Plate",text:"Pile the rice in a bowl, top with the glazed chicken, and add the broccoli alongside."}] },
   "Egg & cheese breakfast quesadilla":{ servings:1,
     ingredients:[{id:"eggs",amt:2,name:"large eggs"},{id:"cheddar",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"tortilla",amt:1,name:"burrito-size (10-inch) flour tortilla"}],
     steps:[{title:"Scramble",text:"Beat {eggs} and cook in a nonstick pan over medium-low heat, stirring gently, until just set, ~2 minutes.",timer:120},{title:"Fold",text:"Lay {tortilla} flat in the pan, add the eggs and {cheddar} to one half, and fold the other half over."},{title:"Press and crisp",text:"Press gently and cook over medium heat until golden, flipping once, ~2 minutes per side.",timer:120}] },
   "Garlic-parmesan chicken Caesar bowl":{ servings:1,
-    ingredients:[{id:"chicken",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"romaine",amt:2,unit:"cup",name:"romaine, chopped"},{id:"cucumber",amt:0.5,unit:"cup",name:"cucumber, diced"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"},{id:"caesar",amt:1,unit:"tbsp",name:"light Caesar"}],
+    ingredients:[{id:"chicken",amt:1,name:"plain chicken portion (from the pool)"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"romaine",amt:2,unit:"cup",name:"romaine, chopped"},{id:"cucumber",amt:0.5,unit:"cup",name:"cucumber, diced"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"},{id:"caesar",amt:1,unit:"tbsp",name:"light Caesar"}],
     steps:[{title:"Season the chicken",text:"The chicken was prepped plain: slice {chicken} into strips (warm ~30 sec on a covered plate if you like) and toss with {garlic} and about half the {parm} so it tastes garlic-parmesan.",timer:30},{title:"Build the bowl",text:"Add {romaine} and {cucumber} to a bowl, then top with the seasoned chicken."},{title:"Dress and toss",text:"Sprinkle the rest of the {parm} over the top, drizzle with {caesar}, and toss to coat."}] },
   "Healthy Choice steamer + side salad":{ servings:1,
     ingredients:[{id:"steamer",amt:1,name:"Healthy Choice steamer meal"},{id:"romaine",amt:1,unit:"handful",name:"romaine"},{id:"cucumber",amt:0.5,unit:"cup",name:"cucumber, diced"},{id:"oil",amt:1,unit:"tsp",name:"olive oil"},{id:"ital",amt:1,unit:"pinch",name:"Italian seasoning"}],
@@ -4065,13 +4432,13 @@ const RECIPE_LIB={
     ingredients:[{id:"chk",amt:1,name:"can of chicken, drained"},{id:"mayo",amt:1,unit:"tbsp",name:"light mayo"},{id:"cuc",amt:0.5,unit:"cup",name:"cucumber, diced"},{id:"rom",amt:1,unit:"handful",name:"romaine"},{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"}],
     steps:[{title:"Mix",text:"In a bowl, mix {chk} with {mayo} and {cuc} until combined."},{title:"Fill",text:"Lay {rom} on {tort} and spoon the chicken salad down the center."},{title:"Roll",text:"Fold in the sides and roll up tight. No cooking."}] },
   "HB eggs + cheddar + fruit":{ servings:1,
-    ingredients:[{id:"eggs",amt:2,name:"large eggs, hard-boiled (from Sun prep)"},{id:"ched",amt:1,name:"cheddar slice"},{id:"fruit",amt:0.5,unit:"cup",name:"fruit bowl (pineapple/melon/banana)"},{id:"straw",amt:1,unit:"handful",name:"fresh strawberries"}],
+    ingredients:[{id:"eggs",amt:2,name:"large eggs, hard-boiled (from the pool)"},{id:"ched",amt:1,name:"cheddar slice"},{id:"fruit",amt:0.5,unit:"cup",name:"fruit bowl (pineapple/melon/banana)"},{id:"straw",amt:1,unit:"handful",name:"fresh strawberries"}],
     steps:[{title:"Plate it",text:"Peel and slice {eggs}, lay out {ched}, and serve with {fruit} and {straw}. Cold assembly."}] },
   "Lemon-herb chicken pasta salad":{ servings:1,
-    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"pasta",amt:0.75,unit:"cup",name:"pasta (dry)"},{id:"cuc",amt:0.5,unit:"cup",name:"cucumber, diced"},{id:"oil",amt:1,unit:"tbsp",name:"olive oil"},{id:"herb",amt:0.5,unit:"tsp",name:"dried Italian herbs"},{id:"gar",amt:0.25,unit:"tsp",name:"garlic powder"},{id:"salt",amt:1,unit:"pinch",name:"salt"},{id:"lem",amt:1,name:"squeeze of lemon"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"}],
+    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"pasta",amt:0.75,unit:"cup",name:"pasta (dry)"},{id:"cuc",amt:0.5,unit:"cup",name:"cucumber, diced"},{id:"oil",amt:1,unit:"tbsp",name:"olive oil"},{id:"herb",amt:0.5,unit:"tsp",name:"dried Italian herbs"},{id:"gar",amt:0.25,unit:"tsp",name:"garlic powder"},{id:"salt",amt:1,unit:"pinch",name:"salt"},{id:"lem",amt:1,name:"squeeze of lemon"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"}],
     steps:[{title:"Cook and cool the pasta",text:"Boil {pasta} in a small pot ~9-10 minutes until tender, drain, then rinse under cold water to cool.",timer:600},{title:"Make the lemon-herb dressing",text:"In your serving bowl, whisk {oil} with {herb}, {gar}, {salt}, and {lem}. This is where the lemon-herb flavor comes from since the chicken went in plain."},{title:"Coat the chicken",text:"Chop {chk} and toss it in the dressing first so every piece gets coated; let it sit a minute to soak up the flavor."},{title:"Combine",text:"Add the cooled pasta and {cuc}, and toss everything together."},{title:"Finish",text:"Top with {parm} and serve cold."}] },
   "Beef teriyaki rice bowl":{ servings:1,
-    ingredients:[{id:"steak",amt:1,name:"plain steak bites portion (from Sun prep)"},{id:"soy",amt:2,unit:"tbsp",name:"soy sauce"},{id:"honey",amt:1,unit:"tsp",name:"honey"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"ginger",amt:1,unit:"pinch",name:"ground ginger"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"veg",amt:1.5,unit:"cup",name:"frozen stir-fry mix"}],
+    ingredients:[{id:"steak",amt:1,name:"plain steak bites portion (from the pool)"},{id:"soy",amt:2,unit:"tbsp",name:"soy sauce"},{id:"honey",amt:1,unit:"tsp",name:"honey"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"ginger",amt:1,unit:"pinch",name:"ground ginger"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"veg",amt:1.5,unit:"cup",name:"frozen stir-fry mix"}],
     steps:[{title:"Start the rice",text:"Combine {rice} with equal water in a microwave-safe bowl, microwave ~5 minutes, and fluff.",timer:300},{title:"Saute the veg",text:"Heat a pan over medium-high and saute {veg} ~5 minutes until tender-crisp.",timer:300},{title:"Glaze the steak",text:"Add {steak} to the pan with {soy}, {honey}, {garlic}, and {ginger}; toss over medium heat ~2 minutes until hot and glossy.",timer:120},{title:"Bowl it",text:"Spoon the steak and veg over the rice."}] },
   "PB-banana-granola wrap":{ servings:1,
     ingredients:[{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"pb",amt:1.5,unit:"tbsp",name:"peanut butter"},{id:"ban",amt:1,name:"banana, sliced"},{id:"gran",amt:2,unit:"tbsp",name:"crunchy granola"}],
@@ -4080,7 +4447,7 @@ const RECIPE_LIB={
     ingredients:[{id:"eggs",amt:2,name:"large eggs"},{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"ched",amt:1,name:"cheddar slice"}],
     steps:[{title:"Scramble",text:"Beat {eggs} and cook in a nonstick pan over medium-low heat, stirring, until just set, ~2 minutes.",timer:120},{title:"Warm the tortilla",text:"Warm {tort} in a dry skillet over medium heat ~15 seconds per side until soft and pliable."},{title:"Roll",text:"Add the eggs and {ched}, then roll up tight."}] },
   "BBQ chicken loaded sweet potato":{ servings:1,
-    ingredients:[{id:"pot",amt:1,name:"medium sweet potato"},{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"bbq",amt:1,unit:"tbsp",name:"BBQ sauce"},{id:"ched",amt:1,name:"cheddar slice"},{id:"broc",amt:1,unit:"cup",name:"frozen broccoli"}],
+    ingredients:[{id:"pot",amt:1,name:"medium sweet potato"},{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"bbq",amt:1,unit:"tbsp",name:"BBQ sauce"},{id:"ched",amt:1,name:"cheddar slice"},{id:"broc",amt:1,unit:"cup",name:"frozen broccoli"}],
     steps:[{title:"Cook the potato",text:"Pierce {pot} a few times with a fork, set on a plate, and microwave ~6-7 minutes until soft when squeezed.",timer:420},{title:"Sauce the chicken",text:"Shred {chk} and toss with {bbq}."},{title:"Load it",text:"Split the potato open, pile in the BBQ chicken, and lay {ched} on top to melt."},{title:"Broccoli",text:"Microwave {broc} in a covered bowl with a splash of water ~3 minutes; serve alongside.",timer:180}] },
   "Loaded breakfast quesadilla":{ servings:1,
     ingredients:[{id:"eggs",amt:2,name:"large eggs"},{id:"saus",amt:2,name:"turkey sausage patties"},{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"ched",amt:0.25,unit:"cup",name:"shredded cheddar"}],
@@ -4089,7 +4456,7 @@ const RECIPE_LIB={
     ingredients:[{id:"chk",amt:1,name:"can of chicken, drained"},{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"ched",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"rom",amt:1,unit:"handful",name:"romaine"}],
     steps:[{title:"Fill",text:"Spread {chk} over {tort}, add {ched} and {rom}, and fold in half."},{title:"Press",text:"Press in a dry nonstick pan over medium heat ~2 minutes per side until golden and the cheese melts.",timer:120}] },
   "Turkey sausage + broccoli + rice":{ servings:1,
-    ingredients:[{id:"saus",amt:2,name:"turkey sausage patties"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"soy",amt:1,unit:"tbsp",name:"soy sauce"}],
+    ingredients:[{id:"saus",amt:2,name:"turkey sausage patties"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"soy",amt:1,unit:"tbsp",name:"soy sauce"}],
     steps:[{title:"Brown the sausage",text:"Chop {saus} and cook in a dry nonstick pan over medium heat ~5-6 minutes, turning, until browned.",timer:360},{title:"Steam the broccoli",text:"Microwave {broc} in a covered bowl with a splash of water ~4 minutes until tender.",timer:240},{title:"Rice",text:"Microwave {rice} with equal water ~5 minutes, fluff, and stir in {soy}.",timer:300},{title:"Plate",text:"Combine everything in a bowl."}] },
   "Tropical sunrise protein smoothie":{ servings:1,
     ingredients:[{id:"ban",amt:1,name:"banana"},{id:"straw",amt:1,unit:"cup",name:"frozen strawberries"},{id:"pine",amt:0.5,unit:"cup",name:"frozen pineapple"},{id:"yog",amt:1,unit:"cup",name:"plain 2% Greek yogurt"},{id:"coco",amt:0.5,unit:"cup",name:"coconut water"},{id:"chia",amt:1,unit:"tbsp",name:"chia seeds"},{id:"truv",amt:0.75,unit:"tsp",name:"Truvia (optional)"}],
@@ -4101,31 +4468,31 @@ const RECIPE_LIB={
     ingredients:[{id:"avo",amt:0.5,name:"avocado"},{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"eggs",amt:2,name:"large eggs"},{id:"ched",amt:1,name:"cheddar slice"}],
     steps:[{title:"Warm the tortilla",text:"Warm {tort} in a dry skillet over medium heat ~15 seconds per side until soft."},{title:"Smash the avocado",text:"Smash {avo} onto the warm tortilla and spread it out."},{title:"Cook the eggs",text:"Scramble {eggs} in a nonstick pan over medium-low heat ~2 minutes until just set.",timer:120},{title:"Top and fold",text:"Add the eggs and {ched} on top, then fold the tortilla over."}] },
   "Teriyaki chicken rice bowl":{ servings:1,
-    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"soy",amt:2,unit:"tbsp",name:"soy sauce"},{id:"honey",amt:1,unit:"tsp",name:"honey"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"ginger",amt:1,unit:"pinch",name:"ground ginger"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"veg",amt:1.5,unit:"cup",name:"frozen stir-fry mix"}],
+    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"soy",amt:2,unit:"tbsp",name:"soy sauce"},{id:"honey",amt:1,unit:"tsp",name:"honey"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"ginger",amt:1,unit:"pinch",name:"ground ginger"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"veg",amt:1.5,unit:"cup",name:"frozen stir-fry mix"}],
     steps:[{title:"Start the rice",text:"Microwave {rice} with equal water in a covered bowl ~5 minutes, then fluff.",timer:300},{title:"Saute the veg",text:"Saute {veg} in a pan over medium-high heat ~5 minutes until tender-crisp.",timer:300},{title:"Glaze the chicken",text:"Add {chk} to the pan with {soy}, {honey}, {garlic}, and {ginger}; toss over medium heat ~2-3 minutes until hot and glossy.",timer:150},{title:"Bowl it",text:"Spoon the chicken and veg over the rice."}] },
   "Coconut curry chicken bowl":{ servings:1,
-    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"curry",amt:1,unit:"tsp",name:"curry powder"},{id:"coco",amt:2,unit:"tbsp",name:"coconut milk"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"veg",amt:1,unit:"cup",name:"frozen mixed veg"}],
+    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"curry",amt:1,unit:"tsp",name:"curry powder"},{id:"coco",amt:2,unit:"tbsp",name:"coconut milk"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"veg",amt:1,unit:"cup",name:"frozen mixed veg"}],
     steps:[{title:"Start the rice",text:"Microwave {rice} with equal water in a covered bowl ~5 minutes, then fluff.",timer:300},{title:"Make the sauce",text:"In a pan over medium heat, warm {chk} with {curry} and {coco}, stirring, ~3 minutes into a light sauce.",timer:180},{title:"Veg",text:"Microwave {veg} in a covered bowl with a splash of water ~3 minutes until tender.",timer:180},{title:"Bowl it",text:"Spoon the curry chicken and veg over the rice."}] },
   "Egg & cheese breakfast tacos":{ servings:1,
     ingredients:[{id:"eggs",amt:2,name:"large eggs"},{id:"tort",amt:2,name:"street-size (6-inch) flour tortillas"},{id:"ched",amt:0.25,unit:"cup",name:"shredded cheddar"}],
     steps:[{title:"Scramble",text:"Scramble {eggs} in a nonstick pan over medium-low heat ~2 minutes until just set.",timer:120},{title:"Warm the tortillas",text:"Warm {tort} in a dry skillet ~10 seconds per side until soft."},{title:"Fill",text:"Split the eggs between the tortillas and top with {ched}."}] },
   "Honey-garlic steak bites":{ servings:1,
-    ingredients:[{id:"steak",amt:1,name:"plain steak bites portion (from Sun prep)"},{id:"soy",amt:2,unit:"tbsp",name:"soy sauce"},{id:"honey",amt:1,unit:"tsp",name:"honey"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"}],
+    ingredients:[{id:"steak",amt:1,name:"plain steak bites portion (from the pool)"},{id:"soy",amt:2,unit:"tbsp",name:"soy sauce"},{id:"honey",amt:1,unit:"tsp",name:"honey"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"}],
     steps:[{title:"Start the rice",text:"Microwave {rice} with equal water in a covered bowl ~5 minutes, then fluff.",timer:300},{title:"Steam the broccoli",text:"Microwave {broc} in a covered bowl with a splash of water ~4 minutes until tender.",timer:240},{title:"Glaze the steak",text:"Reheat {steak} in a pan over medium heat with {soy}, {honey}, and {garlic}, tossing ~2 minutes until hot and glossy.",timer:120},{title:"Bowl it",text:"Serve the steak over the rice with broccoli alongside."}] },
   "Egg & cheese scramble + fruit":{ servings:1,
     ingredients:[{id:"eggs",amt:2,name:"large eggs"},{id:"ched",amt:1,name:"cheddar slice"},{id:"fruit",amt:0.5,unit:"cup",name:"fruit bowl (pineapple/melon/banana)"}],
     steps:[{title:"Scramble",text:"Beat {eggs} and cook in a nonstick pan over medium-low heat, stirring, until just set ~2 minutes, then fold in {ched} to melt.",timer:120},{title:"Serve",text:"Plate with {fruit} on the side."}] },
   "Garlic-herb chicken & rice skillet":{ servings:1,
-    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"ital",amt:1,unit:"pinch",name:"Italian seasoning"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"veg",amt:1,unit:"cup",name:"frozen mixed veg"},{id:"ched",amt:1,name:"cheddar slice"}],
+    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"ital",amt:1,unit:"pinch",name:"Italian seasoning"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"veg",amt:1,unit:"cup",name:"frozen mixed veg"},{id:"ched",amt:1,name:"cheddar slice"}],
     steps:[{title:"Start the rice",text:"Microwave {rice} with equal water in a covered bowl ~5 minutes, then fluff.",timer:300},{title:"Skillet it",text:"In a pan over medium heat, combine {chk}, {veg}, {garlic}, and {ital}; cook ~4 minutes until hot and the veg is tender.",timer:240},{title:"Finish",text:"Stir in the rice, lay {ched} on top to melt, and serve."}] },
   "Peanut-sesame chicken noodles":{ servings:1,
     ingredients:[{id:"pasta",amt:0.75,unit:"cup",name:"pasta (dry)"},{id:"pb",amt:1,unit:"tbsp",name:"peanut butter"},{id:"soy",amt:1,unit:"tbsp",name:"soy sauce"},{id:"water",amt:1,name:"splash of water"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"chk",amt:1,name:"can of chicken, drained"},{id:"cuc",amt:0.5,unit:"cup",name:"cucumber, sliced"}],
     steps:[{title:"Boil the pasta",text:"Boil {pasta} in a small pot ~9-10 minutes until tender, then drain.",timer:600},{title:"Make the sauce",text:"Whisk {pb}, {soy}, {water}, and {garlic} together into a smooth sauce."},{title:"Toss",text:"Toss the warm pasta with the sauce and {chk}; serve {cuc} on the side. No-cook protein."}] },
   "BBQ chicken quesadilla":{ servings:1,
-    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"bbq",amt:1,unit:"tbsp",name:"BBQ sauce"},{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"ched",amt:0.25,unit:"cup",name:"shredded cheddar"}],
+    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"bbq",amt:1,unit:"tbsp",name:"BBQ sauce"},{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"ched",amt:0.25,unit:"cup",name:"shredded cheddar"}],
     steps:[{title:"Sauce the chicken",text:"Shred {chk} and toss with {bbq}."},{title:"Assemble",text:"Spread the chicken and {ched} over {tort} and fold in half."},{title:"Press",text:"Press in a dry nonstick pan over medium heat ~2 minutes per side until golden and melty.",timer:120}] },
   "Chicken fajita bowl":{ servings:1,
-    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"veg",amt:1,unit:"cup",name:"frozen stir-fry mix"},{id:"cumin",amt:1,unit:"pinch",name:"cumin"},{id:"paprika",amt:1,unit:"pinch",name:"paprika"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"ched",amt:1,name:"cheddar slice"}],
+    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"veg",amt:1,unit:"cup",name:"frozen stir-fry mix"},{id:"cumin",amt:1,unit:"pinch",name:"cumin"},{id:"paprika",amt:1,unit:"pinch",name:"paprika"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"ched",amt:1,name:"cheddar slice"}],
     steps:[{title:"Start the rice",text:"Microwave {rice} with equal water in a covered bowl ~5 minutes, then fluff.",timer:300},{title:"Saute the veg",text:"Saute {veg} in a pan over medium-high heat ~4 minutes with {cumin} and {paprika} until tender-crisp.",timer:240},{title:"Warm the chicken",text:"Add {chk} to the pan ~1 minute to heat through.",timer:60},{title:"Bowl it",text:"Serve over the rice with {ched} on top."}] },
   "Apple-cinnamon yogurt parfait":{ servings:1,
     ingredients:[{id:"yog",amt:0.75,unit:"cup",name:"plain 2% Greek yogurt"},{id:"apple",amt:0.5,name:"apple, diced"},{id:"cin",amt:1,unit:"pinch",name:"cinnamon"},{id:"gran",amt:0.25,unit:"cup",name:"crunchy granola"},{id:"honey",amt:1,unit:"tsp",name:"honey"}],
@@ -4134,25 +4501,25 @@ const RECIPE_LIB={
     ingredients:[{id:"chk",amt:1,name:"can of chicken, drained"},{id:"bbq",amt:1,unit:"tbsp",name:"BBQ sauce"},{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"ched",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"}],
     steps:[{title:"Sauce the chicken",text:"Drain {chk} well and toss with {bbq}."},{title:"Assemble",text:"Spread the BBQ chicken and {ched} over half of {tort} and fold it over."},{title:"Press",text:"Press in a dry nonstick pan over medium heat ~2 minutes per side until golden and melty.",timer:120},{title:"Broccoli side",text:"Microwave {broc} in a covered bowl with a splash of water ~4 minutes; serve alongside.",timer:240}] },
   "BBQ chicken rice bowl":{ servings:1,
-    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"bbq",amt:1,unit:"tbsp",name:"BBQ sauce"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"},{id:"ched",amt:1,name:"cheddar slice"}],
+    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"bbq",amt:1,unit:"tbsp",name:"BBQ sauce"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"},{id:"ched",amt:1,name:"cheddar slice"}],
     steps:[{title:"Start the rice",text:"Microwave {rice} with equal water in a covered bowl ~5 minutes, then fluff.",timer:300},{title:"Steam the broccoli",text:"Microwave {broc} in a covered bowl with a splash of water ~4 minutes until tender.",timer:240},{title:"Sauce the chicken",text:"The chicken was prepped plain: shred {chk}, warm ~1 minute, and toss with {bbq} until coated.",timer:60},{title:"Bowl it",text:"Pile rice in a bowl, add the BBQ chicken and broccoli, and lay {ched} on top to melt."}] },
   "Canned chicken Caesar wrap":{ servings:1,
     ingredients:[{id:"chk",amt:1,name:"can of chicken, drained"},{id:"caesar",amt:1,unit:"tbsp",name:"light Caesar"},{id:"rom",amt:1,unit:"handful",name:"romaine, chopped"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"},{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"}],
     steps:[{title:"Mix",text:"In a bowl, mix {chk} with {caesar} until combined."},{title:"Fill",text:"Lay {rom} on {tort}, spoon the chicken down the center, and sprinkle with {parm}."},{title:"Roll",text:"Fold in the sides and roll up tight. No cooking."}] },
   "Egg fried rice breakfast bowl":{ servings:1,
-    ingredients:[{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"oil",amt:1,unit:"tsp",name:"olive oil"},{id:"veg",amt:0.5,unit:"cup",name:"frozen mixed veg"},{id:"eggs",amt:2,name:"large eggs"},{id:"soy",amt:1,unit:"tbsp",name:"soy sauce"}],
+    ingredients:[{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"oil",amt:1,unit:"tsp",name:"olive oil"},{id:"veg",amt:0.5,unit:"cup",name:"frozen mixed veg"},{id:"eggs",amt:2,name:"large eggs"},{id:"soy",amt:1,unit:"tbsp",name:"soy sauce"}],
     steps:[{title:"Cook the rice",text:"Microwave {rice} with equal water in a covered bowl ~5 minutes, then fluff.",timer:300},{title:"Fry rice and veg",text:"Heat {oil} in a nonstick pan over medium-high, add the rice and {veg}, and stir-fry ~2 minutes until hot.",timer:120},{title:"Scramble in",text:"Push the rice to one side, crack {eggs} into the pan, scramble until just set, then fold everything together with {soy}.",timer:120}] },
   "Garlic-herb chicken rice bowl":{ servings:1,
-    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"herb",amt:1,unit:"pinch",name:"Italian herbs"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"cuc",amt:0.5,unit:"cup",name:"cucumber, diced"},{id:"ched",amt:1,name:"cheddar slice"}],
+    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"herb",amt:1,unit:"pinch",name:"Italian herbs"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"cuc",amt:0.5,unit:"cup",name:"cucumber, diced"},{id:"ched",amt:1,name:"cheddar slice"}],
     steps:[{title:"Start the rice",text:"Microwave {rice} with equal water in a covered bowl ~5 minutes, then fluff.",timer:300},{title:"Season the chicken",text:"The chicken was prepped plain: warm {chk} ~1 minute and toss with {garlic} and {herb}.",timer:60},{title:"Bowl it",text:"Pile the rice in a bowl, add the chicken and {cuc}, and lay {ched} on top to melt."}] },
   "Greek chicken bowl":{ servings:1,
-    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"oreg",amt:1,unit:"pinch",name:"oregano"},{id:"lem",amt:1,name:"squeeze of lemon"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"cuc",amt:1,unit:"cup",name:"cucumber, diced"},{id:"feta",amt:2,unit:"tbsp",name:"crumbled feta"},{id:"oil",amt:1,unit:"tsp",name:"olive oil"}],
+    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"oreg",amt:1,unit:"pinch",name:"oregano"},{id:"lem",amt:1,name:"squeeze of lemon"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"cuc",amt:1,unit:"cup",name:"cucumber, diced"},{id:"feta",amt:2,unit:"tbsp",name:"crumbled feta"},{id:"oil",amt:1,unit:"tsp",name:"olive oil"}],
     steps:[{title:"Start the rice",text:"Microwave {rice} with equal water in a covered bowl ~5 minutes, then fluff.",timer:300},{title:"Season the chicken",text:"The chicken was prepped plain: warm {chk} ~1 minute, then toss with {oreg} and {lem}.",timer:60},{title:"Build the bowl",text:"Pile the rice in a bowl, top with the chicken and {cuc}, then add {feta} and a drizzle of {oil}."}] },
   "Greek yogurt + banana + granola":{ servings:1,
     ingredients:[{id:"yog",amt:0.75,unit:"cup",name:"plain 2% Greek yogurt"},{id:"ban",amt:1,name:"banana, sliced"},{id:"gran",amt:0.25,unit:"cup",name:"crunchy granola"},{id:"pb",amt:1,unit:"tsp",name:"peanut butter"}],
     steps:[{title:"Layer",text:"Spoon {yog} into a bowl and top with {ban} and {gran}."},{title:"Finish",text:"Warm {pb} a few seconds so it drizzles, then drizzle it over the top. No cooking."}] },
   "Italian chicken & provolone bowl":{ servings:1,
-    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"rom",amt:2,unit:"cup",name:"romaine, chopped"},{id:"cuc",amt:0.5,unit:"cup",name:"cucumber, diced"},{id:"prov",amt:1,name:"provolone slice, torn"},{id:"ital",amt:1,unit:"tbsp",name:"light Italian dressing"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"}],
+    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"rom",amt:2,unit:"cup",name:"romaine, chopped"},{id:"cuc",amt:0.5,unit:"cup",name:"cucumber, diced"},{id:"prov",amt:1,name:"provolone slice, torn"},{id:"ital",amt:1,unit:"tbsp",name:"light Italian dressing"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"}],
     steps:[{title:"Slice the chicken",text:"Slice {chk} into strips (warm ~30 seconds on a covered plate if you like)."},{title:"Build the bowl",text:"Add {rom} and {cuc} to a bowl, top with the chicken, and scatter {prov} over."},{title:"Dress",text:"Drizzle with {ital}, finish with {parm}, and toss. A no-bread riff on your JM sub."}] },
   "JM tub — turkey + provolone":{ servings:1, ingredients:[],
     steps:[{title:"Order it in a tub",text:"Order a regular turkey + provolone sub \u201Cin a tub\u201D \u2014 no bread \u2014 Mike's Way (onions, lettuce, tomato, oil & vinegar spices), but skip the oil/vinegar and mayo. This one is bought, not cooked. ~520 cal, 48g protein."}] },
@@ -4161,97 +4528,97 @@ const RECIPE_LIB={
   "JM tub — roast beef + provolone":{ servings:1, ingredients:[],
     steps:[{title:"Order it in a tub",text:"Order a regular roast beef + provolone sub \u201Cin a tub\u201D \u2014 no bread \u2014 Mike's Way, but skip the oil/vinegar and mayo. Bought, not cooked. ~540 cal, 50g protein."}] },
   "Lemon-herb chicken & rice skillet":{ servings:1,
-    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"herb",amt:1,unit:"pinch",name:"Italian herbs"},{id:"lem",amt:1,name:"squeeze of lemon"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"veg",amt:1,unit:"cup",name:"frozen mixed veg"},{id:"ched",amt:1,name:"cheddar slice"}],
+    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"herb",amt:1,unit:"pinch",name:"Italian herbs"},{id:"lem",amt:1,name:"squeeze of lemon"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"veg",amt:1,unit:"cup",name:"frozen mixed veg"},{id:"ched",amt:1,name:"cheddar slice"}],
     steps:[{title:"Start the rice",text:"Microwave {rice} with equal water in a covered bowl ~5 minutes, then fluff.",timer:300},{title:"Skillet it",text:"In a pan over medium heat, combine {chk}, {veg}, {garlic}, and {herb}; cook ~4 minutes until hot and the veg is tender.",timer:240},{title:"Finish",text:"Stir in the rice, add {lem}, lay {ched} on top to melt, and serve."}] },
   "Lemon-pepper chicken rice bowl":{ servings:1,
-    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"lp",amt:1,unit:"tsp",name:"lemon-pepper seasoning"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"veg",amt:1,unit:"cup",name:"frozen mixed veg"},{id:"ched",amt:1,name:"cheddar slice"}],
+    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"lp",amt:1,unit:"tsp",name:"lemon-pepper seasoning"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"veg",amt:1,unit:"cup",name:"frozen mixed veg"},{id:"ched",amt:1,name:"cheddar slice"}],
     steps:[{title:"Start the rice",text:"Microwave {rice} with equal water in a covered bowl ~5 minutes, then fluff.",timer:300},{title:"Season the chicken",text:"The chicken was prepped plain: warm {chk} ~1 minute and toss with {lp}.",timer:60},{title:"Veg",text:"Microwave {veg} in a covered bowl with a splash of water ~3 minutes until tender.",timer:180},{title:"Bowl it",text:"Pile the rice in a bowl, top with the chicken and veg, and lay {ched} on to melt."}] },
   "Marinara chicken parmesan bowl":{ servings:1,
-    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"prego",amt:0.33,unit:"cup",name:"Prego marinara"},{id:"pasta",amt:0.75,unit:"cup",name:"pasta (dry)"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"}],
+    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"prego",amt:0.33,unit:"cup",name:"Prego marinara"},{id:"pasta",amt:0.75,unit:"cup",name:"pasta (dry)"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"}],
     steps:[{title:"Boil the pasta",text:"Boil {pasta} in a small pot ~9-10 minutes until tender, then drain.",timer:600},{title:"Warm chicken in sauce",text:"Slice {chk} and warm it in {prego} in a small pan over medium heat ~3 minutes until hot. Cooked tomato — all good.",timer:180},{title:"Combine",text:"Spoon the pasta into a bowl, top with the marinara chicken, and finish with {parm}."}] },
   "Pepper steak rice bowl":{ servings:1,
-    ingredients:[{id:"steak",amt:1,name:"plain steak bites portion (from Sun prep)"},{id:"soy",amt:2,unit:"tbsp",name:"soy sauce"},{id:"honey",amt:1,unit:"tsp",name:"honey"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"veg",amt:1.5,unit:"cup",name:"frozen stir-fry mix"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"}],
+    ingredients:[{id:"steak",amt:1,name:"plain steak bites portion (from the pool)"},{id:"soy",amt:2,unit:"tbsp",name:"soy sauce"},{id:"honey",amt:1,unit:"tsp",name:"honey"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"veg",amt:1.5,unit:"cup",name:"frozen stir-fry mix"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"}],
     steps:[{title:"Start the rice",text:"Microwave {rice} with equal water in a covered bowl ~5 minutes, then fluff.",timer:300},{title:"Saute the veg",text:"Heat a pan over medium-high and saute {veg} ~5 minutes until tender-crisp.",timer:300},{title:"Glaze the steak",text:"Add {steak} to the pan with {soy}, {honey}, and {garlic}; toss ~2 minutes until hot and glossy.",timer:120},{title:"Bowl it",text:"Spoon the steak and veg over the rice."}] },
   "Pineapple teriyaki chicken bowl":{ servings:1,
-    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"soy",amt:2,unit:"tbsp",name:"soy sauce"},{id:"honey",amt:1,unit:"tsp",name:"honey"},{id:"ginger",amt:1,unit:"pinch",name:"ground ginger"},{id:"pine",amt:0.33,unit:"cup",name:"pineapple (from fruit bowl)"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"veg",amt:1,unit:"cup",name:"frozen mixed veg"}],
+    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"soy",amt:2,unit:"tbsp",name:"soy sauce"},{id:"honey",amt:1,unit:"tsp",name:"honey"},{id:"ginger",amt:1,unit:"pinch",name:"ground ginger"},{id:"pine",amt:0.33,unit:"cup",name:"pineapple (from fruit bowl)"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"veg",amt:1,unit:"cup",name:"frozen mixed veg"}],
     steps:[{title:"Start the rice",text:"Microwave {rice} with equal water in a covered bowl ~5 minutes, then fluff.",timer:300},{title:"Glaze the chicken",text:"The chicken was prepped plain: warm {chk} in a pan with {soy}, {honey}, {ginger}, and {pine} ~3 minutes until hot and glossy.",timer:180},{title:"Veg",text:"Microwave {veg} in a covered bowl with a splash of water ~3 minutes until tender.",timer:180},{title:"Bowl it",text:"Spoon the pineapple-teriyaki chicken and veg over the rice."}] },
   "Ranch chicken wrap":{ servings:1,
-    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"ranch",amt:1,unit:"tbsp",name:"light ranch"},{id:"ched",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"rom",amt:1,unit:"handful",name:"romaine"},{id:"cuc",amt:0.5,unit:"cup",name:"cucumber, diced"},{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"}],
+    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"ranch",amt:1,unit:"tbsp",name:"light ranch"},{id:"ched",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"rom",amt:1,unit:"handful",name:"romaine"},{id:"cuc",amt:0.5,unit:"cup",name:"cucumber, diced"},{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"}],
     steps:[{title:"Dress the chicken",text:"Slice {chk} (warm ~30 seconds if you like) and toss with {ranch}."},{title:"Build the wrap",text:"Warm {tort} in a dry skillet ~15 seconds per side, then lay down {ched}, the ranch chicken, {rom}, and {cuc}."},{title:"Roll",text:"Fold in the sides, roll up tight, and slice in half."}] },
   "Sesame-ginger chicken rice bowl":{ servings:1,
-    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"soy",amt:2,unit:"tbsp",name:"soy sauce"},{id:"honey",amt:1,unit:"tsp",name:"honey"},{id:"ginger",amt:1,unit:"pinch",name:"ground ginger"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"sesoil",amt:0.5,unit:"tsp",name:"sesame oil"},{id:"seeds",amt:1,unit:"tsp",name:"sesame seeds"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"veg",amt:1.5,unit:"cup",name:"frozen stir-fry mix"}],
+    ingredients:[{id:"chk",amt:1,name:"plain chicken portion (from the pool)"},{id:"soy",amt:2,unit:"tbsp",name:"soy sauce"},{id:"honey",amt:1,unit:"tsp",name:"honey"},{id:"ginger",amt:1,unit:"pinch",name:"ground ginger"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"sesoil",amt:0.5,unit:"tsp",name:"sesame oil"},{id:"seeds",amt:1,unit:"tsp",name:"sesame seeds"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"veg",amt:1.5,unit:"cup",name:"frozen stir-fry mix"}],
     steps:[{title:"Start the rice",text:"Microwave {rice} with equal water in a covered bowl ~5 minutes, then fluff.",timer:300},{title:"Saute the veg",text:"Saute {veg} in a pan over medium-high ~5 minutes until tender-crisp.",timer:300},{title:"Glaze the chicken",text:"Add {chk} to the pan with {soy}, {honey}, {ginger}, {garlic}, and {sesoil}; toss ~2 minutes until hot and glossy.",timer:120},{title:"Bowl it",text:"Spoon the chicken and veg over the rice and sprinkle with {seeds}."}] },
   "Steak & cheddar quesadilla":{ servings:1,
     ingredients:[{id:"steak",amt:1,name:"RAW steak, thawed \u2014 cooked fresh tonight, NOT a prep portion"},{id:"ched",amt:0.33,unit:"cup",name:"shredded cheddar"},{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"}],
     steps:[{title:"Sear the steak FRESH",text:"This is steak night \u2014 {steak} is raw, not a prep portion. Pat dry, salt and pepper, sear in a hot pan 3-4 minutes per side to medium.",timer:240},{title:"Rest, then slice",text:"Rest the steak 5 minutes before slicing thin against the grain. Skipping the rest loses the juice into the pan.",timer:300},{title:"Assemble and press",text:"Fill {tort} with the sliced steak and {ched}, fold, and press in the dry pan ~2 minutes per side until golden.",timer:120},{title:"Broccoli side",text:"Microwave {broc} in a covered bowl with a splash of water ~4 minutes; serve alongside.",timer:240}] },
   "Turkey sausage stir-fry bowl":{ servings:1,
-    ingredients:[{id:"saus",amt:2,name:"turkey sausage patties"},{id:"veg",amt:1.5,unit:"cup",name:"frozen stir-fry mix"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"soy",amt:1,unit:"tbsp",name:"soy sauce"}],
+    ingredients:[{id:"saus",amt:2,name:"turkey sausage patties"},{id:"veg",amt:1.5,unit:"cup",name:"frozen stir-fry mix"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"soy",amt:1,unit:"tbsp",name:"soy sauce"}],
     steps:[{title:"Start the rice",text:"Microwave {rice} with equal water in a covered bowl ~5 minutes, then fluff.",timer:300},{title:"Brown the sausage",text:"Chop {saus} and cook in a nonstick pan over medium heat ~5 minutes until browned.",timer:300},{title:"Add the veg",text:"Add {veg} to the pan and stir-fry ~5 minutes until tender-crisp.",timer:300},{title:"Bowl it",text:"Serve the sausage and veg over the rice with {soy}."}] },
   "Chicken, bacon & cheddar quesadilla":{ servings:1,
-    ingredients:[{id:"chicken",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"bacon",amt:1,unit:"tbsp",name:"real bacon bits"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"herbs",amt:0.5,unit:"tsp",name:"Italian seasoning"},{id:"tortilla",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"cheddar",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"broc",amt:1,unit:"cup",name:"frozen broccoli"}],
+    ingredients:[{id:"chicken",amt:1,name:"plain chicken portion (from the pool)"},{id:"bacon",amt:1,unit:"tbsp",name:"real bacon bits"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"herbs",amt:0.5,unit:"tsp",name:"Italian seasoning"},{id:"tortilla",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"cheddar",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"broc",amt:1,unit:"cup",name:"frozen broccoli"}],
     steps:[{title:"Steam the broccoli",text:"Put {broc} in a covered bowl with a splash of water and microwave ~4 minutes until tender. Set aside.",timer:240},{title:"Season the chicken",text:"The chicken was prepped plain, so flavor it now: microwave {chicken} on a covered plate ~1 minute until hot, shred it with two forks, then toss with {bacon}, {garlic}, and {herbs}.",timer:60},{title:"Fill the tortilla",text:"Lay {tortilla} flat, scatter {cheddar} over one half, pile the chicken on top, and fold the empty half over."},{title:"Press it",text:"Set it in a dry skillet over medium heat and press with a spatula ~2 minutes per side until golden and the cheese has melted, then cut into wedges and serve with the broccoli.",timer:240}] },
   "Honey-lime chicken rice bowl":{ servings:1,
-    ingredients:[{id:"chicken",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"honey",amt:0.5,unit:"tbsp",name:"honey"},{id:"lime",amt:1,name:"lime wedge"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"veg",amt:1,unit:"cup",name:"frozen mixed veg"}],
+    ingredients:[{id:"chicken",amt:1,name:"plain chicken portion (from the pool)"},{id:"honey",amt:0.5,unit:"tbsp",name:"honey"},{id:"lime",amt:1,name:"lime wedge"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"veg",amt:1,unit:"cup",name:"frozen mixed veg"}],
     steps:[{title:"Start the rice",text:"Combine {rice} with an equal amount of water in a microwave-safe bowl, microwave ~5 minutes, then fluff with a fork.",timer:300},{title:"Cook the veg",text:"Microwave {veg} in a covered bowl with a splash of water ~3 minutes until hot.",timer:180},{title:"Glaze the chicken",text:"Reheat {chicken} in a pan or microwave ~1 minute, then toss with {honey}, a squeeze of {lime}, and {garlic} until glossy.",timer:60},{title:"Bowl it",text:"Pile the rice in a bowl, top with the chicken and veg, and finish with another squeeze of lime."}] },
   "Garlic butter steak & rice bowl":{ servings:1,
-    ingredients:[{id:"steak",amt:1,name:"plain steak bites portion (from Sun prep)"},{id:"butter",amt:0.5,unit:"tbsp",name:"butter"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"herbs",amt:0.5,unit:"tsp",name:"Italian seasoning"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"}],
+    ingredients:[{id:"steak",amt:1,name:"plain steak bites portion (from the pool)"},{id:"butter",amt:0.5,unit:"tbsp",name:"butter"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"herbs",amt:0.5,unit:"tsp",name:"Italian seasoning"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"}],
     steps:[{title:"Start the rice",text:"Combine {rice} with an equal amount of water in a microwave-safe bowl, microwave ~5 minutes, then fluff.",timer:300},{title:"Steam the broccoli",text:"Put {broc} in a covered bowl with a splash of water and microwave ~4 minutes until tender.",timer:240},{title:"Garlic butter the steak",text:"Melt {butter} in a skillet over medium heat, add {garlic} and {herbs}, then add {steak} and toss ~2 minutes until hot and coated.",timer:120},{title:"Plate",text:"Spoon the rice into a bowl, top with the steak and every drop of the pan butter, and add the broccoli alongside."}] },
   "Chicken Alfredo & broccoli pasta":{ servings:1,
-    ingredients:[{id:"pasta",amt:0.75,unit:"cup",name:"pasta (dry)"},{id:"alfredo",amt:0.25,unit:"cup",name:"jarred Alfredo sauce"},{id:"chicken",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"}],
+    ingredients:[{id:"pasta",amt:0.75,unit:"cup",name:"pasta (dry)"},{id:"alfredo",amt:0.25,unit:"cup",name:"jarred Alfredo sauce"},{id:"chicken",amt:1,name:"plain chicken portion (from the pool)"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"}],
     steps:[{title:"Boil the pasta",text:"Bring a small pot of water to a rolling boil, add {pasta}, and cook ~9-10 minutes until tender.",timer:600},{title:"Add the broccoli",text:"Drop {broc} into the same pot for the last 3 minutes, then drain both together.",timer:180},{title:"Sauce it",text:"Return everything to the warm pot off the heat and stir in {alfredo} until the pasta is coated."},{title:"Top and finish",text:"Microwave {chicken} on a covered plate ~1 minute until hot, slice it over the top, and finish with {parm}.",timer:60}] },
   "Peach & honey yogurt parfait":{ servings:1,
     ingredients:[{id:"yog",amt:0.75,unit:"cup",name:"plain 2% Greek yogurt"},{id:"peach",amt:1,name:"peach, diced (or 1/2 cup canned peaches in juice, drained)"},{id:"granola",amt:0.25,unit:"cup",name:"crunchy granola"},{id:"honey",amt:1,unit:"tsp",name:"honey"}],
     steps:[{title:"Layer it",text:"Spoon half of {yog} into a glass or bowl, add half of {peach}, then repeat with the rest."},{title:"Finish",text:"Top with {granola} and drizzle {honey} over. Add the granola last so it stays crunchy."}] },
   "Steak fajita bowl":{ servings:1,
-    ingredients:[{id:"steak",amt:1,name:"plain steak bites portion (from Sun prep)"},{id:"cumin",amt:1,unit:"pinch",name:"ground cumin"},{id:"paprika",amt:1,unit:"pinch",name:"paprika"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"veg",amt:1.5,unit:"cup",name:"frozen stir-fry mix"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"cheddar",amt:0.25,unit:"cup",name:"shredded cheddar"}],
+    ingredients:[{id:"steak",amt:1,name:"plain steak bites portion (from the pool)"},{id:"cumin",amt:1,unit:"pinch",name:"ground cumin"},{id:"paprika",amt:1,unit:"pinch",name:"paprika"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"veg",amt:1.5,unit:"cup",name:"frozen stir-fry mix"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"cheddar",amt:0.25,unit:"cup",name:"shredded cheddar"}],
     steps:[{title:"Start the rice",text:"Combine {rice} with an equal amount of water in a microwave-safe bowl, microwave ~5 minutes, then fluff.",timer:300},{title:"Sear the veg",text:"Heat a skillet over medium-high and stir-fry {veg} ~5 minutes until tender-crisp and a little charred at the edges.",timer:300},{title:"Season the steak",text:"Add {steak} to the pan with {cumin}, {paprika}, and {garlic}, tossing ~2 minutes until hot and coated.",timer:120},{title:"Bowl it",text:"Spoon the rice into a bowl, pile the steak and veg on top, and scatter {cheddar} over while everything is still hot so it melts."}] },
   "Chicken shawarma bowl":{ servings:1,
-    ingredients:[{id:"chicken",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"cumin",amt:0.5,unit:"tsp",name:"ground cumin"},{id:"paprika",amt:0.5,unit:"tsp",name:"paprika"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"cinn",amt:1,unit:"pinch",name:"cinnamon"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"cuke",amt:1,unit:"cup",name:"cucumber, diced"},{id:"yog",amt:3,unit:"tbsp",name:"plain 2% Greek yogurt"},{id:"lemon",amt:1,name:"lemon wedge"}],
+    ingredients:[{id:"chicken",amt:1,name:"plain chicken portion (from the pool)"},{id:"cumin",amt:0.5,unit:"tsp",name:"ground cumin"},{id:"paprika",amt:0.5,unit:"tsp",name:"paprika"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"cinn",amt:1,unit:"pinch",name:"cinnamon"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"cuke",amt:1,unit:"cup",name:"cucumber, diced"},{id:"yog",amt:3,unit:"tbsp",name:"plain 2% Greek yogurt"},{id:"lemon",amt:1,name:"lemon wedge"}],
     steps:[{title:"Start the rice",text:"Combine {rice} with an equal amount of water in a microwave-safe bowl, microwave ~5 minutes, then fluff.",timer:300},{title:"Spice the chicken",text:"Reheat {chicken} in a pan ~2 minutes with {cumin}, {paprika}, {garlic}, and {cinn}, tossing until the spices smell warm and toasty.",timer:120},{title:"Whisk the sauce",text:"Stir {yog} with a squeeze of {lemon} and a small pinch of garlic until pourable."},{title:"Build the bowl",text:"Spoon the rice into a bowl, add the chicken and {cuke}, and drizzle the yogurt sauce over everything."}] },
   "Garlic-parmesan steak bites & rice":{ servings:1,
-    ingredients:[{id:"steak",amt:1,name:"plain steak bites portion (from Sun prep)"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"}],
+    ingredients:[{id:"steak",amt:1,name:"plain steak bites portion (from the pool)"},{id:"garlic",amt:1,unit:"pinch",name:"garlic powder"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"}],
     steps:[{title:"Start the rice",text:"Combine {rice} with an equal amount of water in a microwave-safe bowl, microwave ~5 minutes, then fluff.",timer:300},{title:"Steam the broccoli",text:"Put {broc} in a covered bowl with a splash of water and microwave ~4 minutes until tender.",timer:240},{title:"Season the steak",text:"Reheat {steak} in a skillet over medium heat ~2 minutes, then toss with {garlic} and half of {parm} so it melts onto the pieces.",timer:120},{title:"Plate",text:"Spoon the rice into a bowl, top with the steak and the broccoli, and finish with the rest of the parmesan."}] },
   "Hash brown & egg skillet":{ servings:1,
     ingredients:[{id:"hash",amt:0.5,unit:"cup",name:"frozen shredded hash browns"},{id:"oil",amt:1,unit:"tsp",name:"olive oil"},{id:"eggs",amt:3,name:"large eggs"},{id:"cheddar",amt:0.25,unit:"cup",name:"shredded cheddar"}],
     steps:[{title:"Crisp the hash browns",text:"Heat {oil} in a skillet over medium-high, spread {hash} in an even layer, and leave it alone ~6 minutes, flipping once, until golden and crisp.",timer:360},{title:"Scramble the eggs",text:"Push the hash browns to one side, pour {eggs} beaten into the empty space, and stir gently ~1 minute until just set.",timer:60},{title:"Finish",text:"Fold everything together, scatter {cheddar} over the top, and cover the pan off the heat ~1 minute to melt.",timer:60}] },
   "Sesame chicken crunch wrap":{ servings:1,
-    ingredients:[{id:"chicken",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"soy",amt:1,unit:"tbsp",name:"less-sodium soy sauce"},{id:"sesoil",amt:0.5,unit:"tsp",name:"sesame oil"},{id:"honey",amt:0.5,unit:"tsp",name:"honey"},{id:"tortilla",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"slaw",amt:1,unit:"cup",name:"shredded coleslaw mix"},{id:"seeds",amt:1,unit:"tsp",name:"sesame seeds"}],
+    ingredients:[{id:"chicken",amt:1,name:"plain chicken portion (from the pool)"},{id:"soy",amt:1,unit:"tbsp",name:"less-sodium soy sauce"},{id:"sesoil",amt:0.5,unit:"tsp",name:"sesame oil"},{id:"honey",amt:0.5,unit:"tsp",name:"honey"},{id:"tortilla",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"slaw",amt:1,unit:"cup",name:"shredded coleslaw mix"},{id:"seeds",amt:1,unit:"tsp",name:"sesame seeds"}],
     steps:[{title:"Dress the chicken",text:"Chop {chicken} into bite-size pieces and toss with {soy}, {sesoil}, and {honey} until evenly coated. Serve it cold or warm it ~45 seconds in the microwave.",timer:45},{title:"Warm the tortilla",text:"Warm {tortilla} in a dry skillet ~15 seconds per side (or microwave it wrapped in a damp paper towel ~15 seconds) so it rolls without cracking."},{title:"Fill and roll",text:"Lay {slaw} down the center, pile the chicken on top, sprinkle {seeds} over, then fold in the sides and roll up tight."}] },
   "Pineapple sweet & sour chicken bowl":{ servings:1,
-    ingredients:[{id:"chicken",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"soy",amt:1,unit:"tbsp",name:"less-sodium soy sauce"},{id:"honey",amt:1,unit:"tsp",name:"honey"},{id:"pine",amt:0.5,unit:"cup",name:"pineapple chunks (plus a splash of the juice)"},{id:"veg",amt:1,unit:"cup",name:"frozen stir-fry mix"},{id:"rice",amt:0.75,unit:"cup",name:"Minute rice (dry)"}],
+    ingredients:[{id:"chicken",amt:1,name:"plain chicken portion (from the pool)"},{id:"soy",amt:1,unit:"tbsp",name:"less-sodium soy sauce"},{id:"honey",amt:1,unit:"tsp",name:"honey"},{id:"pine",amt:0.5,unit:"cup",name:"pineapple chunks (plus a splash of the juice)"},{id:"veg",amt:1,unit:"cup",name:"frozen stir-fry mix"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"}],
     steps:[{title:"Start the rice",text:"Combine {rice} with an equal amount of water in a microwave-safe bowl, microwave ~5 minutes, then fluff.",timer:300},{title:"Mix the sauce",text:"Stir {soy}, {honey}, and a splash of juice from {pine} together in a small cup."},{title:"Cook the veg",text:"Stir-fry {veg} in a skillet over medium-high ~5 minutes until tender-crisp.",timer:300},{title:"Bring it together",text:"Add {chicken} and the pineapple chunks to the pan, pour the sauce over, and toss ~2 minutes until everything is hot and glazed. Spoon over the rice.",timer:120}] },
   "Maple turkey sausage & sweet potato hash":{ servings:1,
     ingredients:[{id:"sweet",amt:1,name:"medium sweet potato"},{id:"sausage",amt:2,name:"turkey sausage patties"},{id:"maple",amt:0.5,unit:"tbsp",name:"maple syrup"},{id:"cinn",amt:1,unit:"pinch",name:"cinnamon"}],
     steps:[{title:"Cook the sweet potato",text:"Pierce {sweet} several times with a fork and microwave ~6 minutes until a knife slides in easily, then let it cool a minute and cut into cubes.",timer:360},{title:"Brown the sausage",text:"Chop {sausage} and brown in a dry skillet over medium heat ~4 minutes until the edges crisp.",timer:240},{title:"Finish the hash",text:"Add the sweet potato cubes to the pan with {maple} and {cinn}, and cook ~3 more minutes, stirring, until everything is glazed and a little caramelized.",timer:180}] },
   "Chicken parm tortilla flatbread":{ servings:1,
-    ingredients:[{id:"tortilla",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"marinara",amt:0.33,unit:"cup",name:"marinara sauce"},{id:"chicken",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"cheddar",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"},{id:"herbs",amt:0.5,unit:"tsp",name:"Italian seasoning"}],
+    ingredients:[{id:"tortilla",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"marinara",amt:0.33,unit:"cup",name:"marinara sauce"},{id:"chicken",amt:1,name:"plain chicken portion (from the pool)"},{id:"cheddar",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"},{id:"herbs",amt:0.5,unit:"tsp",name:"Italian seasoning"}],
     steps:[{title:"Build the flatbread",text:"Lay {tortilla} flat and spread {marinara} over it, leaving a thin border around the edge."},{title:"Top it",text:"Slice {chicken} and lay it over the sauce, then scatter {cheddar}, {parm}, and {herbs} over the top."},{title:"Bake it",text:"Air fry at 350\u00b0F ~5 minutes until the cheese is bubbling and the edges have crisped, then slice into wedges.",timer:300}] },
   "Chicken Caesar pasta salad":{ servings:1,
     ingredients:[{id:"pasta",amt:0.75,unit:"cup",name:"pasta (dry)"},{id:"chicken",amt:1,name:"can of chicken, drained"},{id:"caesar",amt:2,unit:"tbsp",name:"light Caesar dressing"},{id:"romaine",amt:1,unit:"cup",name:"romaine, chopped"},{id:"cuke",amt:0.5,unit:"cup",name:"cucumber, diced"},{id:"parm",amt:1,unit:"tbsp",name:"parmesan"}],
     steps:[{title:"Boil the pasta",text:"Bring a small pot of water to a rolling boil, add {pasta}, and cook ~9-10 minutes until tender.",timer:600},{title:"Cool it down",text:"Drain and rinse under cold water until the pasta is no longer warm, then shake dry."},{title:"Toss",text:"In a bowl, combine the pasta with {chicken}, {caesar}, {romaine}, and {cuke}, tossing until everything is coated."},{title:"Finish",text:"Sprinkle {parm} over the top. Eats cold straight from the fridge."}] },
   "Chicken Caesar crunch wrap":{ servings:1,
-    ingredients:[{id:"chx",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"cae",amt:1,unit:"tbsp",name:"Caesar dressing"},{id:"parm",amt:1,unit:"tbsp",name:"shredded parmesan"},{id:"slaw",amt:1,unit:"cup",name:"coleslaw mix (no dressing)"},{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"}],
+    ingredients:[{id:"chx",amt:1,name:"plain chicken portion (from the pool)"},{id:"cae",amt:1,unit:"tbsp",name:"Caesar dressing"},{id:"parm",amt:1,unit:"tbsp",name:"shredded parmesan"},{id:"slaw",amt:1,unit:"cup",name:"coleslaw mix (no dressing)"},{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"}],
     steps:[{title:"Chop the chicken",text:"Dice {chx} into bite-size pieces."},{title:"Dress it",text:"Toss the chicken with {cae} and {parm} until evenly coated."},{title:"Build the wrap",text:"Lay {tort} flat, pile on the chicken, then top with {slaw} for crunch."},{title:"Roll tight",text:"Fold the sides in and roll tightly. Slice in half on a diagonal."}] },
   "Smoky paprika chicken rice bowl":{ servings:1,
-    ingredients:[{id:"chx",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"oil",amt:1,unit:"tsp",name:"olive oil"},{id:"pap",amt:0.25,unit:"tsp",name:"smoked paprika"},{id:"gar",amt:0.25,unit:"tsp",name:"garlic powder"},{id:"on",amt:0.25,unit:"tsp",name:"onion powder"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"}],
+    ingredients:[{id:"chx",amt:1,name:"plain chicken portion (from the pool)"},{id:"oil",amt:1,unit:"tsp",name:"olive oil"},{id:"pap",amt:0.25,unit:"tsp",name:"smoked paprika"},{id:"gar",amt:0.25,unit:"tsp",name:"garlic powder"},{id:"on",amt:0.25,unit:"tsp",name:"onion powder"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"}],
     steps:[{title:"Season the chicken",text:"Slice {chx} and toss with {oil}, {pap}, {gar} and {on} until the slices are evenly coated."},{title:"Warm it through",text:"Heat in a nonstick pan over medium ~2 minutes, letting the paprika bloom in the oil.",timer:120},{title:"Steam the broccoli",text:"Microwave {broc} ~3 minutes until hot and tender.",timer:180},{title:"Build the bowl",text:"Spoon {rice} into a bowl, add the broccoli, and lay the chicken over the top."}] },
   "Cheesy chicken & broccoli rice bake":{ servings:1,
-    ingredients:[{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"},{id:"chx",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"ched",amt:0.33,unit:"cup",name:"shredded cheddar"},{id:"gar",amt:0.25,unit:"tsp",name:"garlic powder"}],
+    ingredients:[{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"},{id:"chx",amt:1,name:"plain chicken portion (from the pool)"},{id:"ched",amt:0.33,unit:"cup",name:"shredded cheddar"},{id:"gar",amt:0.25,unit:"tsp",name:"garlic powder"}],
     steps:[{title:"Thaw the broccoli",text:"Microwave {broc} ~2 minutes and drain off any water so the bake doesn't go soupy.",timer:120},{title:"Mix it",text:"In an oven-safe dish, stir together {rice}, the broccoli, {chx} chopped, and {gar}."},{title:"Top with cheese",text:"Scatter {ched} evenly over the surface."},{title:"Bake",text:"Air fry or bake at 375&deg;F ~8 minutes until the cheese browns and bubbles at the edges.",timer:480}] },
   "Italian chicken pasta salad":{ servings:1,
-    ingredients:[{id:"pasta",amt:0.75,unit:"cup",name:"cooked pasta, cooled"},{id:"chx",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"oil",amt:1,unit:"tsp",name:"olive oil"},{id:"vin",amt:1,unit:"tsp",name:"red wine vinegar"},{id:"ital",amt:0.25,unit:"tsp",name:"Italian seasoning"},{id:"ore",amt:0.25,unit:"tsp",name:"dried oregano"},{id:"cuc",amt:0.5,unit:"cup",name:"diced cucumber"},{id:"parm",amt:1,unit:"tbsp",name:"shredded parmesan"}],
+    ingredients:[{id:"pasta",amt:0.75,unit:"cup",name:"cooked pasta, cooled"},{id:"chx",amt:1,name:"plain chicken portion (from the pool)"},{id:"oil",amt:1,unit:"tsp",name:"olive oil"},{id:"vin",amt:1,unit:"tsp",name:"red wine vinegar"},{id:"ital",amt:0.25,unit:"tsp",name:"Italian seasoning"},{id:"ore",amt:0.25,unit:"tsp",name:"dried oregano"},{id:"cuc",amt:0.5,unit:"cup",name:"diced cucumber"},{id:"parm",amt:1,unit:"tbsp",name:"shredded parmesan"}],
     steps:[{title:"Make the dressing",text:"Whisk {oil}, {vin}, {ital} and {ore} together in the bottom of the bowl."},{title:"Add everything",text:"Add {pasta}, {chx} chopped, and {cuc}, then toss until every piece is coated."},{title:"Finish",text:"Scatter {parm} over the top. Serve cold, or fridge it overnight and it gets better."}] },
   "Alfredo chicken & broccoli rice bowl":{ servings:1,
-    ingredients:[{id:"chx",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"alf",amt:0.33,unit:"cup",name:"Alfredo sauce"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"parm",amt:1,unit:"tbsp",name:"shredded parmesan"}],
+    ingredients:[{id:"chx",amt:1,name:"plain chicken portion (from the pool)"},{id:"alf",amt:0.33,unit:"cup",name:"Alfredo sauce"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"parm",amt:1,unit:"tbsp",name:"shredded parmesan"}],
     steps:[{title:"Steam the broccoli",text:"Microwave {broc} ~3 minutes until tender.",timer:180},{title:"Warm the sauce",text:"In a pan over medium-low, heat {alf} with {chx} sliced and the broccoli ~3 minutes until everything is hot.",timer:180},{title:"Build the bowl",text:"Spoon it over {rice}, then finish with {parm} and plenty of cracked pepper."}] },
   "Honey-soy turkey sausage rice bowl":{ servings:1,
     ingredients:[{id:"saus",amt:2,name:"turkey sausage patties"},{id:"soy",amt:1,unit:"tbsp",name:"less-sodium soy sauce"},{id:"hon",amt:1,unit:"tsp",name:"honey"},{id:"gar",amt:0.25,unit:"tsp",name:"garlic powder"},{id:"rice",amt:0.75,unit:"cup",name:"cooked rice"},{id:"broc",amt:1.5,unit:"cup",name:"frozen broccoli"}],
     steps:[{title:"Brown the sausage",text:"Chop {saus} and cook in a nonstick pan over medium heat ~5 minutes until the edges caramelize.",timer:300},{title:"Steam the broccoli",text:"Microwave {broc} ~3 minutes while the sausage browns.",timer:180},{title:"Glaze off the heat",text:"Pull the pan off the burner, then stir in {soy}, {hon} and {gar}. Off-heat keeps the honey from scorching."},{title:"Build the bowl",text:"Spoon the sausage and glaze over {rice} with the broccoli alongside."}] },
   "BBQ chicken & cheddar flatbread":{ servings:1,
-    ingredients:[{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"bbq",amt:1.5,unit:"tbsp",name:"BBQ sauce"},{id:"chx",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"ched",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"on",amt:0.25,unit:"tsp",name:"onion powder"}],
+    ingredients:[{id:"tort",amt:1,name:"burrito-size (10-inch) flour tortilla"},{id:"bbq",amt:1.5,unit:"tbsp",name:"BBQ sauce"},{id:"chx",amt:1,name:"plain chicken portion (from the pool)"},{id:"ched",amt:0.25,unit:"cup",name:"shredded cheddar"},{id:"on",amt:0.25,unit:"tsp",name:"onion powder"}],
     steps:[{title:"Sauce the base",text:"Lay {tort} flat and spread {bbq} to within half an inch of the edge."},{title:"Top it",text:"Shred {chx} over the sauce, then scatter {ched} and {on} across the top."},{title:"Crisp it",text:"Air fry at 350&deg;F ~5 minutes until the cheese bubbles and the edges go crisp and brown.",timer:300},{title:"Slice",text:"Let it sit 1 minute so the cheese sets, then cut into quarters."}] },
   "Smoky chicken & sweet potato bowl":{ servings:1,
-    ingredients:[{id:"sp",amt:1,name:"medium sweet potato"},{id:"chx",amt:1,name:"plain chicken portion (from Sun prep)"},{id:"oil",amt:1,unit:"tsp",name:"olive oil"},{id:"pap",amt:0.25,unit:"tsp",name:"smoked paprika"},{id:"cum",amt:0.25,unit:"tsp",name:"ground cumin"},{id:"broc",amt:1,unit:"cup",name:"frozen broccoli"}],
+    ingredients:[{id:"sp",amt:1,name:"medium sweet potato"},{id:"chx",amt:1,name:"plain chicken portion (from the pool)"},{id:"oil",amt:1,unit:"tsp",name:"olive oil"},{id:"pap",amt:0.25,unit:"tsp",name:"smoked paprika"},{id:"cum",amt:0.25,unit:"tsp",name:"ground cumin"},{id:"broc",amt:1,unit:"cup",name:"frozen broccoli"}],
     steps:[{title:"Cook the sweet potato",text:"Pierce {sp} several times and microwave ~6 minutes until a fork slides through. Let it cool a minute, then cube it.",timer:360},{title:"Season",text:"Toss the cubes with {chx} chopped, {oil}, {pap} and {cum}."},{title:"Warm through",text:"Heat in a pan over medium ~2 minutes so the spices bloom and the edges catch color.",timer:120},{title:"Serve",text:"Microwave {broc} ~2 minutes and serve alongside.",timer:120}] }
 };
 
@@ -5129,7 +5496,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v2.11.0 · 2026-09-20";   // bump this each time you upload a new index.html
+const APP_VERSION="v2.14.0 · 2026-09-20";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
