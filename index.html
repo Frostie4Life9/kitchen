@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#FAF6F0">
+<meta name="theme-color" content="#FAF6F0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17140F" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Kitchen">
@@ -418,6 +419,159 @@
     h1.page { font-size: 26px; }
     #screen-calendar .month-label { font-size: 19px; }
   }
+
+  /* ===================== v3.1 design pass =====================
+     One bold element (the calorie ring, set in Fraunces); everything
+     around it quieter: Manrope, sentence case, fewer borders, more air.
+     Motion only answers an action: the sheet opening, a log landing,
+     switching tabs. All of it stops under prefers-reduced-motion. */
+  .screen.active { animation: v3-enter .26s cubic-bezier(.2,.7,.2,1); }
+  @keyframes v3-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+  #screen-today .day-eyebrow { text-transform: none; letter-spacing: 0; font-size: 14px; }
+  .v3-hero { display: flex; gap: 18px; align-items: center; background: var(--card);
+    border-radius: 24px; padding: 18px 18px 18px 16px; margin: 6px 0 22px;
+    box-shadow: 0 1px 0 var(--rule), 0 10px 30px -18px rgba(45,88,64,.45); }
+  .v3-ring-wrap { position: relative; width: 124px; height: 124px; flex: 0 0 124px; }
+  .v3-ring { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .v3-ring circle { fill: none; stroke-width: 11; stroke-linecap: round; }
+  .v3-ring-bg { stroke: var(--rule); opacity: .6; }
+  .v3-ring-fg { stroke: var(--today); stroke-dasharray: 326.73; stroke-dashoffset: 326.73;
+    transition: stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1), stroke .3s; }
+  .v3-ring-fg.over { stroke: var(--orange); }
+  .v3-ring-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+  .v3-big { font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 30px; line-height: 1; letter-spacing: -.02em; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .v3-of { font-size: 12px; color: var(--ink-faded); margin-top: 4px; }
+  .v3-side { flex: 1; min-width: 0; }
+  .v3-left { font-size: 17px; font-weight: 700; color: var(--ink); }
+  .v3-left.over { color: var(--orange); }
+  .v3-pro-label { display: flex; justify-content: space-between; font-size: 12.5px; color: var(--ink-faded); margin: 12px 0 5px; }
+  .v3-pro-track { height: 7px; border-radius: 99px; background: var(--rule); overflow: hidden; }
+  .v3-pro-track span { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--green); transition: width .9s cubic-bezier(.2,.8,.2,1); }
+  .v3-meals { display: flex; gap: 6px; margin-top: 14px; flex-wrap: wrap; }
+  .v3-pill { font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 99px; color: var(--ink-faded); background: var(--paper); display: inline-flex; align-items: center; gap: 5px; }
+  .v3-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid currentColor; }
+  .v3-pill.done { color: var(--green); background: var(--green-soft); }
+  .v3-pill.done::before { background: currentColor; }
+  .v3-pill.pop { animation: v3-pop .5s cubic-bezier(.3,1.6,.5,1); }
+  @keyframes v3-pop { 0% { transform: scale(.85); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
+
+  .v3-h { font-size: 19px; font-weight: 800; color: var(--ink); margin: 0 2px 10px; letter-spacing: -.01em; }
+  .v3-block { margin-bottom: 26px; }
+  .v3-seg { display: flex; background: var(--paper); border-radius: 14px; padding: 4px; gap: 2px; margin-bottom: 12px; border: 1px solid var(--rule); }
+  .v3-seg button { flex: 1; border: 0; background: transparent; font: inherit; font-size: 13px; font-weight: 700; color: var(--ink-faded); padding: 8px 4px; border-radius: 10px; cursor: pointer; transition: background .2s, color .2s; }
+  .v3-seg button[aria-selected="true"] { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(31,26,20,.12); }
+  .v3-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .v3-tiles.swap { animation: v3-fade .22s ease-out; }
+  @keyframes v3-fade { from { opacity: 0; } to { opacity: 1; } }
+  .v3-tile { position: relative; text-align: left; border: 0; font: inherit; background: var(--card); border-radius: 18px; padding: 14px 13px 13px; min-height: 108px; cursor: pointer;
+    display: flex; flex-direction: column; justify-content: space-between; gap: 10px; box-shadow: 0 1px 0 var(--rule); transition: transform .12s ease, box-shadow .12s ease; }
+  .v3-tile:active { transform: scale(.97); }
+  .v3-tile:focus-visible, .v3-seg button:focus-visible, .v3-else:focus-visible, .v3-log-btn:focus-visible { outline: 3px solid var(--today); outline-offset: 2px; }
+  .v3-tile-name { font-size: 14.5px; font-weight: 700; line-height: 1.25; color: var(--ink); padding-right: 18px; }
+  .v3-tile-nums { font-size: 12.5px; color: var(--ink-faded); line-height: 1.35; }
+  .v3-tile-nums b { font-size: 16px; color: var(--ink); font-weight: 800; }
+  .v3-tile-done { position: absolute; top: 11px; right: 11px; width: 20px; height: 20px; border-radius: 50%; background: var(--green); color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .v3-note { font-size: 12.5px; color: var(--ink-faded); margin: 10px 4px 0; line-height: 1.45; }
+  .v3-else { width: 100%; margin-top: 10px; border: 1.5px dashed var(--rule); background: transparent; font: inherit; font-size: 14px; font-weight: 700; color: var(--ink-faded); border-radius: 16px; padding: 13px; cursor: pointer; }
+  .v3-else:active { transform: scale(.98); }
+
+  .v3-more { margin: 4px 0 20px; }
+  .v3-more > summary { list-style: none; cursor: pointer; font-size: 14px; font-weight: 700; color: var(--ink-faded); padding: 14px 16px; background: var(--card); border-radius: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .v3-more > summary::-webkit-details-marker { display: none; }
+  .v3-more > summary::after { content: "+"; font-size: 20px; font-weight: 400; transition: transform .2s; }
+  .v3-more[open] > summary::after { transform: rotate(45deg); }
+  .v3-more-body { padding-top: 14px; }
+  .v3-sub { font-size: 14px; font-weight: 800; color: var(--ink); margin: 16px 2px 8px; }
+
+  .v3-back { position: fixed; inset: 0; background: rgba(31,26,20,.38); opacity: 0; pointer-events: none; transition: opacity .25s; z-index: 80; }
+  .v3-back.open { opacity: 1; pointer-events: auto; }
+  .v3-sheet { position: fixed; left: 0; right: 0; bottom: 0; max-width: 600px; margin: 0 auto; background: var(--card); border-radius: 26px 26px 0 0;
+    padding: 10px 20px calc(22px + env(safe-area-inset-bottom)); z-index: 81; max-height: 86vh; overflow-y: auto;
+    transform: translateY(105%); transition: transform .34s cubic-bezier(.2,.85,.25,1); box-shadow: 0 -12px 40px -20px rgba(31,26,20,.5); }
+  .v3-sheet.open { transform: none; }
+  .v3-grab { width: 38px; height: 5px; border-radius: 99px; background: var(--rule); margin: 0 auto 16px; }
+  .v3-sheet h2 { font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 26px; line-height: 1.1; margin: 0 0 6px; letter-spacing: -.01em; }
+  .v3-sheet-nums { display: flex; gap: 18px; margin: 10px 0 12px; }
+  .v3-sheet-nums div { font-size: 12.5px; color: var(--ink-faded); }
+  .v3-sheet-nums b { display: block; font-size: 20px; color: var(--ink); font-weight: 800; }
+  .v3-sheet-desc { font-size: 14.5px; color: var(--ink); line-height: 1.5; margin: 0 0 14px; }
+  .v3-steps { margin: 0 0 18px; padding: 0; list-style: none; counter-reset: st; }
+  .v3-steps li { counter-increment: st; position: relative; padding: 0 0 12px 34px; font-size: 14.5px; line-height: 1.5; }
+  .v3-steps li::before { content: counter(st); position: absolute; left: 0; top: 0; width: 23px; height: 23px; border-radius: 50%; background: var(--paper); color: var(--ink); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .v3-log-btn { width: 100%; border: 0; font: inherit; font-size: 16px; font-weight: 800; color: #fff; background: var(--today); border-radius: 16px; padding: 16px; cursor: pointer; transition: transform .12s; }
+  .v3-log-btn:active { transform: scale(.98); }
+
+  .tabbar .ico svg { width: 23px; height: 23px; display: block; margin: 0 auto 3px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  .tabbar button { transition: color .2s; text-transform: none; letter-spacing: 0; }
+  .tabbar button.on .ico svg { stroke-width: 2.3; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .screen.active, .v3-pill.pop, .v3-tiles.swap { animation: none; }
+    .v3-ring-fg, .v3-pro-track span, .v3-sheet, .v3-back, .v3-tile, .v3-seg button { transition: none; }
+  }
+
+  /* ===================== v3.2 ===================== */
+  .v3-field { display: block; margin: 0 0 12px; }
+  .v3-field span { display: block; font-size: 13px; font-weight: 700; color: var(--ink-soft); margin: 0 0 5px 2px; }
+  .v3-field input { width: 100%; font: inherit; font-size: 16px; color: var(--ink); background: var(--paper); border: 1.5px solid var(--rule); border-radius: 12px; padding: 12px 13px; }
+  .v3-field input:focus { outline: none; border-color: var(--today); }
+  .v3-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .v3-chips { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 14px; }
+  .v3-chip { border: 1.5px solid var(--rule); background: var(--paper); color: var(--ink); font: inherit; font-size: 13px; font-weight: 700; border-radius: 99px; padding: 7px 12px; cursor: pointer; transition: background .15s, border-color .15s; }
+  .v3-chip:active { transform: scale(.97); }
+  .v3-chip[aria-pressed="true"] { background: var(--today); border-color: var(--today); color: #fff; }
+  .v3-chip small { font-weight: 400; color: var(--ink-faded); margin-left: 3px; }
+  .v3-label { font-size: 13px; font-weight: 700; color: var(--ink-soft); margin: 4px 2px 7px; }
+  .v3-hint { font-size: 12.5px; color: var(--ink-faded); margin: -6px 2px 14px; }
+  .v3-err { font-size: 13px; color: var(--orange); font-weight: 700; margin: -4px 2px 12px; min-height: 0; }
+
+  .v3-week { background: var(--card); border-radius: 22px; padding: 18px; margin: 4px 0 20px; box-shadow: 0 1px 0 var(--rule); }
+  .v3-week h2 { font-size: 19px; font-weight: 800; margin: 0; color: var(--ink); }
+  .v3-week .when { font-size: 13px; color: var(--ink-faded); margin: 2px 0 14px; }
+  .v3-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-bottom: 8px; }
+  .v3-day { text-align: center; font-size: 11.5px; color: var(--ink-faded); }
+  .v3-dot { width: 100%; aspect-ratio: 1; max-width: 34px; margin: 0 auto 4px; border-radius: 50%; border: 2px solid var(--rule); }
+  .v3-dot.some { background: linear-gradient(to top, var(--green-soft) 50%, transparent 50%); border-color: var(--green); }
+  .v3-dot.all { background: var(--green); border-color: var(--green); }
+  .v3-dot.today { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--today); }
+  .v3-headline { font-size: 15px; font-weight: 700; color: var(--ink); margin: 10px 0 14px; }
+  .v3-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .v3-stat { background: var(--paper); border-radius: 14px; padding: 11px 12px; }
+  .v3-stat b { display: block; white-space: nowrap; font-size: 19px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .v3-stat span { font-size: 12px; color: var(--ink-faded); line-height: 1.35; display: block; }
+  .v3-week .foot { font-size: 12.5px; color: var(--ink-faded); margin: 12px 2px 0; line-height: 1.45; }
+
+  /* Dark mode follows the phone's setting. Same warm identity, turned down
+     for night: the paper becomes a warm charcoal rather than pure black,
+     and the greens lift so they still read on a dark ground. */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #17140F; --paper-warm: #1F1B15; --card: #231F19;
+      --ink: #F1EADF; --ink-soft: #CFC5B6; --ink-faded: #A0947F;
+      --rule: #3B342B; --rule-soft: #2D2721;
+      --accent: #E39A80; --accent-soft: #B86B55;
+      --orange: #F0925A; --orange-soft: #3B2617;
+      --today: #6DB38B; --today-soft: #1F3429;
+      --green: #97C766; --green-soft: #26321F;
+      --blue: #7DB3DC; --blue-soft: #1B2A36;
+      --prep: #9A7A3A; --prep-bg: #2F2717; --prep-text: #EBCB8C;
+      --parents: #E5896A; --yellow: #E4BC4A; --red: #E6735F;
+      color-scheme: dark;
+    }
+    .v3-log-btn, .v3-chip[aria-pressed="true"] { color: #10160F; }
+    .v3-ring-bg { opacity: 1; }
+    .v3-hero, .v3-tile, .v3-week { box-shadow: 0 1px 0 var(--rule); }
+    .v3-back { background: rgba(0,0,0,.55); }
+    /* The tab bar had a hardcoded light-cream background. */
+    .tabbar { background: rgba(23,20,15,0.94); }
+    /* Accent colours get lighter at night so they read on a dark ground,
+       which means white text on them stops being legible. Every button
+       that sat white-on-accent switches to near-black text instead. */
+    #screen-today .water-btns button.add, #screen-pantry .copybtn, #screen-pantry .item.checked .chk,
+    .selbar .sb-btn.go, .v3-tile-done, .target-chips button.on, .step-num, .timer button,
+    .alarm-bar, #screen-pantry .logbtn { color: #14110D; }
+  }
 </style>
 </head>
 <body>
@@ -430,89 +584,112 @@
       <h1 class="page" id="t-date">Today</h1>
       <div class="day-chip" id="t-daychip"></div>
     </div>
-    <button class="pill-btn" id="t-weight-btn">⚖️ Log weight</button>
+    <button class="pill-btn" id="t-weight-btn">Log weight</button>
   </div>
 
   <div class="digest-badge" id="digestBadge"></div>
-  <div id="t-win"></div>
-
-  <div class="sec-label">🧊 What you actually have</div>
-  <div id="t-batch"></div>
-
-  <div class="sec-label" id="t-rollover-label" style="display:none">↻ Rolled over</div>
-  <div id="t-rollover"></div>
-
-  <div class="sec-label">How much effort have you got?</div>
-  <div id="t-modes"></div>
-  <div id="sec-ideas"><div id="t-meals"></div></div>
-  <div id="sec-craving"><div id="t-craving"></div></div>
-  <div id="sec-finish"><div id="t-finish"></div></div>
-  <div id="sec-grab" style="display:none"><div id="t-grab-label" style="display:none"></div><div id="t-grab"></div></div>
-
-  <div id="t-prep-wrap" style="display:none">
-    <div class="sec-label">Today's prep</div>
-    <div id="t-prep"></div>
-  </div>
-
-  <div class="sec-label">Calorie budget</div>
-  <div class="card">
-    <div class="budget-row">
-      <div class="budget-big"><span id="t-consumed">0</span> <span class="of">/ <span id="t-target">2250</span> cal</span></div>
-      <div class="budget-left" id="t-left">2250 left</div>
-    </div>
-    <div class="bar"><span id="t-bar" style="width:0%"></span></div>
-    <div class="target-chips" id="t-target-chips"></div>
-    <button class="eat-btn" id="t-eat-btn">🍽 What can I eat? (2250 cal left)</button>
-    <div class="note-sm">Fixed deficit target — your workout calories are already baked in, so it doesn't balloon on lift or cardio days.</div>
-  </div>
-
-  <div class="sec-label">Protein first</div>
-  <div class="card">
-    <div id="t-protein"></div>
-    <div id="t-macros"></div>
-    <div class="note-sm">Protein is the priority in a cut — hit the protein number first, then fill in the rest. Only logged items with macro data count.</div>
-  </div>
-
-  <div class="sec-label">Weight goal progress</div>
-  <div class="card">
-    <div class="wg-row">
-      <div class="wg-box"><div class="wg-lbl">Current</div><div class="wg-val" id="t-cur-w">—</div><div class="wg-unit">lbs</div></div>
-      <div class="wg-arrow">→</div>
-      <div class="wg-box goal"><div class="wg-lbl">Goal</div><div class="wg-val" id="t-goal-w">—</div><div class="wg-unit">lbs</div></div>
-    </div>
-    <div class="wg-track"><span id="t-wg-track" style="width:0%"></span></div>
-    <div class="wg-meta">
-      <div>
-        <div class="wg-rate" id="t-rate">—</div>
-        <div class="wg-est" id="t-est"></div>
+  <section class="v3-hero" aria-label="Today so far">
+    <div class="v3-ring-wrap">
+      <svg class="v3-ring" viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="v3-ring-bg" cx="60" cy="60" r="52"></circle>
+        <circle class="v3-ring-fg" id="v3-ring-fg" cx="60" cy="60" r="52"></circle>
+      </svg>
+      <div class="v3-ring-center">
+        <div class="v3-big" id="t-consumed">0</div>
+        <div class="v3-of">of <span id="t-target">2300</span> cal</div>
       </div>
-      <div class="wg-togo"><b id="t-togo">—</b>lbs to go</div>
     </div>
-    <div class="note-sm">Estimate based on your deficit target. Tap <b>Log weight</b> (or the Calendar tab) to keep it accurate.</div>
+    <div class="v3-side">
+      <div class="v3-left" id="t-left">2300 left</div>
+      <div class="v3-pro-label"><span>Protein</span><span id="v3-pro-num">0 of 184 g</span></div>
+      <div class="v3-pro-track"><span id="v3-pro-bar"></span></div>
+      <div id="t-check"></div>
+    </div>
+  </section>
+
+  <section class="v3-block">
+    <h2 class="v3-h">Log a meal</h2>
+    <div class="v3-seg" id="v3-seg" role="tablist" aria-label="Meal"></div>
+    <div class="v3-tiles" id="t-rotation" role="tabpanel"></div>
+    <div id="v3-sec-note"></div>
+    <button class="v3-else" type="button" onclick="openMealLog()">+ Log something else</button>
+  </section>
+
+  <section class="v3-block">
+    <h2 class="v3-h">Eaten today</h2>
+    <div class="card" id="t-log"></div>
+  </section>
+
+  <details class="v3-more">
+    <summary>Weight, water, energy, and notes</summary>
+    <div class="v3-more-body">
+      <div class="v3-sub">Weight</div>
+      <div class="card">
+        <div class="wg-row">
+          <div class="wg-box"><div class="wg-lbl">Current</div><div class="wg-val" id="t-cur-w">—</div><div class="wg-unit">lbs</div></div>
+          <div class="wg-arrow">→</div>
+          <div class="wg-box goal"><div class="wg-lbl">Goal</div><div class="wg-val" id="t-goal-w">—</div><div class="wg-unit">lbs</div></div>
+        </div>
+        <div class="wg-track"><span id="t-wg-track" style="width:0%"></span></div>
+        <div class="wg-meta">
+          <div><div class="wg-rate" id="t-rate">—</div><div class="wg-est" id="t-est"></div></div>
+          <div class="wg-togo"><b id="t-togo">—</b>lbs to go</div>
+        </div>
+      </div>
+
+      <div class="v3-sub">Water</div>
+      <div class="card">
+        <div class="water-row">
+          <div class="water-big"><span id="t-water">0</span> <span class="of">/ 64 oz</span></div>
+          <div class="water-glass" id="t-water-glass">0 glasses</div>
+        </div>
+        <div class="water-bar"><span id="t-water-bar" style="width:0%"></span></div>
+        <div class="water-btns">
+          <button id="t-water-minus">− 8 oz</button>
+          <button class="add" id="t-water-plus">+ 8 oz</button>
+        </div>
+      </div>
+
+      <div class="v3-sub">How are you feeling?</div>
+      <div class="energy" id="t-energy"></div>
+
+      <div class="v3-sub">Workout notes</div>
+      <textarea class="notes-area" id="t-notes" placeholder="Sets, weights, how it felt"></textarea>
+    </div>
+  </details>
+
+  <!-- Still written to by older code; kept so nothing breaks, not shown. -->
+  <div hidden>
+    <div id="t-bar"></div><div id="t-target-chips"></div><button id="t-eat-btn" type="button"></button>
+    <div id="t-protein"></div><div id="t-macros"></div>
   </div>
 
-  <div class="sec-label">How are you feeling?</div>
-  <div class="energy" id="t-energy"></div>
-  <div class="note-sm" style="margin:-2px 2px 0">Worth watching in a deficit — a run of Low or Exhausted days is a cue to look at sleep, recovery, and whether you're hitting your protein.</div>
-
-  <div class="sec-label">Water intake</div>
-  <div class="card">
-    <div class="water-row">
-      <div class="water-big"><span id="t-water">0</span> <span class="of">/ 64 oz</span></div>
-      <div class="water-glass" id="t-water-glass">0 glasses</div>
+  <div class="v3-back" id="v3-back" onclick="closeRotSheet();closeMealLog()"></div>
+  <div class="v3-sheet" id="v3-meal" role="dialog" aria-modal="true" aria-labelledby="v3-meal-title" aria-hidden="true">
+    <div class="v3-grab"></div>
+    <h2 id="v3-meal-title">Log a meal</h2>
+    <div id="v3-meal-recent"></div>
+    <div class="v3-label">Rough estimates</div>
+    <div class="v3-chips" id="v3-meal-presets"></div>
+    <p class="v3-hint">Tap one to fill it in, then adjust if you know better. Close is good enough.</p>
+    <label class="v3-field"><span>What was it?</span><input id="v3-meal-name" type="text" placeholder="Burger and fries at 7 Brothers" autocomplete="off"></label>
+    <div class="v3-row2">
+      <label class="v3-field"><span>Calories</span><input id="v3-meal-cal" type="number" inputmode="numeric" placeholder="1100"></label>
+      <label class="v3-field"><span>Protein (g)</span><input id="v3-meal-pro" type="number" inputmode="numeric" placeholder="optional"></label>
     </div>
-    <div class="water-bar"><span id="t-water-bar" style="width:0%"></span></div>
-    <div class="water-btns">
-      <button id="t-water-minus">− 8 oz</button>
-      <button class="add" id="t-water-plus">+ 8 oz 💧</button>
-    </div>
+    <div class="v3-label">Which meal?</div>
+    <div class="v3-chips" id="v3-meal-slot"></div>
+    <div class="v3-err" id="v3-meal-err" role="alert"></div>
+    <button class="v3-log-btn" type="button" onclick="submitMealLog()">Log this meal</button>
   </div>
-
-  <div class="sec-label">Workout notes</div>
-  <textarea class="notes-area" id="t-notes" placeholder="+ Add workout notes (sets, weights, how it felt…)"></textarea>
-
-  <div class="sec-label">Today's log</div>
-  <div class="card" id="t-log"></div>
+  <div class="v3-sheet" id="v3-sheet" role="dialog" aria-modal="true" aria-labelledby="v3-sheet-title" aria-hidden="true">
+    <div class="v3-grab"></div>
+    <h2 id="v3-sheet-title"></h2>
+    <div class="v3-sheet-nums" id="v3-sheet-nums"></div>
+    <p class="v3-sheet-desc" id="v3-sheet-desc"></p>
+    <ol class="v3-steps" id="v3-sheet-steps"></ol>
+    <button class="v3-log-btn" id="v3-sheet-log" type="button">Log it</button>
+  </div>
 </div>
 
 <!-- ============ CALENDAR ============ -->
@@ -520,10 +697,12 @@
   <div class="masthead">
     <div>
       <h1 class="page">Calendar</h1>
-      <div class="day-eyebrow" style="margin-top:4px;">May 20 — June 30</div>
+      <div class="day-eyebrow" style="margin-top:4px;">What you ate, day by day</div>
     </div>
-    <button class="pill-btn" id="c-weight-btn">⚖️ Log weight</button>
+    <button class="pill-btn" id="c-weight-btn">Log weight</button>
   </div>
+
+  <div id="v3-week"></div>
 
   <div class="cal-header">
     <div class="month-label" id="month-title">May 2026</div>
@@ -643,13 +822,11 @@
       <h1 class="page">Shop</h1>
     </div>
   </div>
-  <div class="shop-switch" id="shopSwitch">
+  <div class="shop-switch" id="shopSwitch" style="display:none">
     <button data-shopview="kit" class="on" onclick="setShopView('kit')">Day One</button>
     <button data-shopview="weekly" onclick="setShopView('weekly')">Every week</button>
     <button data-shopview="week" onclick="setShopView('week')">This week</button>
   </div>
-  <div class="sec-label">🧾 Restock — what's below par</div>
-  <div id="shopStock"></div>
   <div id="shopBody"></div>
 </div>
 
@@ -862,10 +1039,17 @@ function shopKey(){ return 'kitchen-shop-'+shopView; }
 function shopState(){ try{ return JSON.parse(localStorage.getItem(shopKey())||'{}'); }catch(e){ return {}; } }
 function shopSave(st){ try{ localStorage.setItem(shopKey(), JSON.stringify(st)); }catch(e){} }
 
+/* v3.0: the Shop screen is the grocery list plus the rhythm. The Day One
+   kit, the store guide, and the auto-depleting stock counter were all built
+   for the old weekly-plan model; grocery.html now does that job, and one
+   list is easier to keep honest than three. Their code is left in place. */
+const SHOP_RHYTHM_HTML='<div class="tmeal note" style="margin-bottom:12px"><div class="nt"><b>WinCo every week.</b> Cash or debit only. Produce, ground beef, eggs, bread, tortillas, pantry.<br><br>'+
+  '<b>Costco once a month.</b> Chicken breasts to portion and freeze, chicken chunks, turkey sausage, cheese, Rao\u2019s, protein bars.<br><br>'+
+  '<b>Smith\u2019s only if you\u2019re passing by</b> \u2014 Hillshire turkey patties or a good fruit deal on the weekly ad.</div></div>';
 function renderShop(){
-  renderStock();
   const host=document.getElementById('shopBody'); if(!host) return;
-  if(shopView==='week'){ renderWeekLists(host); return; }
+  shopView='week';
+  if(shopView==='week'){ renderWeekLists(host); host.insertAdjacentHTML('afterbegin', SHOP_RHYTHM_HTML); return; }
   const DATA = shopView==='kit' ? STARTER_KIT : STORE_GUIDE;
   const st=shopState();
   const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -930,7 +1114,7 @@ function renderShop(){
 
 function renderWeekLists(host){
   const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  let html='<p class="shop-intro">The specific list for a single week \u2014 every ingredient for all 21 meals plus Sunday prep, ordered the way you walk each store. Tap a week to open it.</p>';
+  let html='<p class="shop-intro">This week\u2019s list names the exact product for every item, ordered the way you walk each store. Tap it to open.</p>';
 
   html+='<a class="wk-card now" href="'+esc(CURRENT_LIST)+'?t='+Date.now()+'">'
       + '<div class="wk-top"><div class="wk-dates">This week\u2019s list</div>'
@@ -958,11 +1142,11 @@ function renderWeekLists(host){
 
 <!-- ============ TAB BAR ============ -->
 <nav class="tabbar" id="tabbar">
-  <button data-tab="today" class="on" onclick="showTab('today')"><span class="ico">🌅</span>Today</button>
-  <button data-tab="calendar" onclick="showTab('calendar')"><span class="ico">🗓️</span>Calendar</button>
-  <button data-tab="pantry" onclick="showTab('pantry')"><span class="ico">🧺</span>Pantry</button>
-  <button data-tab="shop" onclick="showTab('shop')"><span class="ico">🛒</span>Shop</button>
-  <button data-tab="rules" onclick="showTab('rules')"><span class="ico">📋</span>Rules</button>
+  <button data-tab="today" class="on" onclick="showTab('today')"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span>Today</button>
+  <button data-tab="calendar" onclick="showTab('calendar')"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span>Calendar</button>
+  <button data-tab="pantry" onclick="showTab('pantry')"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 9h16l-1.6 10.1a2 2 0 0 1-2 1.7H7.6a2 2 0 0 1-2-1.7z"/><path d="M8.5 9 11 3.5M15.5 9 13 3.5"/></svg></span>Pantry</button>
+  <button data-tab="shop" onclick="showTab('shop')"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 4h2.2l2.2 11h10.4l2-7.5H6.4"/><circle cx="9.5" cy="19.5" r="1.4"/><circle cx="16.5" cy="19.5" r="1.4"/></svg></span>Shop</button>
+  <button data-tab="rules" onclick="showTab('rules')"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="3.5" width="14" height="17" rx="2.5"/><path d="M9 8.5h6M9 12h6M9 15.5h4"/></svg></span>Rules</button>
 </nav>
 
 <!-- selection bar (pantry meal builder) -->
@@ -1213,6 +1397,8 @@ function todayISO(){ const d=new Date(); return d.getFullYear()+"-"+String(d.get
 let activeTab='today';
 function showTab(name){
   activeTab=name;
+  /* the check-in reads saved days, so redraw it each time Calendar opens */
+  if(name==='calendar' && typeof renderWeek==='function') renderWeek();
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $('screen-'+name).classList.add('active');
   document.querySelectorAll('#tabbar button').forEach(b=>b.classList.toggle('on', b.dataset.tab===name));
@@ -1430,9 +1616,30 @@ function showTab(name){
 const KITCHEN_RULES = {
   _meta: {
     note: "Single source of truth for diet rules, pantry, exact nutrition, and meal/grocery workflow.",
-    updated: "2026-09-20"
+    updated: "2026-09-22"
   },
 
+  rotation: {
+    what: "Sept 2026: the weekly calendar of 21 assigned meals was retired for a ROTATION — a short list of meals he actually wants, picked in any order. Nothing is assigned to a day. See ROTATION in the code.",
+    why: "Most planned meals never got cooked, the plain chicken-rice-veg format was food he didn't want, and ordinary weeks read as failures. He said it plainly: burgers are his favourite food, rice and veggies are bland, and he has no time.",
+    breakfast: "Cheesy scramble plate (3 eggs, cheddar, turkey sausage or hash browns, fruit). Cereal is the rushed-morning fallback.",
+    lunch: "Campus days: PB-honey tortilla + fruit + protein bar, no fridge needed. At home: any dinner card or leftovers.",
+    dinners: "Double smash burger, BBQ chicken quesadilla, beef or chicken tacos, pasta with meat sauce, air-fryer chicken chunks. Plus one flex night a week.",
+    snacks: "Fruit daily (he loves fruit far more than vegetables — apples, bananas, watermelon, pineapple, oranges), the tropical smoothie, protein bar + fruit.",
+    breakfastBurritos: "No — he prefers eggs scrambled with cheese and the meat on the side.",
+    backpackStash: "A protein bar lives in the backpack permanently, so a forgotten lunch is never a skipped meal."
+  },
+  shoppingRhythm: {
+    winco: "Every week. Cash or debit only. Produce, fruit, 85/15 ground beef, eggs, bread, buns, tortillas, pantry, mild taco seasoning from bulk bins.",
+    costco: "Once a month (Orem). Fresh chicken breasts portioned and frozen on arrival, Kirkland breaded chicken chunks, Jimmy Dean turkey sausage links, shredded cheddar, Rao's, protein bars.",
+    smiths: "Dropped as a regular stop. Only when passing by — Hillshire turkey patties or weekly-ad fruit deals.",
+    list: "grocery.html. Each item names the exact product and why; the COSTCO_TRIP switch at the top hides the Costco section on WinCo-only weeks."
+  },
+  logging: {
+    how: "One tap from a rotation card — calories and protein are pre-filled. Anything else (eating out, a friend's) goes through “Something else”.",
+    goal: "Three meals a day with protein in each is the daily goal. The 2300 calorie target stays visible; he asked to keep it.",
+    counts: "Fast food counts. Eating at a friend's counts. Cereal counts. A day is a success if he ate."
+  },
   diet: {
     dailyCalories: "2300 flat, every day — training or not (was 2100-2400 by day type until 2026-09-21)",
     flatTargetWhy: "Tiering by day type was precision we do not have. A Tonal session is ~200-300 cal over baseline, elliptical ~250-400, the bioimpedance TEE carries about ±200, and volume-measured portions carry more — so three tiers meant a daily decision chasing a number smaller than the error bars. Training is 6 days a week anyway, so there was never a big population of low days to average down. One number removes a decision, and decisions are what have been breaking.",
@@ -1654,7 +1861,8 @@ function renderRules(){
     return '<p class="rule-p">'+esc(val)+'</p>';
   }
   const labels={ dislikes_neverUse:'Dislikes / Never Use', useSparingly:'Use Sparingly', cardRules:'Recipe Card Rules', lunchRule:'Lunch Rule', dinnerRule:'Dinner Rule', sundaySteakNight:'Sunday Steak Night', kitchenEquipment:'Kitchen Equipment', eggBreakfastRule:'Egg Breakfast Rule', preLiftBreakfastRotation:'Pre-Lift Breakfast Rotation', weekdaySimplicity:'Weekday Simplicity', weeklyCycle:'Weekly Cycle', groceryList:'Grocery List', dishRatings:'Dish Ratings', exactNutrition:'Exact Nutrition', portionMath:'Portion Math' };
-  const order=['diet','dislikes_neverUse','useSparingly','cardRules','measurement','lunchRule','dinnerRule','sundaySteakNight','eggBreakfastRule','preLiftBreakfastRotation','weekdaySimplicity','reheatRule','sauceAndCrunch','plainIsNotHealthy','sidesNotPrepped','weeklyCycle','groceryList','dishRatings','kitchenEquipment','pantry','exactNutrition','portionMath'];
+  /* v3.0: the batch-prep rules (Sunday prep, weekday simplicity, weekly cycle, portion math, lunch/dinner rules) are kept in the object as history but no longer shown — they describe a system that was retired. */
+  const order=['rotation','diet','logging','shoppingRhythm','dislikes_neverUse','useSparingly','reheatRule','kitchenEquipment','measurement','cardRules','pantry','exactNutrition'];
   let html='<p class="rules-meta">Source of truth for diet rules, pantry &amp; workflow. Last updated '+esc((R._meta&&R._meta.updated)||'')+'.</p>';
   order.forEach(key=>{
     if(!(key in R)) return;
@@ -2473,6 +2681,7 @@ function ratingRow(name){ const r=getRatings(); const cur=r[name]?r[name].r:null
 function exportRatings(){ const r=getRatings(); const likes=[],dislikes=[],tweaks=[]; Object.keys(r).forEach(function(name){ if(r[name].r==="like") likes.push(name); else if(r[name].r==="dislike") dislikes.push(name); else if(r[name].r==="tweak") tweaks.push(name+" — "+(r[name].note?r[name].note:"(no note)")); }); if(!likes.length&&!dislikes.length&&!tweaks.length){ showToast("No ratings yet — tap 👍 🤔 👎 on dishes first"); return; } const out=["Here are my dish ratings — apply these to future plans:",""]; if(likes.length) out.push("KEEP 👍: "+likes.join(", ")); if(dislikes.length) out.push("DROP 👎 (never plan again): "+dislikes.join(", ")); if(tweaks.length){ out.push("TWEAK 🤔 (keep but adjust):"); tweaks.forEach(function(t){ out.push("  • "+t); }); } copyText(out.join("\n")); showToast("Ratings copied — paste them to Claude"); }
 
 function renderCalendar(){
+  if(typeof renderWeek==="function") renderWeek();
   const monthNames=["January","February","March","April","May","June","July","August","September","October","November","December"];
   $("month-title").textContent=`${monthNames[currentMonth]} ${currentYear}`;
   const grid=$("cal-grid"); grid.innerHTML="";
@@ -2507,9 +2716,9 @@ function renderCalendar(){
 function renderDetail(){
   const panel=$("detail-panel"); panel.innerHTML=""; if(!selectedDate) return;
   const m=meals[selectedDate];
-  if(!m){ panel.innerHTML=`<div class="detail-card"><div class="detail-date">${fmtPretty(selectedDate)}</div><div class="detail-overlay">No meals planned</div></div>`; return; }
+  if(!m){ panel.innerHTML=`<div class="detail-card"><div class="detail-date">${fmtPretty(selectedDate)}</div>${loggedListHTML(selectedDate)}</div>`; return; }
   const card=document.createElement("div"); card.className="detail-card";
-  card.innerHTML=`<div class="detail-date">${fmtPretty(selectedDate)}</div><div class="detail-overlay">${m.overlay}</div>`;
+  card.innerHTML=`<div class="detail-date">${fmtPretty(selectedDate)}</div>${loggedListHTML(selectedDate)}<div class="detail-label" style="margin-top:14px;color:var(--ink-faded)">Old plan — kept as history</div><div class="detail-overlay">${m.overlay}</div>`;
   const gbtn=document.createElement("button"); gbtn.className="grocery-btn"; const _wr=weekRange(selectedDate);
   gbtn.textContent="🛒 Grocery list — week of "+shortMD(_wr.sunStr)+"–"+shortMD(_wr.satStr); gbtn.onclick=buildGrocery; card.appendChild(gbtn);
   if(m.isPrep&&m.prep){ const pb=document.createElement("div"); pb.className="prep-box"; pb.innerHTML=`<div class="prep-label">Sunday prep tasks</div>`+m.prep.map(p=>`<div class="prep-item">${p}</div>`).join(""); card.appendChild(pb); }
@@ -3332,17 +3541,17 @@ function logTotals(){ let c=0,p=0,cb=0,f=0; dayState.log.forEach(i=>{ c+=(i.cal|
 /* ----- render ----- */
 function renderToday(){
   // header
-  const dt=todayDate; const dows=["SUNDAY","MONDAY","TUESDAY","WEDNESDAY","THURSDAY","FRIDAY","SATURDAY"];
+  const dt=todayDate; const dows=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
   const months=["Jan","Feb","Mar","Apr","May","June","July","Aug","Sept","Oct","Nov","Dec"];
-  $("t-dow").textContent=dows[dt.getDay()]+", "+months[dt.getMonth()].toUpperCase()+" "+dt.getDate();
+  $("t-dow").textContent=dows[dt.getDay()]+", "+months[dt.getMonth()]+" "+dt.getDate();
   $("t-date").textContent="Today";
   if(typeof updateDigestBadge==="function") updateDigestBadge();
 
   // day chip + today's meals + target chips
   renderDayChip();
-  renderTodayMeals();
-  renderTodayPrep();
-  renderTargetChips();
+  renderCheck();
+  renderRotation();
+  setTimeout(renderRing, 0);   /* after the budget text below is written */
 
   // budget
   const target=dayTarget(); const tot=logTotals(); const left=target-tot.c;
@@ -3373,13 +3582,6 @@ function renderToday(){
   // protein hero + macros
   renderProtein(target,tot);
   renderMacros(target,tot);
-  renderWin();
-  renderModes();
-  renderCraving();
-  renderFinish();
-  renderGrab();
-  renderBatch();
-  renderRollover();
 }
 
 function renderWeightGoal(target){
@@ -3422,7 +3624,10 @@ function renderLog(){
     return h+`</div>`;
   };
   let html="";
-  SLOTS.forEach(s=>{ html+=slotBlock(s.e,s.n,s.k,bySlot[s.k]); });
+  /* v3.1: only the slots you actually ate in. Seven rows of "0 cal" read
+     like a list of failures, and adding now happens from the meal tiles. */
+  SLOTS.forEach(s=>{ if(bySlot[s.k].length) html+=slotBlock(s.e,s.n,s.k,bySlot[s.k]); });
+  if(!dayState.log.length) html='<div style="padding:14px 4px;font-size:14px;color:var(--ink-faded)">Nothing yet. Tap a meal above to log it.</div>';
   Object.keys(extra).forEach(k=>{ const lbl=k.charAt(0).toUpperCase()+k.slice(1); html+=slotBlock("🍎",lbl,k,extra[k]); });
   box.innerHTML=html;
 }
@@ -4084,6 +4289,363 @@ function renderStock(){
        return esc(x.n)+' <span style="color:var(--ink-faded)">'+x.par+' '+esc(x.unit)+(x.par>1?'s':'')+'</span>'; }).join("<br>")+
      '</div></div>';
   host.innerHTML=h;
+}
+
+
+/* ======================= v3.0 — THE ROTATION ========================
+   Sept 2026. The app used to be a calendar: 21 assigned meals a week,
+   Sunday batch prep, and a plan you could fall behind on. In practice most
+   of it never got cooked, the plain chicken-and-rice format was food nobody
+   wanted, and every ordinary week — a day in Salt Lake, a busy Sunday, a
+   skipped campus lunch — read as a failure.
+
+   So the model changed from a schedule to a ROTATION: a short list of meals
+   he actually wants, built on the same few cheap ingredients, picked in any
+   order. Nothing is assigned to a day, so there is nothing to fall behind on.
+   Burgers are his favourite food and they are on here on purpose.
+
+   The calorie target stays (2300), and logging is now one tap: every card
+   already knows its calories and protein, because the real problem with
+   logging was having to look numbers up and type them in.
+
+   Numbers are estimates from typical labels for the products on
+   grocery.html. They are close enough to steer by, not lab values. */
+
+/* Days from here on have no assigned meals. Everything before stays exactly
+   as it was, as read-only history on the Calendar. Removed at load rather
+   than from the file, so the old plans are still in the source if ever
+   wanted and a single line undoes it. */
+const ROTATION_START="2026-09-22";
+Object.keys(meals).forEach(function(d){ if(d>=ROTATION_START) delete meals[d]; });
+
+const ROTATION=[
+  {sec:"Breakfast", slot:"breakfast", items:[
+    {k:"scramble", n:"Cheesy scramble plate", c:550, p:38,
+     d:"3 eggs scrambled with cheddar, turkey sausage, and a piece of fruit.",
+     r:["Air fryer: 2 turkey sausage links (or a hash brown patty), 375°F, 5 min for links / 10–12 min for a patty.",
+        "Meanwhile, whisk 3 eggs with a pinch of salt. Medium-low pan, 1 tsp butter, stir slowly 2–3 min until just set.",
+        "Off the heat, fold in ¼ cup shredded cheddar.",
+        "Plate with the sausage and a banana, orange, or apple. Toast if you're hungry."]},
+    {k:"cereal", n:"Cereal and milk", c:350, p:12,
+     d:"The rushed-morning fallback. Still counts.",
+     r:["A big bowl of cereal with milk.",
+        "To round it out, add a Greek yogurt cup, a couple of hard-boiled eggs, or a glass of milk on the side — cereal alone is light on protein."]}
+  ]},
+  {sec:"Lunch", slot:"lunch", items:[
+    {k:"campus", n:"Campus pack", c:750, p:34,
+     d:"No fridge needed. Pack it the night before or grab it on the way out.",
+     r:["Spread 2 tbsp peanut butter and 1 tbsp honey on a burrito-size tortilla, roll it, wrap in foil.",
+        "Add an apple or a mandarin and a protein bar.",
+        "Keep a spare protein bar in your backpack permanently, so a forgotten lunch is never a skipped one."]}
+  ], note:"At home? Any dinner card below works as lunch — log it before 4 pm and it counts as lunch."},
+  {sec:"Dinner", slot:"dinner", items:[
+    {k:"burger", n:"Double smash burger", c:700, p:40,
+     d:"Your favourite. Two thin crispy patties, cheese, burger sauce.",
+     r:["Split ⅓ lb ground beef into 2 balls. Burger sauce: 1 tbsp mayo + 1 tbsp ketchup.",
+        "Screaming-hot dry pan. Smash each ball flat HARD with a spatula for 10 seconds. Salt well.",
+        "2 min until the edges are deep brown, flip, cheddar on each, 1 more min.",
+        "Toast the bun, sauce it, stack both patties with lettuce and onion."]},
+    {k:"quesadilla", n:"BBQ chicken quesadilla", c:760, p:62,
+     d:"Crispy, cheesy, and the most protein on this list.",
+     r:["Chop 5 oz cooked chicken (pull a portion from the freezer the night before, or air fry a breast 380°F 18–22 min to 165°F).",
+        "Toss with 2 tbsp honey BBQ sauce and a pinch of garlic powder.",
+        "Burrito-size tortilla: ½ cup cheddar split around the chicken, fold it over.",
+        "1 tsp butter, medium pan, 2–3 min a side until deep golden. Rest 1 min, cut."]},
+    {k:"tacos", n:"Beef tacos (3)", c:690, p:37,
+     d:"Mild seasoning, cheese, lettuce. Swap chicken for ~640 cal and 50g protein.",
+     r:["Brown ¼ lb ground beef, breaking it up, 6–7 min. Drain most of the fat.",
+        "Stir in 1 tbsp mild taco seasoning and a splash of water, 2 min.",
+        "Warm 3 regular tortillas in a dry pan, 20 sec a side.",
+        "Fill with beef, cheddar, and shredded lettuce."]},
+    {k:"pasta", n:"Pasta with meat sauce", c:640, p:34,
+     d:"Big, cheap, and leftovers reheat fine.",
+     r:["Boil 3 oz pasta in well-salted water per the box.",
+        "Meanwhile brown ¼ lb ground beef with some chopped onion, 7 min. Drain.",
+        "Add ½ cup Rao's marinara, simmer 3 min.",
+        "Toss with the pasta. Cook a double batch and tomorrow's lunch is done."]},
+    {k:"chunks", n:"Air-fryer chicken chunks", c:590, p:44,
+     d:"Zero prep, straight from the freezer. The Cane's night at home.",
+     r:["8 oz frozen breaded chicken chunks, air fryer 400°F for 10–12 min, shaking once.",
+        "Dip in 2 tbsp honey BBQ, or toss them in it.",
+        "Add a piece of fruit on the side."]}
+  ], note:"One night a week is a flex night — eating out, at a friend's, or leftovers. Use “Log something else” below."},
+  {sec:"Snacks", slot:"snack", items:[
+    {k:"smoothie", n:"Tropical smoothie", c:400, p:6,
+     d:"Your old favourite. Two or three servings of fruit in one glass.",
+     r:["Blend 1 banana, 1 orange, 1 cup frozen strawberries, 1 cup frozen pineapple, and 1 cup liquid.",
+        "Coconut water, 1 tbsp chia, and a little Truvia make it the original version; plain water works fine.",
+        "Low on protein on its own — have it with a protein bar or alongside a meal."]},
+    {k:"barfruit", n:"Protein bar + fruit", c:285, p:22,
+     d:"The easy protein top-up.",
+     r:["A protein bar and a piece of fruit. That's it."]},
+    {k:"fruit", n:"A piece of fruit", c:100, p:1,
+     d:"Banana, apple, mandarins, watermelon.",
+     r:["Eat it."]}
+  ]}
+];
+
+let rotOpen=null;
+function toggleRot(k){ rotOpen = (rotOpen===k ? null : k); renderRotation(); }
+function rotItem(k){
+  for(const sec of ROTATION){ for(const it of sec.items){ if(it.k===k) return {sec:sec, it:it}; } }
+  return null;
+}
+function rotSlot(sec){
+  const hr=new Date().getHours();
+  if(sec.slot==="snack") return hr<11 ? "bsnack" : (hr<16 ? "lsnack" : "dsnack");
+  if(sec.slot==="dinner" && hr<16) return "lunch";   /* a dinner card eaten at lunchtime is lunch */
+  return sec.slot;
+}
+function logRotation(k){
+  const f=rotItem(k); if(!f) return;
+  dayState.log=dayState.log||[];
+  /* Same shape every other logger in the app uses — name/pro, not n/p —
+     or the budget and protein totals silently read zero. */
+  const slot=rotSlot(f.sec);
+  dayState.log.push({id:uid(), slot:slot, name:f.it.n, cal:f.it.c, pro:f.it.p, carb:0, fat:0});
+  saveDay(todayStr,dayState);
+  rotOpen=null; v3LastSlot=slot;
+  closeRotSheet();
+  renderToday();
+  if(typeof renderCalendar==="function") renderCalendar();
+  showToast("Logged \u2014 "+f.it.n);
+}
+function timesLoggedToday(name){
+  return (dayState.log||[]).filter(function(i){ return i.name===name; }).length;
+}
+
+/* ---------- v3.1 Today UI ---------- */
+function reduceMotion(){ return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }
+let v3LastSlot=null;     /* the meal pill to pop after a log lands */
+
+/* Three meals is the whole daily goal. Three pills, nothing more. */
+function renderCheck(){
+  const host=$("t-check"); if(!host) return;
+  const log=dayState.log||[];
+  const has=function(sl){ return log.some(function(i){ return i.slot===sl; }); };
+  host.innerHTML='<div class="v3-meals">'+[["breakfast","Breakfast"],["lunch","Lunch"],["dinner","Dinner"]].map(function(r){
+    const ok=has(r[0]);
+    return '<span class="v3-pill'+(ok?' done':'')+(ok&&v3LastSlot===r[0]?' pop':'')+'">'+r[1]+'</span>';
+  }).join('')+'</div>';
+  v3LastSlot=null;
+}
+
+/* The tab defaults to whatever meal it is right now; switching doesn't
+   persist, because the right tab tomorrow morning is breakfast again. */
+function defaultRotSec(){
+  const h=new Date().getHours()+new Date().getMinutes()/60;
+  if(h<10.5) return "Breakfast";
+  if(h<15.5) return "Lunch";
+  if(h<21) return "Dinner";
+  return "Snacks";
+}
+let rotSec=null;
+function setRotSec(name){ rotSec=name; renderRotation(true); }
+function renderRotation(swapped){
+  const host=$("t-rotation"), seg=$("v3-seg"); if(!host||!seg) return;
+  if(!rotSec) rotSec=defaultRotSec();
+  seg.innerHTML=ROTATION.map(function(sec){
+    const on=sec.sec===rotSec;
+    return '<button type="button" role="tab" aria-selected="'+on+'" onclick="setRotSec(\''+sec.sec+'\')">'+esc(sec.sec)+'</button>';
+  }).join('');
+  const sec=ROTATION.filter(function(x){ return x.sec===rotSec; })[0]||ROTATION[0];
+  host.innerHTML=sec.items.map(function(it){
+    const n=timesLoggedToday(it.n);
+    return '<button type="button" class="v3-tile" onclick="openRotSheet(\''+it.k+'\')" aria-label="'+esc(it.n)+', '+it.c+' calories, '+it.p+' grams protein'+(n?', logged today':'')+'">'+
+      (n?'<span class="v3-tile-done" aria-hidden="true">'+(n>1?n:'\u2713')+'</span>':'')+
+      '<span class="v3-tile-name">'+esc(it.n)+'</span>'+
+      '<span class="v3-tile-nums"><b>'+it.c+'</b> cal<br>'+it.p+' g protein</span></button>';
+  }).join('');
+  if(swapped && !reduceMotion()){ host.classList.remove('swap'); void host.offsetWidth; host.classList.add('swap'); }
+  const note=$("v3-sec-note"); if(note) note.innerHTML = sec.note ? '<p class="v3-note">'+esc(sec.note)+'</p>' : '';
+}
+
+/* ---- the recipe sheet ---- */
+let sheetKey=null, sheetReturn=null;
+function openRotSheet(k){
+  const f=rotItem(k); if(!f) return;
+  sheetKey=k; sheetReturn=document.activeElement;
+  $("v3-sheet-title").textContent=f.it.n;
+  $("v3-sheet-nums").innerHTML='<div><b>'+f.it.c+'</b>calories</div><div><b>'+f.it.p+' g</b>protein</div>';
+  $("v3-sheet-desc").textContent=f.it.d;
+  $("v3-sheet-steps").innerHTML=f.it.r.map(function(st){ return '<li>'+esc(st)+'</li>'; }).join('');
+  $("v3-sheet-log").textContent="Log this meal";
+  $("v3-sheet-log").onclick=function(){ logRotation(k); };
+  $("v3-back").classList.add("open");
+  const sh=$("v3-sheet"); sh.classList.add("open"); sh.setAttribute("aria-hidden","false"); sh.scrollTop=0;
+  setTimeout(function(){ const b=$("v3-sheet-log"); if(b && b.focus) b.focus(); }, reduceMotion()?0:300);
+}
+function closeRotSheet(){
+  sheetKey=null;
+  const sh=$("v3-sheet"); if(sh){ sh.classList.remove("open"); sh.setAttribute("aria-hidden","true"); }
+  const bk=$("v3-back"); if(bk) bk.classList.remove("open");
+  if(sheetReturn && sheetReturn.focus){ try{ sheetReturn.focus(); }catch(e){} } sheetReturn=null;
+}
+document.addEventListener("keydown", function(e){ if(e.key==="Escape" && sheetKey) closeRotSheet(); });
+
+/* ---- the ring, the protein bar, and the number ---- */
+let v3ShownCal=null;
+function renderRing(){
+  const t=dayTarget(), tot=logTotals();
+  const C=326.73, pct=t>0?Math.min(1,tot.c/t):0;
+  const fg=$("v3-ring-fg");
+  if(fg){ fg.style.strokeDashoffset=String(C*(1-pct)); fg.classList.toggle("over", tot.c>t); }
+  const lf=$("t-left");
+  if(lf){ const d=t-tot.c; lf.textContent=Math.abs(d).toLocaleString("en-US")+(d<0?" over":" left"); lf.classList.toggle("over", tot.c>t); }
+  const tg=$("t-target"); if(tg) tg.textContent=t.toLocaleString("en-US");
+  const pro=Math.round(tot.p), pt=(typeof PROTEIN_TARGET_G!=="undefined"?PROTEIN_TARGET_G:184);
+  const pn=$("v3-pro-num"); if(pn) pn.textContent=pro+" of "+pt+" g";
+  const pb=$("v3-pro-bar"); if(pb) pb.style.width=Math.min(100,pt>0?pro/pt*100:0)+"%";
+  /* Count the big number up to its new value \u2014 only when it changed,
+     so opening the app doesn't replay it every time. */
+  const el=$("t-consumed"); if(!el) return;
+  const to=tot.c, from=(v3ShownCal==null?to:v3ShownCal); v3ShownCal=to;
+  const fmt=function(n){ return Math.round(n).toLocaleString("en-US"); };
+  if(from===to || reduceMotion() || typeof requestAnimationFrame!=="function"){ el.textContent=fmt(to); return; }
+  const t0=Date.now(), dur=650;
+  (function step(){ const k=Math.min(1,(Date.now()-t0)/dur), e=1-Math.pow(1-k,3);
+    el.textContent=fmt(from+(to-from)*e); if(k<1) requestAnimationFrame(step); })();
+}
+
+
+/* ================= v3.2 — LOGGING A REAL MEAL =================
+   "Log something else" used to open the pantry's ingredient picker, which
+   is the wrong tool for "a burger and fries at 7 Brothers." A meal eaten
+   out is one thing with one rough number, not a list of ingredients.
+
+   The hard part of logging out-of-plan food is not typing a name, it's not
+   knowing the calories — so the sheet leads with rough estimates you
+   can tap and adjust, and remembers what you've logged before so the
+   second time is one tap. */
+const MEAL_PRESETS=[
+  {n:"Burger and fries",        c:1100, p:45},
+  {n:"Sandwich and chips",      c:800,  p:35},
+  {n:"Burrito or bowl",         c:1000, p:45},
+  {n:"Fast-food chicken meal",  c:1000, p:50},
+  {n:"Pizza, 2 slices",         c:600,  p:25},
+  {n:"Home-cooked plate",       c:700,  p:35},
+  {n:"Snack or treat",          c:250,  p:4}
+];
+const RECENT_KEY="recentMeals_v1";
+function loadRecent(){ try{ const r=JSON.parse(localStorage.getItem(RECENT_KEY)); return Array.isArray(r)?r:[]; }catch(e){ return []; } }
+function rememberMeal(m){
+  const list=loadRecent().filter(function(x){ return x.n.toLowerCase()!==m.n.toLowerCase(); });
+  list.unshift({n:m.n, c:m.c, p:m.p});
+  try{ localStorage.setItem(RECENT_KEY, JSON.stringify(list.slice(0,8))); }catch(e){}
+}
+const MEAL_SLOTS=[["breakfast","Breakfast"],["lunch","Lunch"],["dinner","Dinner"],["snack","Snack"]];
+let mealSlot="dinner", mealReturn=null;
+function mealSlotDefault(){ const h=new Date().getHours(); return h<11?"breakfast":(h<16?"lunch":"dinner"); }
+function renderMealSlots(){
+  $("v3-meal-slot").innerHTML=MEAL_SLOTS.map(function(s){
+    return '<button type="button" class="v3-chip" aria-pressed="'+(mealSlot===s[0])+'" onclick="mealSlot=\''+s[0]+'\';renderMealSlots()">'+s[1]+'</button>'; }).join('');
+}
+function fillMeal(n,c,p){
+  $("v3-meal-name").value=n; $("v3-meal-cal").value=c; $("v3-meal-pro").value=p||"";
+  $("v3-meal-err").textContent="";
+}
+function openMealLog(){
+  mealReturn=document.activeElement;
+  mealSlot=mealSlotDefault();
+  fillMeal("","",""); renderMealSlots();
+  const rec=loadRecent();
+  $("v3-meal-recent").innerHTML = rec.length
+    ? '<div class="v3-label">Logged before</div><div class="v3-chips">'+rec.map(function(r,i){
+        return '<button type="button" class="v3-chip" onclick="pickRecent('+i+')">'+esc(r.n)+'<small>'+r.c+'</small></button>'; }).join('')+'</div>'
+    : '';
+  $("v3-meal-presets").innerHTML=MEAL_PRESETS.map(function(m,i){
+    return '<button type="button" class="v3-chip" onclick="pickPreset('+i+')">'+esc(m.n)+'<small>~'+m.c+'</small></button>'; }).join('');
+  $("v3-back").classList.add("open");
+  const sh=$("v3-meal"); sh.classList.add("open"); sh.setAttribute("aria-hidden","false"); sh.scrollTop=0;
+  setTimeout(function(){ const f=$("v3-meal-name"); if(f && f.focus) f.focus(); }, reduceMotion()?0:320);
+}
+function pickPreset(i){ const m=MEAL_PRESETS[i]; if(m) fillMeal(m.n,m.c,m.p); }
+function pickRecent(i){ const m=loadRecent()[i]; if(m) fillMeal(m.n,m.c,m.p); }
+function closeMealLog(){
+  const sh=$("v3-meal"); if(!sh || !sh.classList.contains("open")) return;
+  sh.classList.remove("open"); sh.setAttribute("aria-hidden","true");
+  $("v3-back").classList.remove("open");
+  if(mealReturn && mealReturn.focus){ try{ mealReturn.focus(); }catch(e){} } mealReturn=null;
+}
+function submitMealLog(){
+  const n=($("v3-meal-name").value||"").trim() || "Meal";
+  const c=Math.round(parseFloat($("v3-meal-cal").value));
+  const p=Math.round(parseFloat($("v3-meal-pro").value));
+  if(!(c>0)){ $("v3-meal-err").textContent="Add calories. A rough guess is fine \u2014 tap an estimate above if you're not sure."; return; }
+  const slot = mealSlot==="snack" ? rotSlot({slot:"snack"}) : mealSlot;
+  dayState.log=dayState.log||[];
+  dayState.log.push({id:uid(), slot:slot, name:n, cal:c, pro:(p>0?p:0), carb:0, fat:0});
+  saveDay(todayStr,dayState);
+  rememberMeal({n:n, c:c, p:(p>0?p:0)});
+  v3LastSlot=slot;
+  closeMealLog();
+  renderToday(); if(typeof renderCalendar==="function") renderCalendar();
+  showToast("Logged \u2014 "+n);
+}
+document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeMealLog(); });
+
+/* ================= v3.2 — THE WEEKLY CHECK-IN =================
+   The honest answer to "how is this supposed to make me successful": not a
+   theory, his own last seven days. The headline is the one goal that
+   matters — three meals a day — and the numbers sit underneath it. */
+function weekData(){
+  const days=[];
+  for(let i=6;i>=0;i--){
+    const ds=isoAddDays(todayStr,-i), d=getDay(ds), log=d.log||[];
+    const has=function(sl){ return log.some(function(x){ return x.slot===sl; }); };
+    const meals3=["breakfast","lunch","dinner"].filter(has).length;
+    days.push({ds:ds, meals:meals3, cal:log.reduce(function(a,x){ return a+(x.cal||0); },0),
+               pro:log.reduce(function(a,x){ return a+(x.pro||0); },0), logged:log.length>0, w:d.weight});
+  }
+  return days;
+}
+function weightTrend(){
+  /* the last 21 days of weigh-ins, first vs latest */
+  const pts=[];
+  for(let i=20;i>=0;i--){ const ds=isoAddDays(todayStr,-i), w=getDay(ds).weight; if(w) pts.push({ds:ds,w:w}); }
+  if(pts.length<2) return null;
+  return {from:pts[0], to:pts[pts.length-1], n:pts.length};
+}
+function renderWeek(){
+  const host=$("v3-week"); if(!host) return;
+  const days=weekData(), letters=["S","M","T","W","T","F","S"];
+  const full=days.filter(function(d){ return d.meals===3; }).length;
+  const logged=days.filter(function(d){ return d.logged; });
+  const avgC=logged.length?Math.round(logged.reduce(function(a,d){ return a+d.cal; },0)/logged.length):0;
+  const avgP=logged.length?Math.round(logged.reduce(function(a,d){ return a+d.pro; },0)/logged.length):0;
+  const tr=weightTrend();
+  let head;
+  if(!logged.length) head="Nothing logged this week yet. One tap on a meal starts it.";
+  else if(full>=5) head=full+" of 7 days with all three meals. That's the habit working.";
+  else if(full>=3) head=full+" of 7 days with all three meals. Solid \u2014 lunch is usually the one to watch.";
+  else head=full+" of 7 days with all three meals. Every extra meal counts; the backpack protein bar is the easy win.";
+  const pt=(typeof PROTEIN_TARGET_G!=="undefined"?PROTEIN_TARGET_G:184), ct=plannedTarget(todayStr);
+  const [y0,m0,d0]=days[0].ds.split("-").map(Number), [y1,m1,d1]=days[6].ds.split("-").map(Number);
+  const mo=["Jan","Feb","Mar","Apr","May","June","July","Aug","Sept","Oct","Nov","Dec"];
+  host.innerHTML='<section class="v3-week" aria-label="This week">'+
+    '<h2>This week</h2><div class="when">'+mo[m0-1]+' '+d0+' to '+mo[m1-1]+' '+d1+'</div>'+
+    '<div class="v3-days">'+days.map(function(d){
+      const [yy,mm,dd]=d.ds.split("-").map(Number), dow=new Date(yy,mm-1,dd).getDay();
+      const cls=d.meals===3?" all":(d.meals>0?" some":"");
+      return '<div class="v3-day"><div class="v3-dot'+cls+(d.ds===todayStr?' today':'')+'" title="'+d.meals+' of 3 meals"></div>'+letters[dow]+'</div>'; }).join('')+'</div>'+
+    '<div class="v3-headline">'+esc(head)+'</div>'+
+    '<div class="v3-stats">'+
+      '<div class="v3-stat"><b>'+(logged.length?avgC.toLocaleString("en-US"):"\u2014")+'</b><span>avg calories<br>target '+ct.toLocaleString("en-US")+'</span></div>'+
+      '<div class="v3-stat"><b>'+(logged.length?avgP+' g':"\u2014")+'</b><span>avg protein<br>target '+pt+' g</span></div>'+
+      '<div class="v3-stat"><b>'+(tr?((tr.to.w-tr.from.w>0?"+":"")+(tr.to.w-tr.from.w).toFixed(1)):"\u2014")+'</b><span>'+(tr?'lbs over '+tr.n+' weigh-ins':'weight trend')+'</span></div>'+
+    '</div>'+
+    '<p class="foot">'+(tr?'Weight moves around day to day; the trend over a few weeks is what counts.':'Log your weight two or three times a week and a trend will show up here.')+
+    ' Averages only count days you logged something.</p></section>';
+}
+
+/* ---- Calendar: what was actually eaten ---- */
+function loggedListHTML(ds){
+  const log=(getDay(ds).log||[]);
+  if(!log.length) return '<div class="detail-overlay" style="margin-top:6px">Nothing logged'+(ds>=todayStr?' yet':'')+'.</div>';
+  const tc=log.reduce(function(a,i){ return a+(i.cal||0); },0), tp=log.reduce(function(a,i){ return a+(i.pro||0); },0);
+  return '<div class="detail-label" style="margin-top:10px">What you ate \u00b7 '+tc+' cal \u00b7 '+tp+'g protein</div>'+
+    log.map(function(i){ const sl=SLOTS.find(function(x){ return x.k===i.slot; });
+      return '<div style="font-size:13.5px;padding:3px 0">'+(sl?sl.e+' ':'')+esc(i.name||'')+' <span style="color:var(--ink-faded)">'+(i.cal||0)+' cal</span></div>'; }).join('');
 }
 
 /* ---- the day-status line: did you eat, not did you obey ---- */
@@ -5322,8 +5884,13 @@ function openCookByName(name){
 
 /* ===== digest countdown after breakfast (not Sundays) ===== */
 const DIGEST_MIN=45;
+/* v3.1: the post-breakfast digest countdown is retired from Today. It was
+   part of the old pre-lift breakfast system and added a timer banner to a
+   screen that was already too busy. Kept as a no-op so callers don't break. */
+const DIGEST_BADGE_ON=false;
 function updateDigestBadge(){
   const el=$("digestBadge"); if(!el) return;
+  if(!DIGEST_BADGE_ON){ el.classList.remove("show","ready"); return; }
   if(todayDate.getDay()===0 || !dayState.bfastAt){ el.classList.remove("show","ready"); return; }
   const remMs=(dayState.bfastAt+DIGEST_MIN*60000)-Date.now();
   if(remMs>0){
@@ -5453,7 +6020,10 @@ function openWeight(){ $("logW").value=wgoal.cur||""; $("logGoalW").value=wgoal.
 function saveLoggedWeight(){
   const c=parseFloat($("logW").value), g=parseFloat($("logGoalW").value);
   if(!isNaN(c)) wgoal.cur=c; if(!isNaN(g)) wgoal.goal=g;
-  saveWg(); $("weightOverlay").classList.remove("show"); renderToday(); showToast("Weight updated");
+  /* v3.2: also keep the weigh-in on today's record, so the weekly check-in
+     can show a trend. Before this, each new weight overwrote the last. */
+  if(!isNaN(c)){ dayState.weight=c; saveDay(todayStr,dayState); }
+  saveWg(); $("weightOverlay").classList.remove("show"); renderToday(); if(typeof renderWeek==="function") renderWeek(); showToast("Weight updated");
 }
 function saveWeightGoal(){
   const c=parseFloat($("setCurW").value), g=parseFloat($("setGoalW").value);
@@ -5496,7 +6066,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v2.14.0 · 2026-09-20";   // bump this each time you upload a new index.html
+const APP_VERSION="v3.2.0 · 2026-09-23";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
