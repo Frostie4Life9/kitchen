@@ -469,6 +469,7 @@
   .v3-tile:active { transform: scale(.97); }
   .v3-tile:focus-visible, .v3-seg button:focus-visible, .v3-else:focus-visible, .v3-log-btn:focus-visible { outline: 3px solid var(--today); outline-offset: 2px; }
   .v3-tile-name { font-size: 14.5px; font-weight: 700; line-height: 1.25; color: var(--ink); padding-right: 18px; }
+  .v3-tile-tag { align-self: flex-start; font-size: 11px; font-weight: 800; color: var(--today); background: var(--today-soft); border-radius: 99px; padding: 2px 8px; margin-top: -4px; }
   .v3-tile-nums { font-size: 12.5px; color: var(--ink-faded); line-height: 1.35; }
   .v3-tile-nums b { font-size: 16px; color: var(--ink); font-weight: 800; }
   .v3-tile-done { position: absolute; top: 11px; right: 11px; width: 20px; height: 20px; border-radius: 50%; background: var(--green); color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
@@ -572,6 +573,42 @@
     .selbar .sb-btn.go, .v3-tile-done, .target-chips button.on, .step-num, .timer button,
     .alarm-bar, #screen-pantry .logbtn { color: #14110D; }
   }
+
+  /* ===================== v3.4 ===================== */
+  .v3-ings { margin: 0 0 18px; }
+  .v3-ings-head { display: flex; justify-content: space-between; align-items: baseline; margin: 0 2px 8px; }
+  .v3-ings-head b { font-size: 14px; color: var(--ink); }
+  .v3-ings-head span { font-size: 12px; color: var(--ink-faded); }
+  .v3-ing { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-top: 1px solid var(--rule-soft); }
+  .v3-ing:first-of-type { border-top: 0; }
+  .v3-ing-main { flex: 1; min-width: 0; border: 0; background: none; font: inherit; text-align: left; padding: 0; cursor: pointer; color: var(--ink); }
+  .v3-ing-main b { display: block; font-size: 14px; font-weight: 700; }
+  .v3-ing-main small { display: block; font-size: 12px; color: var(--ink-faded); margin-top: 1px; }
+  .v3-ing-main small.lab { color: var(--green); font-weight: 700; }
+  .v3-ing-low { border: 1.5px solid var(--rule); background: transparent; color: var(--ink-faded); font: inherit; font-size: 12px; font-weight: 700; border-radius: 99px; padding: 5px 10px; cursor: pointer; white-space: nowrap; }
+  .v3-ing-low[aria-pressed="true"] { border-color: var(--orange); color: var(--orange); background: var(--orange-soft); }
+  .v3-tile-tag.out { color: var(--orange); background: var(--orange-soft); }
+  .v3-tile-lab { font-size: 11px; font-weight: 700; color: var(--green); }
+  .v3-pick { display: block; width: 100%; text-align: left; border: 1.5px solid var(--rule); background: var(--paper); font: inherit; color: var(--ink); border-radius: 12px; padding: 11px 13px; margin: 0 0 8px; cursor: pointer; }
+  .v3-pick b { display: block; font-size: 14px; }
+  .v3-pick small { font-size: 12px; color: var(--ink-faded); }
+  .v3-pick[aria-pressed="true"] { border-color: var(--today); box-shadow: inset 0 0 0 1px var(--today); }
+  .v3-empty { font-size: 14px; color: var(--ink-faded); line-height: 1.5; margin: 6px 2px 16px; }
+  .v3-ghost { width: 100%; border: 1.5px solid var(--rule); background: transparent; font: inherit; font-size: 14px; font-weight: 700; color: var(--ink-faded); border-radius: 14px; padding: 12px; margin-top: 10px; cursor: pointer; }
+  .v3-low-panel { background: var(--card); border-radius: 20px; padding: 16px; margin: 0 0 14px; box-shadow: 0 1px 0 var(--rule); }
+  .v3-low-panel h3 { font-size: 17px; font-weight: 800; margin: 0 0 4px; color: var(--ink); }
+  .v3-low-panel p { font-size: 13px; color: var(--ink-faded); margin: 0 0 12px; line-height: 1.45; }
+  .v3-low-panel .v3-chip[aria-pressed="true"] { background: var(--orange); border-color: var(--orange); color: #fff; }
+  .v3-thu { background: var(--today-soft); border-radius: 18px; padding: 14px 16px; margin: 4px 0 16px; }
+  .v3-thu b { display: block; font-size: 15px; color: var(--ink); margin-bottom: 3px; }
+  .v3-thu p { font-size: 13px; color: var(--ink-soft); margin: 0 0 10px; line-height: 1.45; }
+  .v3-thu .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .v3-thu a, .v3-thu button { font: inherit; font-size: 13px; font-weight: 700; border-radius: 99px; padding: 7px 13px; cursor: pointer; text-decoration: none; }
+  .v3-thu a { background: var(--today); color: #fff; }
+  .v3-thu button { background: transparent; border: 1.5px solid var(--rule); color: var(--ink-faded); }
+  @media (prefers-color-scheme: dark) {
+    .v3-low-panel .v3-chip[aria-pressed="true"], .v3-thu a { color: #14110D; }
+  }
 </style>
 </head>
 <body>
@@ -588,6 +625,7 @@
   </div>
 
   <div class="digest-badge" id="digestBadge"></div>
+  <div id="v3-thu"></div>
   <section class="v3-hero" aria-label="Today so far">
     <div class="v3-ring-wrap">
       <svg class="v3-ring" viewBox="0 0 120 120" aria-hidden="true">
@@ -664,7 +702,7 @@
     <div id="t-protein"></div><div id="t-macros"></div>
   </div>
 
-  <div class="v3-back" id="v3-back" onclick="closeRotSheet();closeMealLog()"></div>
+  <div class="v3-back" id="v3-back" onclick="closeRotSheet();closeMealLog();closeLinker()"></div>
   <div class="v3-sheet" id="v3-meal" role="dialog" aria-modal="true" aria-labelledby="v3-meal-title" aria-hidden="true">
     <div class="v3-grab"></div>
     <h2 id="v3-meal-title">Log a meal</h2>
@@ -682,11 +720,23 @@
     <div class="v3-err" id="v3-meal-err" role="alert"></div>
     <button class="v3-log-btn" type="button" onclick="submitMealLog()">Log this meal</button>
   </div>
+  <div class="v3-sheet" id="v3-link" role="dialog" aria-modal="true" aria-labelledby="v3-link-title" aria-hidden="true">
+    <div class="v3-grab"></div>
+    <h2 id="v3-link-title">Use your label</h2>
+    <p class="v3-hint" id="v3-link-sub" style="margin:4px 2px 14px"></p>
+    <label class="v3-field"><span>Find it in your pantry</span><input id="v3-link-q" type="search" placeholder="Search your scanned items" autocomplete="off" oninput="renderLinkList()"></label>
+    <div id="v3-link-list"></div>
+    <div id="v3-link-per"></div>
+    <div class="v3-err" id="v3-link-err" role="alert"></div>
+    <button class="v3-log-btn" type="button" onclick="saveLink()">Use this label</button>
+    <button class="v3-ghost" type="button" id="v3-link-unlink" onclick="unlinkIng()">Go back to the estimate</button>
+  </div>
   <div class="v3-sheet" id="v3-sheet" role="dialog" aria-modal="true" aria-labelledby="v3-sheet-title" aria-hidden="true">
     <div class="v3-grab"></div>
     <h2 id="v3-sheet-title"></h2>
     <div class="v3-sheet-nums" id="v3-sheet-nums"></div>
     <p class="v3-sheet-desc" id="v3-sheet-desc"></p>
+    <div class="v3-ings" id="v3-sheet-ings"></div>
     <ol class="v3-steps" id="v3-sheet-steps"></ol>
     <button class="v3-log-btn" id="v3-sheet-log" type="button">Log it</button>
   </div>
@@ -1049,7 +1099,7 @@ const SHOP_RHYTHM_HTML='<div class="tmeal note" style="margin-bottom:12px"><div 
 function renderShop(){
   const host=document.getElementById('shopBody'); if(!host) return;
   shopView='week';
-  if(shopView==='week'){ renderWeekLists(host); host.insertAdjacentHTML('afterbegin', SHOP_RHYTHM_HTML); return; }
+  if(shopView==='week'){ renderWeekLists(host); host.insertAdjacentHTML('afterbegin', SHOP_RHYTHM_HTML); host.insertAdjacentHTML('afterbegin', lowPanelHTML()); return; }
   const DATA = shopView==='kit' ? STARTER_KIT : STORE_GUIDE;
   const st=shopState();
   const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -1633,10 +1683,14 @@ const KITCHEN_RULES = {
     winco: "Every week. Cash or debit only. Produce, fruit, 85/15 ground beef, eggs, bread, buns, tortillas, pantry, mild taco seasoning from bulk bins.",
     costco: "Once a month (Orem). Fresh chicken breasts portioned and frozen on arrival, Kirkland breaded chicken chunks, Jimmy Dean turkey sausage links, shredded cheddar, Rao's, protein bars.",
     smiths: "Dropped as a regular stop. Only when passing by — Hillshire turkey patties or weekly-ad fruit deals.",
-    list: "grocery.html. Each item names the exact product and why; the COSTCO_TRIP switch at the top hides the Costco section on WinCo-only weeks."
+    list: "grocery.html. Each item names the exact product and why; COSTCO_TRIP and PICNIC_WEEK switches at the top hide those sections.",
+    lastOneRule: "Open the last of something? Flag it as running low right then (Shop tab, or the Low? button on any ingredient). Flags show at the top of grocery.html and mark any meal that needs them.",
+    kitchenCheck: "Thursday evening, five minutes: open grocery.html, walk the kitchen and fridge, tap off what you already have. What's left is Friday's real list.",
+    stockingPrinciple: "With a rotation you don't plan meals, you keep ingredients stocked. Every card is built from about 38 core ingredients; frozen and shelf-stable backups (chicken chunks, pasta and Rao's, protein bars, chicken pouches) mean running out of fresh food never means no meal."
   },
   logging: {
-    how: "One tap from a rotation card — calories and protein are pre-filled. Anything else (eating out, a friend's) goes through “Something else”.",
+    how: "One tap from a rotation card — calories, protein, carbs and fat are pre-filled. Anything else (eating out, a friend's) goes through “Something else”.",
+    labels: "Card numbers start as estimates. Linking an ingredient to a scanned pantry item switches every card that uses it to the real label; the card shows how many of its ingredients are from labels.",
     goal: "Three meals a day with protein in each is the daily goal. The 2300 calorie target stays visible; he asked to keep it.",
     counts: "Fast food counts. Eating at a friend's counts. Cereal counts. A day is a success if he ate."
   },
@@ -3549,6 +3603,7 @@ function renderToday(){
 
   // day chip + today's meals + target chips
   renderDayChip();
+  renderThursday();
   renderCheck();
   renderRotation();
   setTimeout(renderRing, 0);   /* after the budget text below is written */
@@ -4319,25 +4374,83 @@ const ROTATION_START="2026-09-22";
 Object.keys(meals).forEach(function(d){ if(d>=ROTATION_START) delete meals[d]; });
 
 const ROTATION=[
-  {sec:"Breakfast", slot:"breakfast", items:[
+  {sec:"Breakfast", slot:"breakfast", note:"Rushed morning? Cereal still counts \u2014 adding a glass of milk or a couple of eggs rounds it out.", items:[
     {k:"scramble", n:"Cheesy scramble plate", c:550, p:38,
      d:"3 eggs scrambled with cheddar, turkey sausage, and a piece of fruit.",
      r:["Air fryer: 2 turkey sausage links (or a hash brown patty), 375°F, 5 min for links / 10–12 min for a patty.",
         "Meanwhile, whisk 3 eggs with a pinch of salt. Medium-low pan, 1 tsp butter, stir slowly 2–3 min until just set.",
         "Off the heat, fold in ¼ cup shredded cheddar.",
         "Plate with the sausage and a banana, orange, or apple. Toast if you're hungry."]},
+    {k:"bigplate", n:"Big breakfast plate", c:700, p:41, tag:"Lift days",
+     d:"Everything at once: cheesy eggs, a hash brown, sausage, and toast.",
+     r:["Air fryer: 1 hash brown patty, 400\u00b0F, 10\u201312 min. Add 2 turkey sausage links for the last 5 min.",
+        "Scramble 3 eggs slowly in 1 tsp butter; fold in \u00bc cup cheddar off the heat.",
+        "Toast 1 slice of bread and butter it.",
+        "Plate it all together."]},
+    {k:"omelet", n:"Turkey and cheese omelet", c:595, p:39,
+     d:"Cheesy eggs folded around diced deli turkey, with toast and fruit.",
+     r:["Dice 2 oz deli turkey. Whisk 3 eggs with a pinch of salt.",
+        "Medium-low pan, 1 tsp butter. Pour in the eggs and let them set around the edges, about 2 min.",
+        "Scatter \u00bc cup cheddar and the turkey over half, fold it over, 1 more min.",
+        "Toast and a piece of fruit on the side."]},
+    {k:"frenchtoast", n:"Honey French toast + sausage", c:545, p:32,
+     d:"The sweet, warm one. Bread you already have, eggs, and honey instead of syrup.",
+     r:["Air fryer: 2 turkey sausage links, 375\u00b0F, 5 min.",
+        "Whisk 2 eggs, \u00bc cup milk, and a good shake of cinnamon in a shallow bowl.",
+        "Dip 2 slices of bread, a few seconds per side.",
+        "Medium pan, 1 tsp butter, 2\u20133 min per side until golden. Drizzle 1 tbsp honey over the top."]},
+    {k:"pbroll", n:"PB-banana roll-up", c:515, p:15, tag:"Eat on the go",
+     d:"Your original grab-and-go. Rolls up in a minute, eats while walking.",
+     r:["Spread 2 tbsp peanut butter on a burrito-size tortilla.",
+        "Lay a whole banana at one edge and roll it up tight.",
+        "A glass of milk alongside adds 8 g of protein if you have a minute."]},
+    {k:"yoplait", n:"Yoplait, granola, and fruit", c:485, p:10,
+     d:"The one you already liked: sweetened Yoplait, crunchy granola, and a banana or other fruit.",
+     r:["A Yoplait cup, \u00bd cup crunchy granola on top, and sliced banana or other fruit.",
+        "It's light on protein \u2014 add 2 turkey sausage links or a protein bar to round it out."]},
+    {k:"pbtoast", n:"PB-banana toast + sausage", c:575, p:28,
+     d:"The sweet breakfast. Toast, peanut butter, banana, turkey sausage on the side.",
+     r:["Air fryer: 2 turkey sausage links, 375\u00b0F, 5 min.",
+        "Toast 2 slices of bread.",
+        "Spread 1 tbsp peanut butter on each and top with a sliced banana. A drizzle of honey if you want it sweeter.",
+        "Sausage on the side."]},
+    {k:"smoothiebar", n:"Smoothie + protein bar", c:590, p:27,
+     d:"Grab-and-go. Drink it on the way out the door.",
+     r:["Blend 1 banana, 1 orange, 1 cup frozen strawberries, 1 cup frozen pineapple, and 1 cup water or coconut water.",
+        "Pour it into a to-go cup and take a protein bar with you \u2014 the bar is where the protein comes from."]},
     {k:"cereal", n:"Cereal and milk", c:350, p:12,
      d:"The rushed-morning fallback. Still counts.",
      r:["A big bowl of cereal with milk.",
         "To round it out, add a Greek yogurt cup, a couple of hard-boiled eggs, or a glass of milk on the side — cereal alone is light on protein."]}
   ]},
   {sec:"Lunch", slot:"lunch", items:[
-    {k:"campus", n:"Campus pack", c:750, p:34,
+    {k:"campus", n:"Campus pack", c:750, p:34, tag:"No fridge",
      d:"No fridge needed. Pack it the night before or grab it on the way out.",
      r:["Spread 2 tbsp peanut butter and 1 tbsp honey on a burrito-size tortilla, roll it, wrap in foil.",
         "Add an apple or a mandarin and a protein bar.",
-        "Keep a spare protein bar in your backpack permanently, so a forgotten lunch is never a skipped one."]}
-  ], note:"At home? Any dinner card below works as lunch — log it before 4 pm and it counts as lunch."},
+        "Keep a spare protein bar in your backpack permanently, so a forgotten lunch is never a skipped one."]},
+    {k:"pouch", n:"Chicken and crackers pack", c:605, p:40, tag:"No fridge",
+     d:"Shelf-stable protein for Wednesdays and Fridays. Nothing in it needs to stay cold.",
+     r:["Pack a shelf-stable chicken pouch, a sleeve of Ritz (about 15), an apple, and a protein bar.",
+        "Eat the chicken straight from the pouch on the crackers. A mayo packet makes it chicken salad.",
+        "It all survives a full day in your backpack."]},
+    {k:"snackbox", n:"Snack box", c:570, p:29, tag:"Ice pack",
+     d:"A homemade Lunchable: turkey, provolone, crackers, and fruit.",
+     r:["In a lidded container: 3 oz deli turkey, 2 slices provolone cut into squares, about 15 Ritz, and grapes or apple slices.",
+        "Stack them as you eat.",
+        "Turkey and cheese need an ice pack if it's riding in your bag."]},
+    {k:"melt", n:"Turkey melt", c:500, p:36, tag:"At home",
+     d:"Hot, crispy, cheesy. The home-lunch sandwich.",
+     r:["Butter the outsides of 2 slices of bread (sourdough if you have it).",
+        "Inside: 4 oz deli turkey and 2 slices provolone.",
+        "Medium-low pan, 3\u20134 min per side, pressing gently, until golden and the cheese melts."]},
+    {k:"wrap", n:"Turkey and provolone wrap", c:560, p:36, tag:"Ice pack",
+     d:"Cold and quick. Needs an ice pack if it's riding in your backpack.",
+     r:["Burrito-size tortilla: a thin swipe of mayo, 4 oz sliced turkey, 2 slices provolone, a handful of shredded lettuce.",
+        "Fold in the sides, roll it tight, wrap in foil.",
+        "Add an apple or mandarins on the side.",
+        "Food safety: turkey and cheese shouldn't sit out more than about 2 hours \u2014 pack an ice pack if it's going to campus."]}
+  ], note:"Wednesdays and Fridays, grab a “No fridge” card or pack an ice pack. At home, any dinner card works as lunch too — log it before 4 pm and it counts as lunch."},
   {sec:"Dinner", slot:"dinner", items:[
     {k:"burger", n:"Double smash burger", c:700, p:40,
      d:"Your favourite. Two thin crispy patties, cheese, burger sauce.",
@@ -4384,6 +4497,132 @@ const ROTATION=[
   ]}
 ];
 
+
+/* ================= v3.4 — INGREDIENTS AND YOUR LABELS =================
+   Every rotation card is built from a shared list of ingredients. Each one
+   carries an ESTIMATE per unit so the numbers work from day one. When a real
+   label gets scanned into the pantry and linked to an ingredient, that one
+   link replaces the estimate on every card that uses it — link your eggs
+   once and all nine egg-using cards switch to your label.
+
+   e = [calories, protein, carbs, fat] per unit. Estimates come from labels
+   on file where there is one (eggs, cheddar, tortillas, peanut butter,
+   granola, honey) and typical labels otherwise. */
+const INGR={
+  eggs:      {n:"Eggs",                    u:"egg",          e:[70,6,0.5,5],     q:"egg"},
+  cheddar:   {n:"Shredded cheddar",        u:"1/4 cup",      e:[110,7,1,9],      q:"cheddar"},
+  sausage:   {n:"Turkey sausage links",    u:"link",         e:[60,6,0.5,4],     q:"sausage"},
+  hashbrown: {n:"Hash brown patties",      u:"patty",        e:[140,1,15,8],     q:"hash"},
+  bread:     {n:"Bread",                   u:"slice",        e:[80,3,15,1],      q:"bread"},
+  butter:    {n:"Butter",                  u:"tsp",          e:[34,0,0,3.8],     q:"butter"},
+  milk:      {n:"Milk",                    u:"cup",          e:[122,8,12,5],     q:"milk"},
+  honey:     {n:"Honey",                   u:"tbsp",         e:[60,0,17,0],      q:"honey"},
+  pb:        {n:"Peanut butter",           u:"2 tbsp",       e:[200,8,6,17],     q:"peanut"},
+  tortilla:  {n:"Burrito-size tortillas",  u:"tortilla",     e:[210,6,35,5],     q:"burrito"},
+  smalltort: {n:"Regular tortillas",       u:"tortilla",     e:[120,3,20,3],     q:"tortilla"},
+  banana:    {n:"Bananas",                 u:"banana",       e:[105,1.3,27,0.4], q:"banana"},
+  apple:     {n:"Apples",                  u:"apple",        e:[95,0.5,25,0.3],  q:"apple"},
+  orange:    {n:"Oranges or mandarins",    u:"orange",       e:[62,1.2,15,0.2],  q:"orange mandarin"},
+  fruit:     {n:"Any fruit",               u:"piece",        e:[90,0.8,23,0.3],  q:"apple banana orange mandarin grape"},
+  grapes:    {n:"Grapes",                  u:"cup",          e:[104,1,27,0.2],   q:"grape"},
+  strawb:    {n:"Frozen strawberries",     u:"cup",          e:[50,1,12,0.2],    q:"strawberr"},
+  pineapple: {n:"Frozen pineapple",        u:"cup",          e:[80,1,21,0.2],    q:"pineapple"},
+  yoplait:   {n:"Yoplait cups",            u:"cup",          e:[150,5,26,2],     q:"yoplait yogurt"},
+  granola:   {n:"Crunchy granola",         u:"1/2 cup",      e:[230,4,34,9],     q:"granola"},
+  bar:       {n:"Protein bars",            u:"bar",          e:[190,21,22,7],    q:"protein bar"},
+  cereal:    {n:"Cereal",                  u:"serving",      e:[150,8,28,3],     q:"cheerios cereal"},
+  pouch:     {n:"Chicken pouches",         u:"pouch",        e:[80,16,0,1.5],    q:"chicken pouch"},
+  ritz:      {n:"Ritz crackers",           u:"5 crackers",   e:[80,1,10,4.5],    q:"ritz cracker"},
+  turkey:    {n:"Deli turkey",             u:"oz",           e:[30,5,1,0.5],     q:"turkey"},
+  provolone: {n:"Provolone",               u:"slice",        e:[70,5,0.5,5.5],   q:"provolone"},
+  mayo:      {n:"Mayo",                    u:"tbsp",         e:[90,0,0,10],      q:"mayo"},
+  ketchup:   {n:"Ketchup",                 u:"tbsp",         e:[20,0,5,0],       q:"ketchup"},
+  lettuce:   {n:"Shredded lettuce",        u:"1/2 cup",      e:[4,0.3,1,0],      q:"lettuce"},
+  onion:     {n:"Onion",                   u:"1/4 onion",    e:[11,0.3,2.5,0],   q:"onion"},
+  beef:      {n:"85/15 ground beef",       u:"oz raw",       e:[60,5.3,0,4.3],   q:"ground beef"},
+  bun:       {n:"Burger buns",             u:"bun",          e:[150,5,27,2],     q:"bun"},
+  chicken:   {n:"Chicken breast, cooked",  u:"oz",           e:[47,8.8,0,1],     q:"chicken breast"},
+  bbq:       {n:"Honey BBQ sauce",         u:"2 tbsp",       e:[70,0,17,0],      q:"bbq barbecue"},
+  taco:      {n:"Mild taco seasoning",     u:"tbsp",         e:[20,0.5,4,0],     q:"taco"},
+  pasta:     {n:"Pasta",                   u:"oz dry",       e:[100,3.5,21,0.5], q:"pasta spaghetti"},
+  marinara:  {n:"Rao's marinara",          u:"1/2 cup",      e:[100,2,6,7],      q:"marinara rao"},
+  chunks:    {n:"Breaded chicken chunks",  u:"3 oz",         e:[160,16,8,7],     q:"chunks breaded chicken"}
+};
+/* [ingredient, amount in its unit, optional]. Optional parts (lettuce,
+   onion, a side of fruit) don't stop you making the meal if you're out. */
+const CARD_PARTS={
+  scramble:   [["eggs",3],["cheddar",1],["sausage",2],["butter",1],["banana",1,1]],
+  bigplate:   [["eggs",3],["cheddar",1],["hashbrown",1],["sausage",2],["bread",1],["butter",2]],
+  omelet:     [["eggs",3],["cheddar",1],["turkey",2],["bread",1],["butter",2],["fruit",1,1]],
+  frenchtoast:[["bread",2],["eggs",2],["milk",0.25],["butter",1],["honey",1],["sausage",2]],
+  pbroll:     [["tortilla",1],["pb",1],["banana",1]],
+  yoplait:    [["yoplait",1],["granola",1],["banana",1,1]],
+  pbtoast:    [["bread",2],["pb",1],["banana",1],["sausage",2]],
+  smoothiebar:[["banana",1],["orange",1],["strawb",1],["pineapple",1],["bar",1]],
+  cereal:     [["cereal",1.5],["milk",1]],
+  campus:     [["tortilla",1],["pb",1],["honey",1],["apple",1,1],["bar",1]],
+  pouch:      [["pouch",1],["ritz",3],["apple",1,1],["bar",1]],
+  snackbox:   [["turkey",3],["provolone",2],["ritz",3],["grapes",1,1]],
+  melt:       [["bread",2],["turkey",4],["provolone",2],["butter",2]],
+  wrap:       [["tortilla",1],["mayo",0.5],["turkey",4],["provolone",2],["lettuce",1,1]],
+  burger:     [["beef",5.33],["cheddar",1],["bun",1],["mayo",1],["ketchup",1],["lettuce",1,1],["onion",1,1]],
+  quesadilla: [["chicken",5],["bbq",1],["tortilla",1],["cheddar",2],["butter",1]],
+  tacos:      [["beef",4],["taco",1],["smalltort",3],["cheddar",1],["lettuce",1,1]],
+  pasta:      [["pasta",3],["beef",4],["marinara",1],["onion",1,1]],
+  chunks:     [["chunks",2.67],["bbq",1],["fruit",1,1]],
+  smoothie:   [["banana",1],["orange",1],["strawb",1],["pineapple",1]],
+  barfruit:   [["bar",1],["fruit",1]],
+  fruit:      [["fruit",1]]
+};
+ROTATION.forEach(function(sec){ sec.items.forEach(function(it){ if(CARD_PARTS[it.k]) it.parts=CARD_PARTS[it.k]; }); });
+
+const LINK_KEY="ingLinks_v1";     /* {ingredientKey: {id: pantryItemId, per: servings per unit}} */
+function loadLinks(){ try{ const o=JSON.parse(localStorage.getItem(LINK_KEY)); return o&&typeof o==="object"?o:{}; }catch(e){ return {}; } }
+function saveLinks(o){ try{ localStorage.setItem(LINK_KEY, JSON.stringify(o)); }catch(e){} }
+function linkedItem(key){
+  const l=loadLinks()[key]; if(!l) return null;
+  const it=ingredientItems().find(function(i){ return i.id===l.id; });
+  return it ? {item:it, per:(l.per>0?l.per:1)} : null;   /* item deleted from pantry -> estimate again */
+}
+function ingNut(key, amt){
+  const g=INGR[key]; if(!g) return {c:0,p:0,cb:0,f:0,lab:false};
+  const L=linkedItem(key);
+  if(L){ const m=amt*L.per;
+    return {c:(L.item.cal||0)*m, p:(L.item.pro||0)*m, cb:(L.item.carb||0)*m, f:(L.item.fat||0)*m, lab:true}; }
+  return {c:g.e[0]*amt, p:g.e[1]*amt, cb:g.e[2]*amt, f:g.e[3]*amt, lab:false};
+}
+function cardNut(it){
+  if(!it.parts) return {c:it.c, p:it.p, cb:0, f:0, linked:0, total:0};
+  let c=0,p=0,cb=0,f=0,linked=0;
+  it.parts.forEach(function(pt){ const n=ingNut(pt[0],pt[1]); c+=n.c; p+=n.p; cb+=n.cb; f+=n.f; if(n.lab) linked++; });
+  return {c:Math.round(c/5)*5, p:Math.round(p), cb:Math.round(cb), f:Math.round(f), linked:linked, total:it.parts.length};
+}
+
+/* ---- running low: the last-one rule ----
+   Tap an ingredient as running low the moment you open the last of it.
+   Stored with its name so grocery.html — same origin, same storage — can
+   show the flags at the top of the list without anyone editing it. */
+const LOW_KEY="runningLow_v1";
+function loadLow(){ try{ const o=JSON.parse(localStorage.getItem(LOW_KEY)); return o&&typeof o==="object"?o:{}; }catch(e){ return {}; } }
+function saveLow(o){ try{ localStorage.setItem(LOW_KEY, JSON.stringify(o)); }catch(e){} }
+function isLow(key){ return !!loadLow()[key]; }
+function toggleRunLow(key){
+  const o=loadLow();
+  if(o[key]) delete o[key]; else o[key]={n:INGR[key]?INGR[key].n:key, at:Date.now()};
+  saveLow(o);
+}
+function outParts(it){
+  if(!it.parts) return [];
+  const low=loadLow();
+  return it.parts.filter(function(pt){ return !pt[2] && low[pt[0]]; }).map(function(pt){ return INGR[pt[0]].n; });
+}
+function ingAmtText(key, amt){
+  const u=INGR[key].u, a=Math.round(amt*100)/100;
+  const whole={egg:1,link:1,patty:1,slice:1,tortilla:1,banana:1,apple:1,orange:1,piece:1,bar:1,pouch:1,bun:1};
+  if(whole[u]) return a+" "+u+(a===1?"":(u==="patty"?"":"s")).replace("pattys","patties");
+  return a+" \u00d7 "+u;
+}
+
 let rotOpen=null;
 function toggleRot(k){ rotOpen = (rotOpen===k ? null : k); renderRotation(); }
 function rotItem(k){
@@ -4401,8 +4640,8 @@ function logRotation(k){
   dayState.log=dayState.log||[];
   /* Same shape every other logger in the app uses — name/pro, not n/p —
      or the budget and protein totals silently read zero. */
-  const slot=rotSlot(f.sec);
-  dayState.log.push({id:uid(), slot:slot, name:f.it.n, cal:f.it.c, pro:f.it.p, carb:0, fat:0});
+  const slot=rotSlot(f.sec), nu=cardNut(f.it);
+  dayState.log.push({id:uid(), slot:slot, name:f.it.n, cal:nu.c, pro:nu.p, carb:nu.cb, fat:nu.f});
   saveDay(todayStr,dayState);
   rotOpen=null; v3LastSlot=slot;
   closeRotSheet();
@@ -4450,11 +4689,14 @@ function renderRotation(swapped){
   }).join('');
   const sec=ROTATION.filter(function(x){ return x.sec===rotSec; })[0]||ROTATION[0];
   host.innerHTML=sec.items.map(function(it){
-    const n=timesLoggedToday(it.n);
-    return '<button type="button" class="v3-tile" onclick="openRotSheet(\''+it.k+'\')" aria-label="'+esc(it.n)+', '+it.c+' calories, '+it.p+' grams protein'+(n?', logged today':'')+'">'+
+    const n=timesLoggedToday(it.n), nu=cardNut(it), out=outParts(it);
+    const allLab=nu.total>0 && nu.linked===nu.total;
+    const tag = out.length ? '<span class="v3-tile-tag out">Out of '+esc(out[0].toLowerCase())+(out.length>1?' +'+(out.length-1):'')+'</span>'
+              : (it.tag ? '<span class="v3-tile-tag">'+esc(it.tag)+'</span>' : '');
+    return '<button type="button" class="v3-tile" onclick="openRotSheet(\''+it.k+'\')" aria-label="'+esc(it.n)+', '+nu.c+' calories, '+nu.p+' grams protein'+(out.length?', out of '+esc(out.join(' and ')):'')+(n?', logged today':'')+'">'+
       (n?'<span class="v3-tile-done" aria-hidden="true">'+(n>1?n:'\u2713')+'</span>':'')+
-      '<span class="v3-tile-name">'+esc(it.n)+'</span>'+
-      '<span class="v3-tile-nums"><b>'+it.c+'</b> cal<br>'+it.p+' g protein</span></button>';
+      '<span class="v3-tile-name">'+esc(it.n)+'</span>'+tag+
+      '<span class="v3-tile-nums"><b>'+nu.c+'</b> cal<br>'+nu.p+' g protein'+(allLab?'<br><span class="v3-tile-lab">\u2713 your labels</span>':'')+'</span></button>';
   }).join('');
   if(swapped && !reduceMotion()){ host.classList.remove('swap'); void host.offsetWidth; host.classList.add('swap'); }
   const note=$("v3-sec-note"); if(note) note.innerHTML = sec.note ? '<p class="v3-note">'+esc(sec.note)+'</p>' : '';
@@ -4464,16 +4706,34 @@ function renderRotation(swapped){
 let sheetKey=null, sheetReturn=null;
 function openRotSheet(k){
   const f=rotItem(k); if(!f) return;
-  sheetKey=k; sheetReturn=document.activeElement;
-  $("v3-sheet-title").textContent=f.it.n;
-  $("v3-sheet-nums").innerHTML='<div><b>'+f.it.c+'</b>calories</div><div><b>'+f.it.p+' g</b>protein</div>';
-  $("v3-sheet-desc").textContent=f.it.d;
-  $("v3-sheet-steps").innerHTML=f.it.r.map(function(st){ return '<li>'+esc(st)+'</li>'; }).join('');
+  sheetKey=k; if(!$("v3-sheet").classList.contains("open")) sheetReturn=document.activeElement;
+  renderRotSheet();
   $("v3-sheet-log").textContent="Log this meal";
   $("v3-sheet-log").onclick=function(){ logRotation(k); };
   $("v3-back").classList.add("open");
-  const sh=$("v3-sheet"); sh.classList.add("open"); sh.setAttribute("aria-hidden","false"); sh.scrollTop=0;
-  setTimeout(function(){ const b=$("v3-sheet-log"); if(b && b.focus) b.focus(); }, reduceMotion()?0:300);
+  const sh=$("v3-sheet"); if(!sh.classList.contains("open")){ sh.classList.add("open"); sh.setAttribute("aria-hidden","false"); sh.scrollTop=0;
+    setTimeout(function(){ const b=$("v3-sheet-log"); if(b && b.focus) b.focus(); }, reduceMotion()?0:300); }
+}
+function renderRotSheet(){
+  const f=rotItem(sheetKey); if(!f) return;
+  const nu=cardNut(f.it);
+  $("v3-sheet-title").textContent=f.it.n;
+  $("v3-sheet-nums").innerHTML='<div><b>'+nu.c+'</b>calories</div><div><b>'+nu.p+' g</b>protein</div>'+
+    (f.it.parts?'<div><b>'+nu.cb+' g</b>carbs</div><div><b>'+nu.f+' g</b>fat</div>':'');
+  $("v3-sheet-desc").textContent=f.it.d;
+  $("v3-sheet-steps").innerHTML=f.it.r.map(function(st){ return '<li>'+esc(st)+'</li>'; }).join('');
+  const ings=$("v3-sheet-ings");
+  if(!f.it.parts){ ings.innerHTML=''; return; }
+  const low=loadLow();
+  ings.innerHTML='<div class="v3-ings-head"><b>Ingredients</b><span>'+(nu.linked===nu.total?'All from your labels':nu.linked+' of '+nu.total+' from your labels')+'</span></div>'+
+    f.it.parts.map(function(pt){
+      const key=pt[0], g=INGR[key], L=linkedItem(key), on=!!low[key];
+      return '<div class="v3-ing"><button type="button" class="v3-ing-main" onclick="openLinker(\''+key+'\')">'+
+        '<b>'+esc(g.n)+(pt[2]?' <span style="font-weight:400;color:var(--ink-faded)">(optional)</span>':'')+'</b>'+
+        '<small>'+esc(ingAmtText(key,pt[1]))+'</small>'+
+        (L?'<small class="lab">\u2713 '+esc(L.item.name)+'</small>':'<small>Estimate \u00b7 tap to use your label</small>')+
+        '</button><button type="button" class="v3-ing-low" aria-pressed="'+on+'" onclick="toggleRunLow(\''+key+'\');renderRotSheet();renderRotation()">'+(on?'Running low':'Low?')+'</button></div>';
+    }).join('');
 }
 function closeRotSheet(){
   sheetKey=null;
@@ -4507,6 +4767,83 @@ function renderRing(){
     el.textContent=fmt(from+(to-from)*e); if(k<1) requestAnimationFrame(step); })();
 }
 
+
+
+/* ---- linking an ingredient to a scanned pantry item ---- */
+let linkKey=null, linkPick=null;
+function openLinker(key){
+  linkKey=key; const L=linkedItem(key); linkPick=L?L.item.id:null;
+  const g=INGR[key];
+  $("v3-link-title").textContent=g.n;
+  $("v3-link-sub").textContent="Pick the item you scanned. Every meal that uses "+g.n.toLowerCase()+" will switch from the estimate to your label.";
+  $("v3-link-q").value=""; $("v3-link-err").textContent="";
+  $("v3-link-unlink").style.display=L?"block":"none";
+  renderLinkList(); renderLinkPer(L?L.per:1);
+  const sh=$("v3-link"); sh.classList.add("open"); sh.setAttribute("aria-hidden","false"); sh.scrollTop=0;
+  $("v3-back").classList.add("open");
+}
+function closeLinker(){
+  const sh=$("v3-link"); if(!sh || !sh.classList.contains("open")) return;
+  sh.classList.remove("open"); sh.setAttribute("aria-hidden","true");
+  if(!$("v3-sheet").classList.contains("open")) $("v3-back").classList.remove("open");
+}
+function renderLinkList(){
+  const host=$("v3-link-list"); if(!host) return;
+  const items=ingredientItems();
+  if(!items.length){ host.innerHTML='<p class="v3-empty">Your pantry is empty. Scan this item\u2019s barcode first (Pantry \u2192 Scan), then come back here to link it. Until then, the estimate is used.</p>'; return; }
+  const q=($("v3-link-q").value||"").trim().toLowerCase();
+  const hints=(INGR[linkKey].q||"").split(" ");
+  const score=function(it){ const n=(it.name||"").toLowerCase(); return hints.some(function(h){ return h && n.indexOf(h)>=0; })?1:0; };
+  let list=items.filter(function(it){ return !q || (it.name||"").toLowerCase().indexOf(q)>=0; });
+  list.sort(function(a,b){ return score(b)-score(a) || (a.name||"").localeCompare(b.name||""); });
+  host.innerHTML=list.slice(0,30).map(function(it){
+    return '<button type="button" class="v3-pick" aria-pressed="'+(linkPick===it.id)+'" onclick="linkPick=\''+it.id+'\';renderLinkList();renderLinkPer()">'+
+      '<b>'+esc(it.name)+'</b><small>'+(it.cal||0)+' cal \u00b7 '+(it.pro||0)+' g protein per serving'+(it.serving?' ('+esc(it.serving)+')':'')+'</small></button>';
+  }).join('') || '<p class="v3-empty">Nothing matches that search.</p>';
+}
+function renderLinkPer(v){
+  const host=$("v3-link-per"); if(!host) return;
+  if(!linkPick){ host.innerHTML=''; return; }
+  const it=ingredientItems().find(function(i){ return i.id===linkPick; }); if(!it){ host.innerHTML=''; return; }
+  const cur = (v!=null) ? v : (parseFloat(($("v3-link-servings")||{}).value)||1);
+  host.innerHTML='<label class="v3-field"><span>One '+esc(INGR[linkKey].u)+' of '+esc(INGR[linkKey].n.toLowerCase())+' = how many servings of this label?</span>'+
+    '<input id="v3-link-servings" type="number" inputmode="decimal" step="0.25" min="0.05" value="'+cur+'"></label>'+
+    '<p class="v3-hint">The label\u2019s serving is '+(it.serving?'\u201c'+esc(it.serving)+'\u201d':'not listed')+'. If that matches one '+esc(INGR[linkKey].u)+', leave it at 1.</p>';
+}
+function saveLink(){
+  if(!linkPick){ $("v3-link-err").textContent="Pick an item from your pantry first."; return; }
+  const per=parseFloat(($("v3-link-servings")||{}).value);
+  if(!(per>0)){ $("v3-link-err").textContent="Enter how many label servings make one "+INGR[linkKey].u+"."; return; }
+  const o=loadLinks(); o[linkKey]={id:linkPick, per:per}; saveLinks(o);
+  closeLinker(); if(sheetKey) renderRotSheet(); renderRotation(); showToast("Using your label for "+INGR[linkKey].n.toLowerCase());
+}
+function unlinkIng(){
+  const o=loadLinks(); delete o[linkKey]; saveLinks(o);
+  closeLinker(); if(sheetKey) renderRotSheet(); renderRotation(); showToast("Back to the estimate");
+}
+document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeLinker(); });
+
+/* ---- Shop screen: the last-one rule, in one place ---- */
+function lowPanelHTML(){
+  const low=loadLow(), keys=Object.keys(INGR).sort(function(a,b){ return INGR[a].n.localeCompare(INGR[b].n); });
+  const n=Object.keys(low).length;
+  return '<div class="v3-low-panel"><h3>Running low'+(n?' \u00b7 '+n:'')+'</h3>'+
+    '<p>Open the last of something? Tap it here right then. Flagged items show up at the top of your grocery list automatically, and any meal that needs them says so.</p>'+
+    '<div class="v3-chips" style="margin:0">'+keys.map(function(k){
+      return '<button type="button" class="v3-chip" aria-pressed="'+(!!low[k])+'" onclick="toggleRunLow(\''+k+'\');renderShop();renderRotation()">'+esc(INGR[k].n)+'</button>'; }).join('')+
+    '</div>'+(n?'<button type="button" class="v3-ghost" onclick="saveLow({});renderShop();renderRotation()">Clear all \u2014 I restocked</button>':'')+'</div>';
+}
+
+/* ---- Thursday: the five-minute kitchen check before Friday's shop ---- */
+function renderThursday(){
+  const host=$("v3-thu"); if(!host) return;
+  let dismissed=false; try{ dismissed=localStorage.getItem("thuCheck_"+todayStr)==="1"; }catch(e){}
+  if(todayDate.getDay()!==4 || dismissed || todayStr!==isoToday()){ host.innerHTML=''; return; }
+  host.innerHTML='<div class="v3-thu"><b>Kitchen check tonight</b><p>Five minutes before tomorrow\u2019s shop: open the grocery list, walk the kitchen and fridge, and tap off everything you already have. What\u2019s left is the real list.</p>'+
+    '<div class="row"><a href="'+esc(CURRENT_LIST)+'?t='+Date.now()+'">Open grocery list</a>'+
+    '<button type="button" onclick="try{localStorage.setItem(\'thuCheck_\'+todayStr,\'1\')}catch(e){};renderThursday()">Done</button></div></div>';
+}
+function isoToday(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 
 /* ================= v3.2 — LOGGING A REAL MEAL =================
    "Log something else" used to open the pantry's ingredient picker, which
@@ -6066,7 +6403,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v3.2.0 · 2026-09-23";   // bump this each time you upload a new index.html
+const APP_VERSION="v3.4.0 · 2026-09-25";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);

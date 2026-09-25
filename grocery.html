@@ -106,6 +106,12 @@ li.done .box::after{transform:rotate(45deg) scale(1)}
 .name{font-weight:600;font-size:.97rem}
 .amt{font-weight:400;color:var(--amber)}
 .why{font-size:.83rem;color:var(--muted);margin-top:.12rem}
+.flagged{border:2px solid var(--amber);border-radius:14px;padding:.85rem 1rem;margin:1rem 0 .5rem;background:var(--card)}
+.flagged h3{margin:0 0 .25rem;font-size:1rem}
+.flagged p{margin:0 0 .6rem;font-size:.86rem;color:var(--muted)}
+.flagged ul{margin:0 0 .7rem 1.1rem;padding:0}
+.flagged li{margin:.15rem 0;font-weight:600}
+.flagged button{font:inherit;font-size:.85rem;font-weight:700;border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:.4rem .9rem;cursor:pointer}
 .picnic-gear{opacity:.9}
 .picnic-gear p{font-size:.86rem}
 .picnic-gear .gear-note{color:var(--muted);font-style:italic}
@@ -171,6 +177,7 @@ footer{font-size:.8rem;color:var(--muted);border-top:1px solid var(--line);paddi
 </div>
 
 <div class="wrap">
+  <div id="flagged"></div>
   <div id="stores"></div>
 
   <div class="gear picnic-only">
@@ -231,18 +238,12 @@ var DATA = [
     note:"Cash or debit only \u2014 no credit cards, and you bag your own. Sized for about one week.",
     groups:[
       {name:"Picnic \u2014 this week only", temp:true, items:[
-        {n:"Oven-roasted turkey, fresh-sliced at the deli counter", a:"1 lb, sliced thin", t:"researched", p:"check shelf",
-         w:"Fresh-sliced beats the watery pressed packages, and the premium brands run about $17/lb for barely any difference. Ask for it thin so it drapes on sandwiches."},
-        {n:"Provolone, sliced at the deli counter", a:"about 1/2 lb", t:"store brand", p:"check shelf",
-         w:"Same stop as the turkey. Plain deli provolone is the classic turkey-sandwich cheese."},
         {n:"Tillamook Sharp Cheddar block", a:"1 block, 8 oz", t:"store brand", p:"check shelf",
          w:"For slicing onto crackers and apples. The shredded Costco bag is for cooking; a block tastes better on a board. Brand pick, not taste-tested here."},
         {n:"Sourdough or ciabatta loaf, in-store bakery", a:"1 loaf", t:"store brand", p:"check shelf",
          w:"Buy it Thursday for a Friday picnic. Sourdough holds up better to turkey and mayo without going soggy."},
         {n:"Guerrero Caseras Burrito Size Flour Tortillas", a:"1 extra pack of 8", t:"researched", p:"check shelf",
          w:"For picnic wraps, on top of the pack already on your list. Same fallback: Mission burrito-size."},
-        {n:"Ritz crackers", a:"1 box", t:"store brand", p:"check shelf",
-         w:"The crowd-pleaser with cheddar and turkey. Brand pick, not taste-tested here."},
         {n:"Seedless grapes", a:"about 2 lb", t:"store brand", p:"check shelf",
          w:"Rinse and dry them before packing so they don't sit wet in the cooler."},
         {n:"Apples for dipping", a:"4 more, on top of your usual", t:"store brand", p:"check shelf",
@@ -257,11 +258,10 @@ var DATA = [
          w:"Just in case, for her. Mayo is already on your list below."},
         {n:"Ito En Matcha Love, bottled", a:"2\u20134 bottles", t:"researched", p:"check shelf",
          w:"From the makers of Oi Ocha; their matcha won The Kitchn's taste test this year. Not confirmed at WinCo \u2014 check the cold tea case. If she prefers it sweet and milky, grab a bottled matcha latte instead."},
-        {n:"Milk", a:"only if out", t:"store brand", p:"check shelf", w:""}
       ]},
       {name:"Produce", items:[
-        {n:"Bananas", a:"1 bunch, about 6", t:"store brand", p:"check shelf",
-         w:"Breakfast and smoothies. Pick ones still a little green at the stem so the last few aren't brown by midweek."},
+        {n:"Bananas", a:"2 bunches", t:"store brand", p:"check shelf",
+         w:"Smoothies, PB-banana toast, and snacks all use them. Pick ones still a little green at the stem so the last few aren't brown by midweek."},
         {n:"Apples", a:"4\u20135, Honeycrisp or Gala", t:"store brand", p:"check shelf",
          w:"Backpack fruit \u2014 they survive a bag for days. Honeycrisp is in its crispest season now; Gala if Honeycrisp is pricey."},
         {n:"Mandarins or oranges", a:"a bag or 5 loose", t:"store brand", p:"check shelf",
@@ -273,13 +273,23 @@ var DATA = [
         {n:"Yellow onions", a:"2", t:"store brand", p:"check shelf",
          w:"Burgers and meat sauce. Skip if you still have one."}
       ]},
+      {name:"Deli counter", items:[
+        {n:"Oven-roasted turkey, fresh-sliced", a:"1 lb \u2014 2 lb this week (1 for the picnic)", t:"researched", p:"check shelf",
+         w:"Omelets, wraps, snack boxes, turkey melts. Fresh-sliced beats the watery pressed packages, and premium brands run about $17/lb for barely any difference. Ask for it thin."},
+        {n:"Provolone, sliced", a:"1/2 lb \u2014 1 lb this week (half for the picnic)", t:"store brand", p:"check shelf",
+         w:"Wraps, snack boxes, turkey melts, and the picnic sandwiches."}
+      ]},
       {name:"Meat", items:[
         {n:"85/15 ground beef", a:"2 lb", t:"researched", p:"est. $4.28\u20135.98/lb",
          w:"Two burger nights, a taco night, and a pasta night. Cheaper here than Costco right now. Freeze whatever you won't cook in 2 days."}
       ]},
-      {name:"Eggs", items:[
+      {name:"Dairy + eggs", items:[
         {n:"Large eggs", a:"30, or skip if you still have a dozen", t:"store brand", p:"est. ~$5.75",
-         w:"Daily cheesy scrambles. The 30-pack is cheaper per egg and keeps for weeks."}
+         w:"Daily cheesy scrambles. The 30-pack is cheaper per egg and keeps for weeks."},
+        {n:"Milk", a:"1 gallon", t:"store brand", p:"check shelf",
+         w:"Cereal mornings and French toast. A glass alongside also adds protein to a light breakfast."},
+        {n:"Yoplait Original cups", a:"4\u20136", t:"store brand", p:"check shelf",
+         w:"The sweetened Yoplait you liked, for Yoplait-granola-fruit mornings."}
       ]},
       {name:"Frozen", items:[
         {n:"Ore-Ida Golden Hash Brown Patties", a:"1 bag", t:"researched", p:"check shelf",
@@ -301,6 +311,14 @@ var DATA = [
       {name:"Pantry", items:[
         {n:"Sweet Baby Ray's Honey Barbecue Sauce", a:"1 bottle, if out", t:"researched", p:"est. ~$3",
          w:"Honey, not Original \u2014 the Original has a touch of heat and the honey one doesn't. Lasts a month or more."},
+        {n:"Post Honey Roasted Granola", a:"1 bag, only if out", t:"store brand", p:"check shelf",
+         w:"The crunchy granola on your Yoplait mornings. Your standing rule is to always have it on the list."},
+        {n:"Ritz crackers", a:"1 box \u2014 2 this week (1 for the picnic)", t:"store brand", p:"check shelf",
+         w:"Chicken-and-crackers packs and snack boxes."},
+        {n:"Shelf-stable chicken pouches", a:"4", t:"store brand", p:"check shelf",
+         w:"The no-fridge lunch protein for Wednesdays and Fridays. StarKist or store brand; any chunk white chicken pouch works. Not researched here."},
+        {n:"Cinnamon Protein Cheerios", a:"1 box", t:"researched", p:"check shelf",
+         w:"Rushed-morning breakfast. Sporked's top-rated protein cereal because it doesn't taste like protein cereal. 8 g protein, about double regular cereal. Costco sold a 30 oz box for $7.79 in August \u2014 cheaper there if they have it on this trip."},
         {n:"Pasta", a:"1 lb, any shape", t:"store brand", p:"check shelf", w:"For the Rao's."},
         {n:"Ketchup and mayo", a:"only if low", t:"store brand", p:"check shelf", w:"Burger sauce is 1 tbsp of each."},
         {n:"Peanut butter", a:"1 jar, only if out", t:"store brand", p:"check shelf", w:"Campus-day lunch: PB-honey tortilla. 2 tbsp per lunch."},
@@ -308,7 +326,9 @@ var DATA = [
       ]},
       {name:"Bulk bins", items:[
         {n:"Mild taco seasoning", a:"about 1/4 cup", t:"store brand", p:"cents per use",
-         w:"Taco nights. Make sure the bin says mild."}
+         w:"Taco nights. Make sure the bin says mild."},
+        {n:"Ground cinnamon", a:"a small scoop, only if out", t:"store brand", p:"cents per use",
+         w:"French toast."}
       ]}
     ]
   },
@@ -482,8 +502,28 @@ document.getElementById("stores").addEventListener("keydown", function(e){
   if(li){ e.preventDefault(); toggle(li); }
 });
 
+/* Running-low flags set in the kitchen app. Same origin, same storage, so
+   they show up here without this file ever being edited. */
+var LOW_KEY = "runningLow_v1";
+function loadFlags(){ try{ var o = JSON.parse(localStorage.getItem(LOW_KEY)); return (o && typeof o === "object") ? o : {}; }catch(e){ return {}; } }
+function renderFlags(){
+  var host = document.getElementById("flagged"); if(!host) return;
+  var f = loadFlags(), keys = Object.keys(f);
+  if(!keys.length){ host.innerHTML = ""; return; }
+  host.innerHTML = '<div class="flagged"><h3>Flagged in the app &mdash; running low</h3>' +
+    '<p>You marked these when you opened the last one. Grab them even if they\'re not on the list below.</p><ul>' +
+    keys.map(function(k){ return "<li>" + esc(f[k].n || k) + "</li>"; }).join("") +
+    '</ul><button type="button" id="clearFlags">I bought these \u2014 clear the flags</button></div>';
+  document.getElementById("clearFlags").addEventListener("click", function(){
+    try{ localStorage.removeItem(LOW_KEY); }catch(e){}
+    renderFlags(); toast("Flags cleared");
+  });
+}
+
 function buildText(){
   var out = ["Here's what I still need to buy for " + WEEK_LABEL + ":", ""];
+  var fl = loadFlags(), fk = Object.keys(fl);
+  if(fk.length){ out.push("FLAGGED AS RUNNING LOW"); fk.forEach(function(k){ out.push("  - " + (fl[k].n || k)); }); out.push(""); }
   DATA.forEach(function(st,si){
     var lines = [];
     st.groups.forEach(function(g,gi){
@@ -547,6 +587,7 @@ var lbl = document.getElementById("weekLabel");
 if(lbl) lbl.textContent = WEEK_LABEL;
 document.title = "Grocery — " + WEEK_LABEL;
 render();
+renderFlags();
 </script>
 </body>
 </html>
