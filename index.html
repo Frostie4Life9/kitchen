@@ -524,6 +524,9 @@
   @media (prefers-reduced-motion: reduce) { .v3-timer, .v3-timer-go, .v3-timer-bar i, .v3-timer-reset { transition: none; } .v3-timer.done .v3-timer-go { animation: none; } }
   body.v3-sheet-up #timerChip:not(.ringing) { display: none; }
   body.v3-sheet-up #timerChip.ringing { bottom: auto; top: calc(14px + env(safe-area-inset-top)); }
+  .v3-step-t { display: block; font-size: 15px; font-weight: 800; color: var(--ink); margin-bottom: 3px; }
+  .v3-step-x { display: block; color: var(--ink-soft); }
+  .v3-steps li { padding-bottom: 18px; }
   .v3-log-btn { width: 100%; border: 0; font: inherit; font-size: 16px; font-weight: 800; color: #fff; background: var(--today); border-radius: 16px; padding: 16px; cursor: pointer; transition: transform .12s; }
   .v3-log-btn:active { transform: scale(.98); }
 
@@ -623,6 +626,15 @@
   .v3-low-panel h3 { font-size: 17px; font-weight: 800; margin: 0 0 4px; color: var(--ink); }
   .v3-low-panel p { font-size: 13px; color: var(--ink-faded); margin: 0 0 12px; line-height: 1.45; }
   .v3-low-panel .v3-chip[aria-pressed="true"] { background: var(--orange); border-color: var(--orange); color: #fff; }
+  .v3-low-panel .v3-chip[aria-pressed="true"] small { color: inherit; opacity: .8; }
+  .v3-low-add { display: flex; gap: 8px; margin: 14px 0 0; }
+  .v3-low-add input { flex: 1; min-width: 0; font: inherit; font-size: 16px; color: var(--ink); background: var(--paper); border: 1.5px solid var(--rule); border-radius: 12px; padding: 11px 12px; }
+  .v3-low-add input:focus { outline: none; border-color: var(--orange); }
+  .v3-low-add button { border: 0; background: var(--orange); color: #fff; font: inherit; font-weight: 800; font-size: 14px; border-radius: 12px; padding: 0 16px; cursor: pointer; }
+  .v3-fruit { background: var(--paper); border-radius: 16px; padding: 12px 12px 12px; margin: 0 0 14px; }
+  .v3-fruit-h { font-size: 14px; font-weight: 800; color: var(--ink); margin: 0 2px 8px; }
+  .v3-fruit .v3-chip:not([aria-pressed="true"]) { background: var(--card); }
+  .v3-fruit .v3-chip[aria-pressed="true"] small { color: inherit; opacity: .75; }
   .v3-thu { background: var(--today-soft); border-radius: 18px; padding: 14px 16px; margin: 4px 0 16px; }
   .v3-thu b { display: block; font-size: 15px; color: var(--ink); margin-bottom: 3px; }
   .v3-thu p { font-size: 13px; color: var(--ink-soft); margin: 0 0 10px; line-height: 1.45; }
@@ -4729,7 +4741,7 @@ const INGR={
   smalltort: {n:"Regular tortillas",       u:"tortilla",     e:[120,3,20,3],     q:"tortilla"},
   banana:    {n:"Bananas",                 u:"banana",       e:[105,1.3,27,0.4], q:"banana"},
   apple:     {n:"Apples",                  u:"apple",        e:[95,0.5,25,0.3],  q:"apple"},
-  orange:    {n:"Oranges or mandarins",    u:"orange",       e:[62,1.2,15,0.2],  q:"orange mandarin"},
+  orange:    {n:"Oranges",                 u:"orange",       e:[62,1.2,15,0.2],  q:"orange mandarin"},
   fruit:     {n:"Any fruit",               u:"piece",        e:[90,0.8,23,0.3],  q:"apple banana orange mandarin grape"},
   grapes:    {n:"Grapes",                  u:"cup",          e:[104,1,27,0.2],   q:"grape"},
   strawb:    {n:"Frozen strawberries",     u:"cup",          e:[50,1,12,0.2],    q:"strawberr"},
@@ -4749,12 +4761,35 @@ const INGR={
   beef:      {n:"85/15 ground beef",       u:"oz raw",       e:[60,5.3,0,4.3],   q:"ground beef"},
   bun:       {n:"Burger buns",             u:"bun",          e:[150,5,27,2],     q:"bun"},
   chicken:   {n:"Chicken breast, cooked",  u:"oz",           e:[47,8.8,0,1],     q:"chicken breast"},
-  bbq:       {n:"Honey BBQ sauce",         u:"2 tbsp",       e:[70,0,17,0],      q:"bbq barbecue"},
   taco:      {n:"Mild taco seasoning",     u:"tbsp",         e:[20,0.5,4,0],     q:"taco"},
   pasta:     {n:"Pasta",                   u:"oz dry",       e:[100,3.5,21,0.5], q:"pasta spaghetti"},
   marinara:  {n:"Rao's marinara",          u:"1/2 cup",      e:[100,2,6,7],      q:"marinara rao"},
-  chunks:    {n:"Breaded chicken chunks",  u:"3 oz",         e:[160,16,8,7],     q:"chunks breaded chicken"}
+  chunks:    {n:"Breaded chicken chunks",  u:"3 oz",         e:[160,16,8,7],     q:"chunks breaded chicken"},
+  mandarin:  {n:"Mandarins",               u:"2 mandarins",  e:[94,1.4,23.6,0.6], q:"mandarin cutie halos"},
+  watermelon:{n:"Watermelon",              u:"2 cups",       e:[91,1.9,23,0.5],  q:"watermelon"}
 };
+/* v3.9 — "which fruit?" Cards with a fruit side ask which one you had, so
+   the numbers are that fruit's, not an average. USDA values per portion. */
+const FRUIT_CHOICES=[["banana","Banana"],["apple","Apple"],["orange","Orange"],["mandarin","2 mandarins"],
+  ["grapes","Grapes","1 cup"],["watermelon","Watermelon","2 cups"],["pineapple","Pineapple","1 cup"],["strawb","Strawberries","1 cup"]];
+const FRUIT_WORD={banana:"banana",apple:"apple",orange:"orange",mandarin:"mandarins",grapes:"grapes",watermelon:"watermelon",pineapple:"pineapple",strawb:"strawberries"};
+const FRUIT_SWAP={fruit:1,banana:1,apple:1,orange:1,grapes:1};
+/* the part of a card that is a choosable fruit: "any fruit", or an optional side of fruit */
+function fruitSlot(it){
+  if(!it.parts) return -1;
+  for(let i=0;i<it.parts.length;i++){ const pt=it.parts[i]; if(pt[0]==="fruit" || (pt[2] && FRUIT_SWAP[pt[0]])) return i; }
+  return -1;
+}
+function lastFruit(){ try{ const v=localStorage.getItem("lastFruit_v1"); if(v && INGR[v]) return v; }catch(e){} return "banana"; }
+function defaultFruit(it){ const i=fruitSlot(it); if(i<0) return null; const k=it.parts[i][0]; return k==="fruit"?lastFruit():k; }
+function partsFor(it,choice){
+  if(!it.parts) return null;
+  const i=fruitSlot(it); if(i<0) return it.parts;
+  const ch=(choice===undefined)?defaultFruit(it):choice;
+  const out=it.parts.slice();
+  if(!ch || ch==="none") out.splice(i,1); else out[i]=[ch,1,it.parts[i][2]];
+  return out;
+}
 /* [ingredient, amount in its unit, optional]. Optional parts (lettuce,
    onion, a side of fruit) don't stop you making the meal if you're out. */
 const CARD_PARTS={
@@ -4801,6 +4836,130 @@ const ROT_TIMERS={
   chunks:     [600,0,0]
 };
 ROTATION.forEach(function(sec){ sec.items.forEach(function(it){ if(ROT_TIMERS[it.k]) it.tm=ROT_TIMERS[it.k]; }); });
+/* v3.10 — full step-by-step recipes. Each step is [title, how, timer seconds].
+   Written for someone learning to cook: heat on a 1–10 dial, how long, and
+   what "done" looks like. Replaces each card's short steps and timers. */
+const ROT_STEPS={
+  scramble:[
+    ["Start the sausage","Put 2 turkey sausage links in the air fryer basket. 375°F for 5 min (8 min if they're frozen). Shake the basket once halfway. Done when browned and hot all the way through.",300],
+    ["Whisk the eggs","Crack 3 eggs into a bowl. Add a pinch of salt (about ⅛ tsp — what you can pinch between two fingers and a thumb). Whisk with a fork for 20–30 seconds, until there are no streaks of white left.",0],
+    ["Heat the pan","Nonstick pan on medium-low (about 3–4 on a 1–10 dial) with 1 tsp butter. Wait about 1 minute, until the butter melts and stops foaming. If the butter starts turning brown, the pan is too hot — lift it off the heat for a few seconds.",60],
+    ["Scramble slowly","Pour in the eggs. Let them sit 15 seconds, then slowly push them from the edges toward the middle with a spatula, over and over. Stop when they're mostly set but still look a little wet, about 2 minutes. They keep cooking on the plate, so pulling them early keeps them soft.",120],
+    ["Add the cheese","Take the pan off the heat and fold in ¼ cup shredded cheddar. The heat of the eggs melts it in about 20 seconds.",0],
+    ["Plate it","Eggs, sausage, and your fruit. Want toast too? Put a slice in the toaster when you start the eggs — medium setting, about 2 minutes.",0]],
+  bigplate:[
+    ["Start the hash brown","1 hash brown patty in the air fryer, no oil needed. 400°F for 10 min. Flip it with tongs at the 5-minute mark.",600],
+    ["Add the sausage","When the timer ends, add 2 sausage links next to the patty. 5 more min at 400°F. The patty is done when it's deep golden and the edges are crisp.",300],
+    ["Scramble the eggs","While that cooks: whisk 3 eggs with a pinch of salt. Nonstick pan on medium-low with 1 tsp butter. Pour in the eggs and slowly push them from the edges to the middle for about 2 min, until just set. Off the heat, fold in ¼ cup cheddar.",120],
+    ["Toast","1 slice of bread in the toaster on medium (about 2 min). Spread 1 tsp butter on it right away so it melts in.",0],
+    ["Plate it all","Everything on one plate. A little salt and pepper on the hash brown if you like.",0]],
+  omelet:[
+    ["Prep","Dice 2 oz deli turkey (about 3 thin slices) into small squares. Crack 3 eggs into a bowl with a pinch of salt and whisk with a fork until smooth, about 20 seconds.",0],
+    ["Heat the pan","Nonstick pan on medium-low (about 3–4). Add 1 tsp butter and swirl the pan so it coats the whole bottom.",0],
+    ["Set the eggs","Pour in the eggs and don't stir. After about a minute the edges firm up: lift an edge with the spatula and tilt the pan so the runny egg on top flows underneath. Do that a few times around the pan. After about 2 min total, the top should be almost set — just a little glossy.",120],
+    ["Fill and fold","Scatter ¼ cup cheddar and the turkey over one half. Slide the spatula under the empty half and fold it over the filling. Cook 1 more minute so the cheese melts.",60],
+    ["Serve","Slide it onto a plate. Toast (medium, about 2 min, 1 tsp butter) and a piece of fruit on the side.",0]],
+  frenchtoast:[
+    ["Start the sausage","2 turkey sausage links in the air fryer. 375°F for 5 min, shaking the basket once halfway.",300],
+    ["Make the dip","In a shallow bowl (a pasta bowl works): 2 eggs, ¼ cup milk, and about ½ tsp cinnamon. Whisk with a fork until it's all one even color.",0],
+    ["Heat the pan","Nonstick pan on medium (about 5). Add 1 tsp butter and wait until it's melted and bubbling gently, about 1 minute.",0],
+    ["Dip the bread","Dip a slice of bread in the egg for 3–4 seconds per side: long enough to soak in, short enough that it doesn't get soggy and fall apart. Let the extra drip off. Do both slices.",0],
+    ["Cook side one","Lay both slices in the pan and don't move them. 2½ minutes, until the bottom is golden brown — lift a corner with the spatula to check.",150],
+    ["Flip and finish","Flip and cook the other side 2½ minutes. Plate and drizzle 1 tbsp honey over the top.",150]],
+  pbroll:[
+    ["Soften the tortilla","Microwave the burrito-size tortilla for 10 seconds. A warm tortilla bends without cracking.",0],
+    ["Spread","Spread 2 tbsp peanut butter (one heaping spoonful) across the middle, leaving about an inch bare around the edge.",0],
+    ["Roll","Lay a whole peeled banana near one edge. Fold that edge over the banana, then roll it up tight. Wrap the bottom in a paper towel or foil so you can eat it walking.",0],
+    ["Round it out","A glass of milk alongside adds 8 g of protein if you have a minute.",0]],
+  yoplait:[
+    ["Build it","Stir the Yoplait in its cup (or pour it into a bowl). Right before you eat, top with ½ cup crunchy granola (a big handful) so it stays crunchy, and slice a banana or other fruit on top.",0],
+    ["More protein","It's light on protein. Add 2 turkey sausage links (air fryer, 375°F, 5 min) or a protein bar to round it out.",300]],
+  pbtoast:[
+    ["Start the sausage","2 turkey sausage links in the air fryer. 375°F for 5 min, shaking once halfway.",300],
+    ["Toast","2 slices of bread in the toaster on medium (about 2 min), so it's firm enough to hold the toppings.",0],
+    ["Top it","While the toast is warm, spread 1 tbsp peanut butter on each slice. Slice a banana into coins about ¼ inch thick and lay them on top. A drizzle of honey if you want it sweeter.",0],
+    ["Plate","Sausage on the side.",0]],
+  smoothiebar:[
+    ["Load the blender","Liquid first, so the blades don't jam: 1 cup water or coconut water. Then 1 peeled banana broken in half, 1 peeled orange pulled into segments, 1 cup frozen strawberries, and 1 cup frozen pineapple.",0],
+    ["Blend","Start on low for 10 seconds, then high for 45–60 seconds, until there are no chunks. Too thick to move? Add a splash of water and blend 10 more seconds.",60],
+    ["Go","Pour it into a to-go cup and grab a protein bar. The bar is where the protein comes from.",0]],
+  cereal:[
+    ["Pour","About 1½ cups of cereal and 1 cup of milk.",0],
+    ["Round it out","Cereal alone is light on protein. A yogurt cup, a couple of hard-boiled eggs, or a second glass of milk on the side fills it out.",0]],
+  campus:[
+    ["Spread","Lay a burrito-size tortilla flat. Spread 2 tbsp peanut butter across the middle, leaving an inch bare at the edges, then drizzle 1 tbsp honey over it.",0],
+    ["Roll and wrap","Fold the two sides in about 2 inches, then roll it up from the bottom, tight. Wrap it in foil so the honey can't leak.",0],
+    ["Pack the rest","An apple or 2 mandarins and a protein bar. Keep a spare bar in your backpack at all times, so a forgotten lunch never becomes a skipped one.",0]],
+  pouch:[
+    ["Pack","A shelf-stable chicken pouch, a sleeve of Ritz (about 15), a piece of fruit, and a protein bar. Nothing here needs to stay cold.",0],
+    ["Eat","Tear the pouch open and eat the chicken on the crackers. Stir in a mayo packet (or 1 tbsp mayo in a small container) and it becomes chicken salad.",0]],
+  snackbox:[
+    ["Portion","In a lidded container: 3 oz deli turkey (4–5 thin slices, folded), 2 slices provolone cut into 4 squares each, about 15 Ritz, and a cup of grapes or a sliced apple.",0],
+    ["Keep it cold","Pack an ice pack next to it. Turkey and cheese are fine for about 2 hours without one.",0],
+    ["Eat","Stack a cracker, a cheese square, and a piece of turkey.",0]],
+  melt:[
+    ["Build it","Lay out 2 slices of bread (sourdough if you have it). Put 1 slice of provolone on each, then 4 oz turkey (about 6 thin slices) on one side. Close it. Cheese touching both slices of bread is what glues it together.",0],
+    ["Butter the outside","Spread 1 tsp soft butter on the top of the sandwich, all the way to the edges.",0],
+    ["Cook side one","Nonstick pan on medium-low (about 4). Put the sandwich in butter-side down, then spread 1 tsp butter on the new top. Cook 3½ minutes, pressing gently with a spatula once or twice, until the bottom is golden.",210],
+    ["Flip","Flip and cook 3½ more minutes. Low heat is what melts the cheese before the bread burns — if it's browning faster than that, turn it down.",210],
+    ["Rest","Let it sit 1 minute before cutting it in half so the cheese doesn't all run out.",60]],
+  wrap:[
+    ["Spread","Lay a burrito-size tortilla flat and spread ½ tbsp mayo (a thin layer) across the middle.",0],
+    ["Layer","4 oz turkey (about 6 thin slices), 2 slices provolone, and a handful of shredded lettuce, in a strip across the lower third of the tortilla.",0],
+    ["Roll","Fold the bottom edge up over the filling, fold both sides in, then roll it up tight. Wrap it in foil — it holds the shape and is easier to eat.",0],
+    ["Pack","Add an apple or mandarins. Pack an ice pack if it's going to campus; turkey and cheese are good for about 2 hours out of the fridge.",0]],
+  burger:[
+    ["Get everything ready first","The patties cook in under 4 minutes, so have it all out: stir 1 tbsp mayo + 1 tbsp ketchup in a small bowl (burger sauce), slice 2 thin rings of onion, tear a couple of lettuce leaves, and have ¼ cup shredded cheddar and the bun on the counter.",0],
+    ["Toast the bun","Open the bun. Lay both halves cut-side down in your dry skillet (no butter needed) on medium, about 5. Leave them 1½ minutes, until golden and a little crisp — lift one to check. Put them on your plate. A toasted bun doesn't go soggy from the sauce and juice.",90],
+    ["Make 2 loose balls","Split ⅓ lb ground beef into 2 equal balls, about golf-ball size. Don't squeeze them tight. Loose meat is what gives you the lacy, crispy edges.",0],
+    ["Get the pan very hot","Turn the same skillet to high (9–10) and let it heat, empty, for 2–3 minutes. It's ready when a drop of water sizzles away in a second or two. Cast iron or stainless works best. Only have nonstick? Use medium-high (7) instead of high — very high heat ruins the coating.",150],
+    ["Smash","Put both balls in the pan, well apart. Press each one straight down hard with a sturdy spatula, pushing on the spatula with your other hand, for 10 seconds, until it's a thin patty about ¼ inch thick with ragged edges. A square of parchment between spatula and meat stops it sticking, if you have some.",10],
+    ["Salt well","Right away, sprinkle each patty with a big pinch of salt (about ⅛ tsp — enough that you can see it scattered across the whole top) and a little black pepper. Ground beef has no salt of its own, so this is most of the flavor. Pepper is optional.",0],
+    ["Sear — don't touch","Leave them alone for 2 minutes. They're ready to flip when the edges are dark brown and crispy and juice is pooling on top.",120],
+    ["Flip and cheese","Push the spatula edge hard under each patty to scrape up the brown crust with it, and flip. Put 2 tbsp cheddar on each right away. 1 more minute. Patties this thin are fully cooked by then.",60],
+    ["Stack it","Sauce on both bun halves. Bottom bun, lettuce, both patties stacked, onion, top bun.",0]],
+  quesadilla:[
+    ["Get the chicken ready","You need 5 oz cooked chicken — about one palm-sized piece. Frozen portion? Move it to the fridge the night before, or microwave it on defrost for 1–2 min. No cooked chicken at all? Air fry a raw breast at 380°F for 18 min, flipping halfway, until it reaches 165°F in the thickest part (or cut it open: no pink, juices run clear).",1080],
+    ["Chop and season","Chop it into small pieces, about ½ inch. In a bowl, toss with 1 tsp mild taco seasoning, a pinch of garlic powder, and 1 tbsp water so it coats. Microwave 45 seconds to warm it through.",45],
+    ["Fill","Lay the burrito-size tortilla flat. On one half only: ¼ cup cheddar, then the chicken, then another ¼ cup cheddar on top. Cheese on both sides glues it shut. Fold the empty half over.",0],
+    ["Cook side one","Nonstick pan on medium (about 5). Melt 1 tsp butter, then lay the quesadilla in. Press it flat gently with the spatula. 2½ minutes, until the bottom is deep golden — lift the edge to check.",150],
+    ["Flip","Slide the spatula all the way under it, steady the top with your other hand, and flip it toward the folded side so nothing spills. 2½ more minutes.",150],
+    ["Rest and cut","1 minute on a cutting board so the cheese firms up a little, then cut into 3 or 4 wedges.",60],
+    ["Make the dip","Cane's-style sauce: 1 tbsp mayo, ½ tbsp ketchup, a pinch of garlic powder, and lots of black pepper (8–10 grinds, or ¼ tsp). Stir until it's one even pinkish color.",0]],
+  tacos:[
+    ["Brown the beef","Nonstick pan on medium-high (about 7). Add ¼ lb ground beef and break it into small crumbles with the spatula as it cooks. 6–7 minutes, until there's no pink left and some bits are browned.",390],
+    ["Drain","Tilt the pan so the grease pools at one side and spoon most of it out — into a mug or onto foil, never down the sink.",0],
+    ["Season","Turn to medium. Sprinkle in 1 tbsp mild taco seasoning and 2–3 tbsp water. Stir and simmer 2 minutes, until the water is mostly gone and the meat looks saucy, not wet.",120],
+    ["Warm the tortillas","Spoon the meat into a bowl. Wipe the pan with a paper towel and put it back on medium. Warm the 3 tortillas one at a time, 20 seconds a side, until soft and bendy with a few brown spots.",20],
+    ["Fill","Split the beef between the tortillas, then top with ¼ cup cheddar and shredded lettuce.",0]],
+  pasta:[
+    ["Boil the water","Fill a pot with about 8 cups (2 quarts) of water, add 1 tsp salt, put the lid on, and set it on high. It takes 8–10 minutes to boil.",540],
+    ["Brown the beef","While the water heats: pan on medium-high (about 7). Add ¼ lb ground beef and ¼ onion, diced small. Break the meat into crumbles and cook about 7 minutes, until there's no pink and the onion is soft. Spoon out most of the grease.",420],
+    ["Cook the pasta","Once the water is at a full rolling boil (big bubbles that don't stop when you stir), add 3 oz pasta — about ¾ cup of penne, or a bundle of spaghetti the width of a quarter. Stir so it doesn't stick. Cook for the time on the box plus 1–2 minutes: water boils cooler at Provo's elevation, so pasta takes a little longer. Taste a piece; it should be tender with a tiny bit of bite.",660],
+    ["Add the sauce","Pour ½ cup Rao's into the beef, turn to low, and let it bubble gently for 3 minutes while the pasta finishes.",180],
+    ["Drain and toss","Scoop out a mug of the pasta water first. Drain the pasta in a colander, add it to the sauce pan, and toss. Too thick? Stir in a spoonful or two of the pasta water.",0],
+    ["Leftovers","Made extra? Let it cool 30 minutes, then refrigerate in a lidded container. Good for 3–4 days. Reheat 1½–2 minutes in the microwave with a splash of water.",0]],
+  chunks:[
+    ["Preheat","Run the air fryer empty at 400°F for 3 minutes, so the chunks crisp instead of steam.",180],
+    ["Cook from frozen","8 oz frozen chunks (about 12–14 pieces) straight from the bag, no thawing, in a single layer — don't pile them. 400°F for 10 minutes, shaking the basket at the 5-minute mark.",600],
+    ["Check","They're done when they're golden and hot in the middle — cut the biggest one open: no cold center. If it's not there yet, 2 more minutes.",0],
+    ["Make the dip","Cane's-style sauce: 1 tbsp mayo, ½ tbsp ketchup, a pinch of garlic powder, and lots of black pepper (8–10 grinds, or ¼ tsp). Stir until it's one even color.",0],
+    ["Round it out","Fruit on the side. Still hungry? Baby carrots, or a steamer bag of broccoli (microwave per the bag, about 4 min), add volume for very few calories.",0]],
+  smoothie:[
+    ["Load the blender","Liquid first: 1 cup coconut water or water. Then 1 peeled banana broken in half, 1 peeled orange in segments, 1 cup frozen strawberries, and 1 cup frozen pineapple. For the original version, add 1 tbsp chia and a little Truvia.",0],
+    ["Blend","Low for 10 seconds, then high for 45–60 seconds, until smooth. Add a splash of liquid if it won't move.",60],
+    ["Pair it","It's low on protein by itself, so have it with a protein bar or alongside a meal.",0]],
+  barfruit:[
+    ["That's it","A protein bar and your piece of fruit.",0]],
+  fruit:[
+    ["Eat it","Rinse it if it has an edible skin (apples, grapes, strawberries), peel it if not, and eat it.",0]]
+};
+ROTATION.forEach(function(sec){ sec.items.forEach(function(it){
+  const S=ROT_STEPS[it.k]; if(!S) return;
+  it.r=S.map(function(x){ return [x[0],x[1]]; });
+  it.tm=S.map(function(x){ return x[2]||0; });
+}); });
+
 
 const LINK_KEY="ingLinks_v1";     /* {ingredientKey: {id: pantryItemId, per: servings per unit}} */
 function loadLinks(){ try{ const o=JSON.parse(localStorage.getItem(LINK_KEY)); return o&&typeof o==="object"?o:{}; }catch(e){ return {}; } }
@@ -4817,11 +4976,13 @@ function ingNut(key, amt){
     return {c:(L.item.cal||0)*m, p:(L.item.pro||0)*m, cb:(L.item.carb||0)*m, f:(L.item.fat||0)*m, lab:true}; }
   return {c:g.e[0]*amt, p:g.e[1]*amt, cb:g.e[2]*amt, f:g.e[3]*amt, lab:false};
 }
-function cardNut(it){
+function cardNut(it,choice){
   if(!it.parts) return {c:it.c, p:it.p, cb:0, f:0, linked:0, total:0};
-  let c=0,p=0,cb=0,f=0,linked=0;
-  it.parts.forEach(function(pt){ const n=ingNut(pt[0],pt[1]); c+=n.c; p+=n.p; cb+=n.cb; f+=n.f; if(n.lab) linked++; });
-  return {c:Math.round(c/5)*5, p:Math.round(p), cb:Math.round(cb), f:Math.round(f), linked:linked, total:it.parts.length};
+  const parts=partsFor(it,choice);
+  let c=0,p=0,cb=0,f=0,linked=0,total=0;
+  parts.forEach(function(pt){ const n=ingNut(pt[0],pt[1]); c+=n.c; p+=n.p; cb+=n.cb; f+=n.f;
+    if(!NO_LABEL[pt[0]]){ total++; if(n.lab) linked++; } });
+  return {c:Math.round(c/5)*5, p:Math.round(p), cb:Math.round(cb), f:Math.round(f), linked:linked, total:total};
 }
 
 /* ---- running low: the last-one rule ----
@@ -4866,8 +5027,18 @@ function logRotation(k){
   dayState.log=dayState.log||[];
   /* Same shape every other logger in the app uses — name/pro, not n/p —
      or the budget and protein totals silently read zero. */
-  const slot=rotSlot(f.sec), nu=cardNut(f.it);
-  dayState.log.push({id:uid(), slot:slot, name:f.it.n, cal:nu.c, pro:nu.p, carb:nu.cb, fat:nu.f});
+  const ch=(sheetKey===k && sheetFruit!==null)?sheetFruit:undefined;
+  const slot=rotSlot(f.sec), nu=cardNut(f.it,ch);
+  const used=(ch===undefined)?defaultFruit(f.it):ch;
+  let name=f.it.n;
+  if(used && used!=="none" && FRUIT_WORD[used]){
+    const w=FRUIT_WORD[used];
+    if(/a piece of fruit/i.test(name)) name=w.charAt(0).toUpperCase()+w.slice(1);
+    else if(/fruit/i.test(name)) name=name.replace(/fruit/i,w);
+    else if(fruitSlot(f.it)>=0) name=name+" + "+w;
+    try{ localStorage.setItem("lastFruit_v1",used); }catch(e){}
+  }
+  dayState.log.push({id:uid(), slot:slot, name:name, rk:k, cal:nu.c, pro:nu.p, carb:nu.cb, fat:nu.f});
   saveDay(todayStr,dayState);
   rotOpen=null; v3LastSlot=slot;
   closeRotSheet();
@@ -4875,8 +5046,8 @@ function logRotation(k){
   if(typeof renderCalendar==="function") renderCalendar();
   showToast("Logged \u2014 "+f.it.n);
 }
-function timesLoggedToday(name){
-  return (dayState.log||[]).filter(function(i){ return i.name===name; }).length;
+function timesLoggedToday(it){
+  return (dayState.log||[]).filter(function(i){ return i.rk ? i.rk===it.k : i.name===it.n; }).length;
 }
 
 /* ---------- v3.1 Today UI ---------- */
@@ -4915,7 +5086,7 @@ function renderRotation(swapped){
   }).join('');
   const sec=ROTATION.filter(function(x){ return x.sec===rotSec; })[0]||ROTATION[0];
   host.innerHTML=sec.items.map(function(it,idx){
-    const n=timesLoggedToday(it.n), nu=cardNut(it), out=outParts(it);
+    const n=timesLoggedToday(it), nu=cardNut(it), out=outParts(it);
     const allLab=nu.total>0 && nu.linked===nu.total;
     const tag = out.length ? '<span class="v3-tile-tag out">Out of '+esc(out[0].toLowerCase())+(out.length>1?' +'+(out.length-1):'')+'</span>'
               : (it.tag ? '<span class="v3-tile-tag">'+esc(it.tag)+'</span>' : '');
@@ -4929,9 +5100,10 @@ function renderRotation(swapped){
 }
 
 /* ---- the recipe sheet ---- */
-let sheetKey=null, sheetReturn=null;
+let sheetKey=null, sheetReturn=null, sheetFruit=null;
 function openRotSheet(k){
   const f=rotItem(k); if(!f) return;
+  if(sheetKey!==k) sheetFruit=defaultFruit(f.it);
   sheetKey=k; if(!$("v3-sheet").classList.contains("open")) sheetReturn=document.activeElement;
   renderRotSheet();
   $("v3-sheet-log").textContent="Log this meal";
@@ -4941,23 +5113,41 @@ function openRotSheet(k){
   const sh=$("v3-sheet"); if(!sh.classList.contains("open")){ sh.classList.add("open"); sh.setAttribute("aria-hidden","false"); sh.scrollTop=0;
     setTimeout(function(){ const b=$("v3-sheet-log"); if(b && b.focus) b.focus(); }, reduceMotion()?0:300); }
 }
+function pickFruit(k){ sheetFruit=k; renderRotSheet(); }
 function renderRotSheet(){
   const f=rotItem(sheetKey); if(!f) return;
-  const nu=cardNut(f.it);
+  const slotI=fruitSlot(f.it);
+  if(slotI>=0 && sheetFruit===null) sheetFruit=defaultFruit(f.it);
+  const nu=cardNut(f.it, slotI>=0?sheetFruit:undefined);
   $("v3-sheet-title").textContent=f.it.n;
   $("v3-sheet-nums").innerHTML='<div><b>'+nu.c+'</b>calories</div><div><b>'+nu.p+' g</b>protein</div>'+
     (f.it.parts?'<div><b>'+nu.cb+' g</b>carbs</div><div><b>'+nu.f+' g</b>fat</div>':'');
   $("v3-sheet-desc").textContent=f.it.d;
   $("v3-sheet-steps").innerHTML=f.it.r.map(function(st,i){
     const t=(f.it.tm&&f.it.tm[i])||0;
-    return '<li>'+esc(st)+(t?rotTimerHTML(f.it,i,t):'')+'</li>';
+    const body=Array.isArray(st)?'<b class="v3-step-t">'+esc(st[0])+'</b><span class="v3-step-x">'+esc(st[1])+'</span>':esc(st);
+    return '<li>'+body+(t?rotTimerHTML(f.it,i,t):'')+'</li>';
   }).join('');
   const ings=$("v3-sheet-ings");
   if(!f.it.parts){ ings.innerHTML=''; return; }
   const low=loadLow();
-  ings.innerHTML='<div class="v3-ings-head"><b>Ingredients</b><span>'+(nu.linked===nu.total?'All from your labels':nu.linked+' of '+nu.total+' from your labels')+'</span></div>'+
-    f.it.parts.map(function(pt){
+  let pick='';
+  if(slotI>=0){
+    const opt=!!f.it.parts[slotI][2];
+    pick='<div class="v3-fruit"><div class="v3-fruit-h">Which fruit?</div><div class="v3-chips" style="margin:0">'+
+      FRUIT_CHOICES.map(function(fc){ const e=INGR[fc[0]].e;
+        return '<button type="button" class="v3-chip" aria-pressed="'+(sheetFruit===fc[0])+'" onclick="pickFruit(\''+fc[0]+'\')">'+esc(fc[1])+'<small>'+Math.round(e[0])+'</small></button>'; }).join('')+
+      (opt?'<button type="button" class="v3-chip" aria-pressed="'+(sheetFruit==="none")+'" onclick="pickFruit(\'none\')">No fruit</button>':'')+
+      '</div></div>';
+  }
+  const parts=partsFor(f.it, slotI>=0?sheetFruit:undefined);
+  ings.innerHTML=pick+'<div class="v3-ings-head"><b>Ingredients</b><span>'+(!nu.total?'':nu.linked===nu.total?'All from your labels':nu.linked+' of '+nu.total+' from your labels')+'</span></div>'+
+    parts.map(function(pt){
       const key=pt[0], g=INGR[key], L=linkedItem(key), on=!!low[key];
+      if(NO_LABEL[key]){
+        return '<div class="v3-ing"><div class="v3-ing-main" style="cursor:default"><b>'+esc(g.n)+'</b><small>'+esc(ingAmtText(key,pt[1]))+'</small><small>USDA value \u00b7 no label needed</small></div>'+
+          '<button type="button" class="v3-ing-low" aria-pressed="'+on+'" onclick="toggleRunLow(\''+key+'\');renderRotSheet();renderRotation()">'+(on?'Running low':'Low?')+'</button></div>';
+      }
       return '<div class="v3-ing"><button type="button" class="v3-ing-main" onclick="openLinker(\''+key+'\')">'+
         '<b>'+esc(g.n)+(pt[2]?' <span style="font-weight:400;color:var(--ink-faded)">(optional)</span>':'')+'</b>'+
         '<small>'+esc(ingAmtText(key,pt[1]))+'</small>'+
@@ -5138,7 +5328,7 @@ const TMR_SCAN='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 
 const TMR_PLUS='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
 /* Fresh produce has no barcode and the estimates are USDA values anyway,
    so it never counts against you here. */
-const NO_LABEL={banana:1, apple:1, orange:1, fruit:1, grapes:1, lettuce:1, onion:1};
+const NO_LABEL={banana:1, apple:1, orange:1, fruit:1, grapes:1, lettuce:1, onion:1, mandarin:1, watermelon:1};
 function ingUse(){
   const use={};
   ROTATION.forEach(function(sec){ sec.items.forEach(function(it){ (it.parts||[]).forEach(function(pt){
@@ -5357,13 +5547,30 @@ window.addEventListener("kitchensync", function(){ const o=$("settingsOverlay");
 
 /* ---- Shop screen: the last-one rule, in one place ---- */
 function lowPanelHTML(){
-  const low=loadLow(), keys=Object.keys(INGR).sort(function(a,b){ return INGR[a].n.localeCompare(INGR[b].n); });
-  const n=Object.keys(low).length;
-  return '<div class="v3-low-panel"><h3>Running low'+(n?' \u00b7 '+n:'')+'</h3>'+
-    '<p>Open the last of something? Tap it here right then. Flagged items show up at the top of your grocery list automatically, and any meal that needs them says so.</p>'+
-    '<div class="v3-chips" style="margin:0">'+keys.map(function(k){
-      return '<button type="button" class="v3-chip" aria-pressed="'+(!!low[k])+'" onclick="toggleRunLow(\''+k+'\');renderShop();renderRotation()">'+esc(INGR[k].n)+'</button>'; }).join('')+
-    '</div>'+(n?'<button type="button" class="v3-ghost" onclick="saveLow({});renderShop();renderRotation()">Clear all \u2014 I restocked</button>':'')+'</div>';
+  const low=loadLow(), n=Object.keys(low).length;
+  const flagged=Object.keys(low).sort(function(a,b){ return (low[a].n||a).localeCompare(low[b].n||b); });
+  const keys=Object.keys(INGR).filter(function(k){ return !low[k]; }).sort(function(a,b){ return INGR[a].n.localeCompare(INGR[b].n); });
+  return '<div class="v3-low-panel"><h3>Running low'+(n?' · '+n:'')+'</h3>'+
+    '<p>Out of something, or about to be? Add it here and it goes to the top of your grocery list. Meals that need it will say so.</p>'+
+    '<form class="v3-low-add" onsubmit="addLowItem();return false"><input id="lowAddName" type="text" placeholder="Type anything — eggs, ketchup, paper towels" autocomplete="off" enterkeyhint="done" oninput="filterLowChips()"><button type="submit">Add</button></form>'+
+    (flagged.length?'<div class="v3-label" style="margin:14px 2px 7px">On your list</div><div class="v3-chips" style="margin:0">'+
+      flagged.map(function(k){ return '<button type="button" class="v3-chip" aria-pressed="true" onclick="toggleRunLow(\''+k+'\');renderShop();renderRotation()" aria-label="Remove '+esc(low[k].n||k)+'">'+esc(low[k].n||k)+' <small>✕</small></button>'; }).join('')+'</div>':'')+
+    '<div class="v3-label" style="margin:14px 2px 7px">Or tap one</div><div class="v3-chips" id="lowChips" style="margin:0">'+keys.map(function(k){
+      return '<button type="button" class="v3-chip" data-n="'+esc(INGR[k].n.toLowerCase())+'" aria-pressed="false" onclick="toggleRunLow(\''+k+'\');renderShop();renderRotation()">'+esc(INGR[k].n)+'</button>'; }).join('')+
+    '</div>'+(n?'<button type="button" class="v3-ghost" onclick="saveLow({});renderShop();renderRotation()">Clear all — I restocked</button>':'')+'</div>';
+}
+function filterLowChips(){
+  const q=(($("lowAddName")||{}).value||"").trim().toLowerCase();
+  document.querySelectorAll("#lowChips .v3-chip").forEach(function(b){ b.hidden=!!q && b.dataset.n.indexOf(q)<0; });
+}
+/* anything at all can go on the list, not just meal ingredients */
+function addLowItem(){
+  const el=$("lowAddName"); const name=((el&&el.value)||"").trim(); if(!name) return;
+  const match=Object.keys(INGR).find(function(k){ return INGR[k].n.toLowerCase()===name.toLowerCase(); });
+  const o=loadLow(), key=match||("x_"+name.toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,""));
+  o[key]={n:match?INGR[match].n:name, at:Date.now()}; saveLow(o);
+  renderShop(); renderRotation(); showToast("Added to your grocery list: "+o[key].n);
+  setTimeout(function(){ const i=$("lowAddName"); if(i) i.focus(); }, 50);
 }
 
 /* ---- Thursday: the five-minute kitchen check before Friday's shop ---- */
@@ -6936,7 +7143,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v3.8.0 · 2026-09-29";   // bump this each time you upload a new index.html
+const APP_VERSION="v3.10.0 · 2026-09-30";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
