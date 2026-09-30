@@ -500,6 +500,10 @@
   .v3-steps { margin: 0 0 18px; padding: 0; list-style: none; counter-reset: st; }
   .v3-steps li { counter-increment: st; position: relative; padding: 0 0 12px 34px; font-size: 14.5px; line-height: 1.5; }
   .v3-steps li::before { content: counter(st); position: absolute; left: 0; top: 0; width: 23px; height: 23px; border-radius: 50%; background: var(--paper); color: var(--ink); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+  .v3-steps .timer { display: flex; width: max-content; margin-top: 8px; }
+  .v3-steps .timer button { font-family: inherit; }
+  body.v3-sheet-up #timerChip:not(.ringing) { display: none; }
+  body.v3-sheet-up #timerChip.ringing { bottom: auto; top: calc(14px + env(safe-area-inset-top)); }
   .v3-log-btn { width: 100%; border: 0; font: inherit; font-size: 16px; font-weight: 800; color: #fff; background: var(--today); border-radius: 16px; padding: 16px; cursor: pointer; transition: transform .12s; }
   .v3-log-btn:active { transform: scale(.98); }
 
@@ -608,6 +612,20 @@
   .v3-thu button { background: transparent; border: 1.5px solid var(--rule); color: var(--ink-faded); }
   @media (prefers-color-scheme: dark) {
     .v3-low-panel .v3-chip[aria-pressed="true"], .v3-thu a { color: #14110D; }
+  }
+
+  /* ===================== v3.5 motion ===================== */
+  @keyframes v3-tile-in { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
+  .v3-tiles.swap { animation: none; }
+  .v3-tiles.swap .v3-tile { animation: v3-tile-in .34s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i,0) * 40ms); }
+  @keyframes v3-tab-bounce { 0% { transform: translateY(0); } 35% { transform: translateY(-4px); } 70% { transform: translateY(1px); } 100% { transform: none; } }
+  .tabbar button.on .ico svg { animation: v3-tab-bounce .45s cubic-bezier(.3,1.4,.5,1); }
+  @keyframes v3-dot-in { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+  .v3-day .v3-dot { animation: v3-dot-in .38s cubic-bezier(.3,1.5,.5,1) both; animation-delay: calc(var(--i,0) * 55ms); }
+  @keyframes v3-content-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+  .v3-sheet.open > *:not(.v3-grab) { animation: v3-content-in .32s cubic-bezier(.2,.8,.2,1) .06s both; }
+  @media (prefers-reduced-motion: reduce) {
+    .v3-tiles.swap .v3-tile, .tabbar button.on .ico svg, .v3-day .v3-dot, .v3-sheet.open > * { animation: none; }
   }
 </style>
 </head>
@@ -1598,6 +1616,8 @@ function showTab(name){
   #timerChip.show{ display:flex; }
   #timerChip.ringing{ background:var(--orange); animation:alarmpulse 0.85s ease-in-out infinite; }
   #timerChip .tc-ico{ font-size:15px; }
+  /* v3.6: centre without transform, so the ringing pulse (which animates transform) can't knock it off-centre */
+  #timerChip{ left:0; right:0; margin:0 auto; width:max-content; transform:none; }
   .digest-badge{ display:none; align-items:center; gap:12px; margin:0 0 16px; padding:13px 15px; border-radius:15px; background:linear-gradient(135deg,var(--today-soft),var(--paper-warm)); border:1px solid var(--today); }
   .digest-badge.show{ display:flex; }
   .digest-badge.ready{ background:linear-gradient(135deg,var(--green-soft,#e8f3ea),var(--paper-warm)); border-color:var(--green); }
@@ -1674,7 +1694,7 @@ const KITCHEN_RULES = {
     why: "Most planned meals never got cooked, the plain chicken-rice-veg format was food he didn't want, and ordinary weeks read as failures. He said it plainly: burgers are his favourite food, rice and veggies are bland, and he has no time.",
     breakfast: "Cheesy scramble plate (3 eggs, cheddar, turkey sausage or hash browns, fruit). Cereal is the rushed-morning fallback.",
     lunch: "Campus days: PB-honey tortilla + fruit + protein bar, no fridge needed. At home: any dinner card or leftovers.",
-    dinners: "Double smash burger, BBQ chicken quesadilla, beef or chicken tacos, pasta with meat sauce, air-fryer chicken chunks. Plus one flex night a week.",
+    dinners: "Double smash burger, chicken quesadilla, beef or chicken tacos, pasta with meat sauce, air-fryer chicken chunks. Plus one flex night a week.",
     snacks: "Fruit daily (he loves fruit far more than vegetables — apples, bananas, watermelon, pineapple, oranges), the tropical smoothie, protein bar + fruit.",
     breakfastBurritos: "No — he prefers eggs scrambled with cheese and the meat on the side.",
     backpackStash: "A protein bar lives in the backpack permanently, so a forgotten lunch is never a skipped meal."
@@ -4458,12 +4478,13 @@ const ROTATION=[
         "Screaming-hot dry pan. Smash each ball flat HARD with a spatula for 10 seconds. Salt well.",
         "2 min until the edges are deep brown, flip, cheddar on each, 1 more min.",
         "Toast the bun, sauce it, stack both patties with lettuce and onion."]},
-    {k:"quesadilla", n:"BBQ chicken quesadilla", c:760, p:62,
-     d:"Crispy, cheesy, and the most protein on this list.",
+    {k:"quesadilla", n:"Chicken quesadilla", c:800, p:62,
+     d:"Crispy, cheesy, and the most protein on this list. Dipped in Cane's-style sauce.",
      r:["Chop 5 oz cooked chicken (pull a portion from the freezer the night before, or air fry a breast 380°F 18–22 min to 165°F).",
-        "Toss with 2 tbsp honey BBQ sauce and a pinch of garlic powder.",
+        "Toss with 1 tsp mild taco seasoning, a pinch of garlic powder, and a splash of water.",
         "Burrito-size tortilla: ½ cup cheddar split around the chicken, fold it over.",
-        "1 tsp butter, medium pan, 2–3 min a side until deep golden. Rest 1 min, cut."]},
+        "1 tsp butter, medium pan, 2–3 min a side until deep golden. Rest 1 min, cut.",
+        "Dip: 1 tbsp mayo + ½ tbsp ketchup, a pinch of garlic powder, and lots of black pepper. That's the Cane's sauce."]},
     {k:"tacos", n:"Beef tacos (3)", c:690, p:37,
      d:"Mild seasoning, cheese, lettuce. Swap chicken for ~640 cal and 50g protein.",
      r:["Brown ¼ lb ground beef, breaking it up, 6–7 min. Drain most of the fat.",
@@ -4479,7 +4500,7 @@ const ROTATION=[
     {k:"chunks", n:"Air-fryer chicken chunks", c:590, p:44,
      d:"Zero prep, straight from the freezer. The Cane's night at home.",
      r:["8 oz frozen breaded chicken chunks, air fryer 400°F for 10–12 min, shaking once.",
-        "Dip in 2 tbsp honey BBQ, or toss them in it.",
+        "Dip: 1 tbsp mayo + ½ tbsp ketchup, a pinch of garlic powder, and lots of black pepper. Close to Cane's sauce.",
         "Add a piece of fruit on the side."]}
   ], note:"One night a week is a flex night — eating out, at a friend's, or leftovers. Use “Log something else” below."},
   {sec:"Snacks", slot:"snack", items:[
@@ -4566,15 +4587,34 @@ const CARD_PARTS={
   melt:       [["bread",2],["turkey",4],["provolone",2],["butter",2]],
   wrap:       [["tortilla",1],["mayo",0.5],["turkey",4],["provolone",2],["lettuce",1,1]],
   burger:     [["beef",5.33],["cheddar",1],["bun",1],["mayo",1],["ketchup",1],["lettuce",1,1],["onion",1,1]],
-  quesadilla: [["chicken",5],["bbq",1],["tortilla",1],["cheddar",2],["butter",1]],
+  quesadilla: [["chicken",5],["taco",0.33],["tortilla",1],["cheddar",2],["butter",1],["mayo",1],["ketchup",0.5]],
   tacos:      [["beef",4],["taco",1],["smalltort",3],["cheddar",1],["lettuce",1,1]],
   pasta:      [["pasta",3],["beef",4],["marinara",1],["onion",1,1]],
-  chunks:     [["chunks",2.67],["bbq",1],["fruit",1,1]],
+  chunks:     [["chunks",2.67],["mayo",1],["ketchup",0.5],["fruit",1,1]],
   smoothie:   [["banana",1],["orange",1],["strawb",1],["pineapple",1]],
   barfruit:   [["bar",1],["fruit",1]],
   fruit:      [["fruit",1]]
 };
 ROTATION.forEach(function(sec){ sec.items.forEach(function(it){ if(CARD_PARTS[it.k]) it.parts=CARD_PARTS[it.k]; }); });
+
+/* v3.6 — step timers, back from the old recipe cards. Seconds per step, in
+   step order; 0 means that step has no timer. Ranges use the short end so
+   you check early rather than late. Same timers as before: they keep running
+   if you close the recipe, switch tabs, or reload, and they ring when done. */
+const ROT_TIMERS={
+  scramble:   [300,150,0,0],
+  bigplate:   [660,150,0,0],
+  omelet:     [0,120,60,0],
+  frenchtoast:[300,0,0,150],
+  pbtoast:    [300,0,0,0],
+  melt:       [0,0,210],
+  burger:     [0,10,120,0],
+  quesadilla: [1080,0,0,150,0],
+  tacos:      [390,120,20,0],
+  pasta:      [600,420,180,0],
+  chunks:     [600,0,0]
+};
+ROTATION.forEach(function(sec){ sec.items.forEach(function(it){ if(ROT_TIMERS[it.k]) it.tm=ROT_TIMERS[it.k]; }); });
 
 const LINK_KEY="ingLinks_v1";     /* {ingredientKey: {id: pantryItemId, per: servings per unit}} */
 function loadLinks(){ try{ const o=JSON.parse(localStorage.getItem(LINK_KEY)); return o&&typeof o==="object"?o:{}; }catch(e){ return {}; } }
@@ -4688,12 +4728,12 @@ function renderRotation(swapped){
     return '<button type="button" role="tab" aria-selected="'+on+'" onclick="setRotSec(\''+sec.sec+'\')">'+esc(sec.sec)+'</button>';
   }).join('');
   const sec=ROTATION.filter(function(x){ return x.sec===rotSec; })[0]||ROTATION[0];
-  host.innerHTML=sec.items.map(function(it){
+  host.innerHTML=sec.items.map(function(it,idx){
     const n=timesLoggedToday(it.n), nu=cardNut(it), out=outParts(it);
     const allLab=nu.total>0 && nu.linked===nu.total;
     const tag = out.length ? '<span class="v3-tile-tag out">Out of '+esc(out[0].toLowerCase())+(out.length>1?' +'+(out.length-1):'')+'</span>'
               : (it.tag ? '<span class="v3-tile-tag">'+esc(it.tag)+'</span>' : '');
-    return '<button type="button" class="v3-tile" onclick="openRotSheet(\''+it.k+'\')" aria-label="'+esc(it.n)+', '+nu.c+' calories, '+nu.p+' grams protein'+(out.length?', out of '+esc(out.join(' and ')):'')+(n?', logged today':'')+'">'+
+    return '<button type="button" class="v3-tile" style="--i:'+idx+'" onclick="openRotSheet(\''+it.k+'\')" aria-label="'+esc(it.n)+', '+nu.c+' calories, '+nu.p+' grams protein'+(out.length?', out of '+esc(out.join(' and ')):'')+(n?', logged today':'')+'">'+
       (n?'<span class="v3-tile-done" aria-hidden="true">'+(n>1?n:'\u2713')+'</span>':'')+
       '<span class="v3-tile-name">'+esc(it.n)+'</span>'+tag+
       '<span class="v3-tile-nums"><b>'+nu.c+'</b> cal<br>'+nu.p+' g protein'+(allLab?'<br><span class="v3-tile-lab">\u2713 your labels</span>':'')+'</span></button>';
@@ -4711,6 +4751,7 @@ function openRotSheet(k){
   $("v3-sheet-log").textContent="Log this meal";
   $("v3-sheet-log").onclick=function(){ logRotation(k); };
   $("v3-back").classList.add("open");
+  document.body.classList.add("v3-sheet-up");
   const sh=$("v3-sheet"); if(!sh.classList.contains("open")){ sh.classList.add("open"); sh.setAttribute("aria-hidden","false"); sh.scrollTop=0;
     setTimeout(function(){ const b=$("v3-sheet-log"); if(b && b.focus) b.focus(); }, reduceMotion()?0:300); }
 }
@@ -4721,7 +4762,10 @@ function renderRotSheet(){
   $("v3-sheet-nums").innerHTML='<div><b>'+nu.c+'</b>calories</div><div><b>'+nu.p+' g</b>protein</div>'+
     (f.it.parts?'<div><b>'+nu.cb+' g</b>carbs</div><div><b>'+nu.f+' g</b>fat</div>':'');
   $("v3-sheet-desc").textContent=f.it.d;
-  $("v3-sheet-steps").innerHTML=f.it.r.map(function(st){ return '<li>'+esc(st)+'</li>'; }).join('');
+  $("v3-sheet-steps").innerHTML=f.it.r.map(function(st,i){
+    const t=(f.it.tm&&f.it.tm[i])||0;
+    return '<li>'+esc(st)+(t?rotTimerHTML(f.it,i,t):'')+'</li>';
+  }).join('');
   const ings=$("v3-sheet-ings");
   if(!f.it.parts){ ings.innerHTML=''; return; }
   const low=loadLow();
@@ -4735,8 +4779,52 @@ function renderRotSheet(){
         '</button><button type="button" class="v3-ing-low" aria-pressed="'+on+'" onclick="toggleRunLow(\''+key+'\');renderRotSheet();renderRotation()">'+(on?'Running low':'Low?')+'</button></div>';
     }).join('');
 }
+/* ---- step timers on the recipe sheet (share the old cook-timer engine) ---- */
+function rotTimerKey(it,i){ return it.n+"#"+i; }
+function rotTimerHTML(it,i,t){
+  const ts=activeTimers[rotTimerKey(it,i)];
+  const running=!!(ts&&ts.endAt&&!ts.done), done=!!(ts&&ts.done);
+  const disp=done?"Done!":fmtTime(ts?remainOf(ts):t);
+  return '<div class="timer'+(done?' done':'')+'" id="rtmr-'+i+'"><span class="tt" id="rtmr-tt-'+i+'">'+disp+'</span>'+
+    '<button type="button" id="rtmr-pp-'+i+'" aria-label="'+(running?'Pause':'Start')+' timer" onclick="rotTimerToggle('+i+')">'+(done?'\u2713':running?'\u23F8':'\u25B6')+'</button>'+
+    '<button type="button" aria-label="Reset timer" onclick="rotTimerReset('+i+')">\u21BA</button></div>';
+}
+function rotTimerToggle(i){
+  const f=rotItem(sheetKey); if(!f||!f.it.tm) return;
+  const dur=f.it.tm[i]; if(!dur) return;
+  ensureAudio();                                   /* unlock sound on this tap so the alarm can ring later */
+  const key=rotTimerKey(f.it,i); const t=activeTimers[key];
+  if(t && t.done){ rotTimerReset(i); return; }     /* ringing: tap to silence and clear */
+  if(t && t.endAt){ t.remain=remainOf(t); t.endAt=null; }
+  else {
+    stopAlarm();
+    const remain=(t && t.remain>0)?t.remain:dur;
+    activeTimers[key]={endAt:Date.now()+remain*1000, remain:remain, done:false, recipe:f.it.n, rk:f.it.k, step:i, total:dur};
+  }
+  saveTimers(); syncRotTimerDOM(); updateTimerChip();
+}
+function rotTimerReset(i){
+  const f=rotItem(sheetKey); if(!f) return;
+  delete activeTimers[rotTimerKey(f.it,i)]; saveTimers();
+  if(!Object.keys(activeTimers).some(function(k){ return activeTimers[k].done; })) stopAlarm();
+  syncRotTimerDOM(); updateTimerChip();
+}
+function syncRotTimerDOM(){
+  if(!sheetKey) return;
+  const f=rotItem(sheetKey); if(!f||!f.it.tm) return;
+  f.it.tm.forEach(function(dur,i){
+    if(!dur) return;
+    const ts=activeTimers[rotTimerKey(f.it,i)], el=$("rtmr-"+i); if(!el) return;
+    const running=!!(ts&&ts.endAt&&!ts.done), done=!!(ts&&ts.done);
+    $("rtmr-tt-"+i).textContent=done?"Done!":fmtTime(ts?remainOf(ts):dur);
+    el.classList.toggle("done",done);
+    const b=$("rtmr-pp-"+i); b.textContent=done?"\u2713":running?"\u23F8":"\u25B6";
+    b.setAttribute("aria-label",done?"Silence timer":running?"Pause timer":"Start timer");
+  });
+}
 function closeRotSheet(){
   sheetKey=null;
+  document.body.classList.remove("v3-sheet-up");
   const sh=$("v3-sheet"); if(sh){ sh.classList.remove("open"); sh.setAttribute("aria-hidden","true"); }
   const bk=$("v3-back"); if(bk) bk.classList.remove("open");
   if(sheetReturn && sheetReturn.focus){ try{ sheetReturn.focus(); }catch(e){} } sheetReturn=null;
@@ -4961,10 +5049,10 @@ function renderWeek(){
   const mo=["Jan","Feb","Mar","Apr","May","June","July","Aug","Sept","Oct","Nov","Dec"];
   host.innerHTML='<section class="v3-week" aria-label="This week">'+
     '<h2>This week</h2><div class="when">'+mo[m0-1]+' '+d0+' to '+mo[m1-1]+' '+d1+'</div>'+
-    '<div class="v3-days">'+days.map(function(d){
+    '<div class="v3-days">'+days.map(function(d,di){
       const [yy,mm,dd]=d.ds.split("-").map(Number), dow=new Date(yy,mm-1,dd).getDay();
       const cls=d.meals===3?" all":(d.meals>0?" some":"");
-      return '<div class="v3-day"><div class="v3-dot'+cls+(d.ds===todayStr?' today':'')+'" title="'+d.meals+' of 3 meals"></div>'+letters[dow]+'</div>'; }).join('')+'</div>'+
+      return '<div class="v3-day" style="--i:'+di+'"><div class="v3-dot'+cls+(d.ds===todayStr?' today':'')+'" title="'+d.meals+' of 3 meals"></div>'+letters[dow]+'</div>'; }).join('')+'</div>'+
     '<div class="v3-headline">'+esc(head)+'</div>'+
     '<div class="v3-stats">'+
       '<div class="v3-stat"><b>'+(logged.length?avgC.toLocaleString("en-US"):"\u2014")+'</b><span>avg calories<br>target '+ct.toLocaleString("en-US")+'</span></div>'+
@@ -6208,9 +6296,10 @@ function timerChipTap(){
   if(Object.keys(activeTimers).some(k=>activeTimers[k].done)){
     stopAlarm();
     for(const k in activeTimers){ if(activeTimers[k].done) delete activeTimers[k]; }
-    saveTimers(); updateTimerChip(); syncCookTimerDOM(); return;
+    saveTimers(); updateTimerChip(); syncCookTimerDOM(); if(typeof syncRotTimerDOM==="function") syncRotTimerDOM(); return;
   }
-  let rec=null; for(const k in activeTimers){ if(activeTimers[k].endAt){ rec=activeTimers[k].recipe; break; } }
+  let rec=null, rk=null; for(const k in activeTimers){ if(activeTimers[k].endAt){ rec=activeTimers[k].recipe; rk=activeTimers[k].rk||null; break; } }
+  if(rk && typeof rotItem==="function" && rotItem(rk)){ showTab('today'); openRotSheet(rk); return; }
   if(rec) openCookByName(rec);
 }
 function openCookByName(name){
@@ -6245,7 +6334,7 @@ function globalTick(){
   const now=Date.now(); let fired=false;
   for(const k in activeTimers){ const t=activeTimers[k]; if(!t.done && t.endAt && (t.endAt-now)<=0){ t.done=true; t.endAt=null; t.remain=0; fired=true; } }
   if(fired){ saveTimers(); alarmStart(); }
-  syncCookTimerDOM(); updateTimerChip(); updateDigestBadge();
+  syncCookTimerDOM(); if(typeof syncRotTimerDOM==="function") syncRotTimerDOM(); updateTimerChip(); updateDigestBadge();
 }
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) globalTick(); });
 window.addEventListener("focus",globalTick);
@@ -6403,7 +6492,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v3.4.0 · 2026-09-25";   // bump this each time you upload a new index.html
+const APP_VERSION="v3.6.0 · 2026-09-29";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);

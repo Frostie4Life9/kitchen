@@ -5,181 +5,190 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<title>Grocery — Shop Thu Sep 24</title>
+<meta name="theme-color" content="#FAF6F0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#17140F" media="(prefers-color-scheme: dark)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Grocery list</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+/* Same tokens as the kitchen app, light and dark, so the two feel like one
+   product. One bold element per screen: here it's the cart ring. */
 :root{
-  --paper:#FAF6EF;
-  --card:#FFFDF9;
-  --ink:#24221E;
-  --muted:#7A756B;
-  --line:#E6DDCE;
-  --green:#3F6642;
-  --amber:#B8761F;
-  --done:#A9A296;
-  --serif:"Fraunces",Georgia,"Times New Roman",serif;
-  --sans:"Manrope",-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+  --paper:#FAF6F0; --card:#FFFAF2; --ink:#1F1A14; --ink-soft:#4A4137; --ink-faded:#8A7E6E;
+  --rule:#DDD3C2; --rule-soft:#EAE2D3; --today:#2D5840; --today-soft:#DDE9E1;
+  --green:#3F6212; --green-soft:#ECF3DC; --orange:#C2410C; --orange-soft:#FDE4D3;
+  --amber:#B45309; --amber-soft:#FBEBD5;
+  --ease:cubic-bezier(.2,.8,.2,1);
 }
-:root:not([data-theme="light"]){}
 @media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --paper:#1A1917; --card:#221F1C; --ink:#F2ECE2; --muted:#9A9387;
-    --line:#35312C; --green:#8FBA8C; --amber:#DDA64E; --done:#6A645B;
+  :root{
+    --paper:#17140F; --card:#231F19; --ink:#F1EADF; --ink-soft:#CFC5B6; --ink-faded:#A0947F;
+    --rule:#3B342B; --rule-soft:#2D2721; --today:#6DB38B; --today-soft:#1F3429;
+    --green:#97C766; --green-soft:#26321F; --orange:#F0925A; --orange-soft:#3B2617;
+    --amber:#E4BC4A; --amber-soft:#332913; color-scheme:dark;
   }
 }
-:root[data-theme="dark"]{
-  --paper:#1A1917; --card:#221F1C; --ink:#F2ECE2; --muted:#9A9387;
-  --line:#35312C; --green:#8FBA8C; --amber:#DDA64E; --done:#6A645B;
-}
 *{box-sizing:border-box}
-html,body{margin:0;padding:0}
-body{
-  background:var(--paper); color:var(--ink);
-  font-family:var(--sans); font-size:16px; line-height:1.5;
-  -webkit-font-smoothing:antialiased;
-  padding:0 0 4rem;
-}
-.wrap{max-width:46rem;margin:0 auto;padding:0 1.15rem}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-size:15px;line-height:1.5;padding:env(safe-area-inset-top,0) 0 calc(104px + env(safe-area-inset-bottom,0))}
+.wrap{max-width:640px;margin:0 auto;padding:18px 18px 0}
+a{color:var(--today)}
+button{font:inherit}
+:focus-visible{outline:3px solid var(--today);outline-offset:2px}
 
-/* ---- masthead ---- */
-header.top{padding:2.6rem 0 1.4rem}
-h1{
-  font-family:var(--serif); font-weight:600;
-  font-size:clamp(2rem,7vw,2.9rem); line-height:1.05;
-  margin:0 0 .35rem; letter-spacing:-.015em;
-}
-.dates{font-family:var(--serif);font-size:1.05rem;color:var(--muted);margin:0 0 1.25rem}
-.lede{color:var(--muted);font-size:.93rem;max-width:34rem;margin:0 0 1.5rem}
+/* ---- entrance: the page settles in once, top to bottom ---- */
+.rise{animation:rise .55s var(--ease) both;animation-delay:calc(var(--i,0) * 70ms)}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
 
-/* ---- sticky status bar ---- */
-.bar{
-  position:sticky; top:0; z-index:20;
-  background:var(--paper); border-bottom:1px solid var(--line);
-  padding:.7rem 0; margin-bottom:1.5rem;
-}
-.bar-inner{max-width:46rem;margin:0 auto;padding:0 1.15rem;
-  display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
-.count{font-family:var(--serif);font-size:1.5rem;font-weight:600;line-height:1;color:var(--amber)}
-.count-label{font-size:.82rem;color:var(--muted);flex:1;min-width:7rem}
-.btn{
-  font-family:var(--sans);font-size:.8rem;font-weight:600;
-  background:none;border:1px solid var(--line);color:var(--ink);
-  border-radius:999px;padding:.42rem .85rem;cursor:pointer;
-}
-.btn:hover{border-color:var(--ink)}
-.btn:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+/* ---- masthead: matches the app's screens ---- */
+.mast{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding:6px 0 16px;border-bottom:1px solid var(--rule);margin-bottom:18px}
+.eyebrow{font-size:14px;font-weight:700;color:var(--ink-faded)}
+.mast h1{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:500;font-size:40px;line-height:1;margin:4px 0 0;letter-spacing:-.01em}
+.back{font-size:14px;font-weight:700;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--rule);border-radius:99px;padding:9px 15px;white-space:nowrap;transition:transform .12s}
+.back:active{transform:scale(.96)}
 
-/* ---- stores ---- */
-section.store{margin:0 0 2.4rem}
-.store-head{display:flex;align-items:baseline;gap:.6rem;
-  padding-bottom:.5rem;border-bottom:2px solid var(--ink);margin-bottom:.2rem}
-.store-name{font-family:var(--serif);font-size:1.45rem;font-weight:600;margin:0}
-.store-loc{font-size:.8rem;color:var(--muted)}
-.store-note{font-size:.84rem;color:var(--muted);margin:.55rem 0 .9rem;font-style:italic}
-.group{font-size:.78rem;font-weight:700;color:var(--green);
-  margin:1.25rem 0 .35rem;letter-spacing:.02em}
+/* ---- hero: the cart ring ---- */
+.hero{display:flex;gap:18px;align-items:center;background:var(--card);border-radius:24px;padding:18px 18px 18px 16px;margin-bottom:14px;
+  box-shadow:0 1px 0 var(--rule),0 10px 30px -18px rgba(45,88,64,.45)}
+.ring-wrap{position:relative;width:124px;height:124px;flex:0 0 124px}
+.ring{width:100%;height:100%;transform:rotate(-90deg)}
+.ring circle{fill:none;stroke-width:11;stroke-linecap:round}
+.ring-bg{stroke:var(--rule);opacity:.6}
+.ring-fg{stroke:var(--today);stroke-dasharray:326.73;stroke-dashoffset:326.73;transition:stroke-dashoffset .9s var(--ease)}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.big{font-family:'Fraunces',Georgia,serif;font-weight:900;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.big-lbl{font-size:12px;color:var(--ink-faded);margin-top:4px}
+.hero.alldone .ring-wrap{animation:glow 1.2s var(--ease) 1}
+@keyframes glow{0%{filter:none}40%{filter:drop-shadow(0 0 14px var(--today))}100%{filter:none}}
+.side{flex:1;min-width:0}
+.side-top{font-size:17px;font-weight:800}
+.bars{margin-top:12px;display:grid;gap:9px}
+.bar-row{display:grid;grid-template-columns:62px 1fr 44px;gap:8px;align-items:center;font-size:12.5px;color:var(--ink-faded)}
+.bar-row b{color:var(--ink);font-weight:700}
+.bar-row span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.track{height:7px;border-radius:99px;background:var(--rule);overflow:hidden}
+.track span{display:block;height:100%;width:0;border-radius:99px;background:var(--green);transition:width .9s var(--ease)}
+.lede{font-size:13.5px;color:var(--ink-faded);margin:0 2px 16px;line-height:1.5}
+.lede b{color:var(--ink)}
 
-/* ---- items ---- */
-ul{list-style:none;margin:0;padding:0}
-li.item{
-  display:flex;gap:.7rem;align-items:flex-start;
-  padding:.72rem .55rem;border-bottom:1px solid var(--line);
-  cursor:pointer;-webkit-tap-highlight-color:transparent;
-  border-radius:4px;
-}
-li.item:hover{background:var(--card)}
-li.item:focus-visible{outline:2px solid var(--amber);outline-offset:-2px}
-.box{
-  flex:0 0 auto;width:1.1rem;height:1.1rem;margin-top:.22rem;
-  border:1.5px solid var(--muted);border-radius:3px;position:relative;
-}
-.box::after{
-  content:"";position:absolute;left:.3rem;top:.05rem;width:.28rem;height:.6rem;
-  border:solid var(--paper);border-width:0 2px 2px 0;transform:rotate(45deg) scale(0);
-  transition:transform .13s ease-out;
-}
-li.done .box{background:var(--green);border-color:var(--green)}
-li.done .box::after{transform:rotate(45deg) scale(1)}
+/* ---- store filter: same segmented control as the app's meal tabs ---- */
+.seg{display:flex;background:var(--paper);border:1px solid var(--rule);border-radius:14px;padding:4px;gap:2px;margin:0 0 6px;position:sticky;top:calc(env(safe-area-inset-top,0) + 8px);z-index:5;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.seg button{flex:1;border:0;background:transparent;font-size:13px;font-weight:700;color:var(--ink-faded);padding:8px 4px;border-radius:10px;cursor:pointer;transition:background .2s,color .2s}
+.seg button[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(31,26,20,.12)}
+
+/* ---- running-low flags from the app ---- */
+.flagged{background:var(--orange-soft);border-radius:18px;padding:14px 16px;margin:0 0 14px}
+.flagged h3{margin:0 0 3px;font-size:15px;font-weight:800;color:var(--ink)}
+.flagged p{margin:0 0 8px;font-size:13px;color:var(--ink-soft)}
+.flagged ul{margin:0 0 10px;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+.flagged li{font-size:13px;font-weight:700;background:var(--card);border-radius:99px;padding:5px 11px;color:var(--orange)}
+.flagged button{border:1.5px solid var(--rule);background:transparent;color:var(--ink);font-size:13px;font-weight:700;border-radius:99px;padding:7px 13px;cursor:pointer}
+
+/* ---- stores, groups, items ---- */
+.store{margin-top:22px}
+.store.fade{animation:fade .25s ease-out}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.store-head{display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin:0 2px 6px}
+.store-head h2{font-size:22px;font-weight:800;margin:0;letter-spacing:-.01em}
+.store-loc{font-size:13px;color:var(--ink-faded);margin:1px 0 0}
+.store-count{font-size:12.5px;font-weight:800;color:var(--ink-faded);background:var(--card);border-radius:99px;padding:5px 11px;white-space:nowrap}
+.store-count.done{color:var(--green);background:var(--green-soft)}
+.store-count.pop{animation:pop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.12)}100%{transform:scale(1)}}
+.store-note{font-size:13px;color:var(--ink-soft);background:var(--card);border-radius:14px;padding:10px 13px;margin:6px 0 10px;line-height:1.45}
+.group{margin-top:14px}
+.group-head{display:flex;justify-content:space-between;font-size:13px;font-weight:800;color:var(--ink-soft);margin:0 4px 7px}
+.group-head span+span{font-weight:700;color:var(--ink-faded)}
+ul.card{list-style:none;margin:0;padding:4px 14px;background:var(--card);border-radius:18px;box-shadow:0 1px 0 var(--rule)}
+li.item{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-top:1px solid var(--rule-soft);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .35s var(--ease)}
+li.item:first-child{border-top:0}
+li.item:active .check{transform:scale(.9)}
+.check{flex:0 0 24px;height:24px;border-radius:50%;border:2px solid var(--ink-faded);margin-top:1px;display:flex;align-items:center;justify-content:center;transition:background .25s var(--ease),border-color .25s var(--ease),transform .12s}
+.check svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.check path{stroke-dasharray:20;stroke-dashoffset:20;transition:stroke-dashoffset .3s var(--ease) .08s}
+li.done .check{background:var(--green);border-color:var(--green)}
+li.done .check path{stroke-dashoffset:0}
+li.justdone .check{animation:pop .45s cubic-bezier(.3,1.6,.5,1)}
 .body{flex:1;min-width:0}
-.name{font-weight:600;font-size:.97rem}
-.amt{font-weight:400;color:var(--amber)}
-.why{font-size:.83rem;color:var(--muted);margin-top:.12rem}
-.flagged{border:2px solid var(--amber);border-radius:14px;padding:.85rem 1rem;margin:1rem 0 .5rem;background:var(--card)}
-.flagged h3{margin:0 0 .25rem;font-size:1rem}
-.flagged p{margin:0 0 .6rem;font-size:.86rem;color:var(--muted)}
-.flagged ul{margin:0 0 .7rem 1.1rem;padding:0}
-.flagged li{margin:.15rem 0;font-weight:600}
-.flagged button{font:inherit;font-size:.85rem;font-weight:700;border:1.5px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:.4rem .9rem;cursor:pointer}
-.picnic-gear{opacity:.9}
-.picnic-gear p{font-size:.86rem}
-.picnic-gear .gear-note{color:var(--muted);font-style:italic}
-.meta{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;margin-top:.35rem}
-.tag{font-size:.7rem;font-weight:700;border-radius:999px;padding:.08rem .5rem;border:1px solid var(--line);color:var(--muted)}
-.tag-researched{color:var(--green);border-color:var(--green)}
-.tag-deal{color:var(--amber);border-color:var(--amber)}
-.price{font-size:.75rem;color:var(--muted)}
-li.done .meta{opacity:.5}
-li.done .name,li.done .amt,li.done .why{color:var(--done);text-decoration:line-through;
-  text-decoration-thickness:1px}
-li.done .amt{color:var(--done)}
+.name{font-weight:700;font-size:15px;line-height:1.3;
+  background:linear-gradient(currentColor,currentColor) 0 55%/0% 1.5px no-repeat;transition:background-size .35s var(--ease),color .35s}
+li.done .name{background-size:100% 1.5px;color:var(--ink-faded)}
+.amt{display:block;font-size:13px;color:var(--ink-faded);margin-top:1px}
+.why{display:block;font-size:13px;color:var(--ink-soft);margin-top:5px;line-height:1.45;transition:opacity .35s}
+li.done .why,li.done .meta{opacity:.45}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:9px;transition:opacity .35s}
+.tag{font-size:11px;font-weight:800;border-radius:99px;padding:2px 8px;background:var(--paper);color:var(--ink-faded)}
+.tag.researched{background:var(--today-soft);color:var(--today)}
+.tag.deal{background:var(--amber-soft);color:var(--amber)}
+.price{font-size:12px;color:var(--ink-faded)}
+.aisle{font-size:12px;font-weight:700;border:1.5px dashed var(--rule);background:transparent;color:var(--ink);border-radius:99px;padding:3px 10px;cursor:pointer}
+.aisle.empty{color:var(--ink-faded)}
+.aisle-input{font:inherit;font-size:14px;border:1.5px solid var(--today);border-radius:10px;padding:5px 9px;width:100%;max-width:260px;background:var(--paper);color:var(--ink)}
 
-/* ---- aisle notes (shared across every week on this origin) ---- */
-.aisle{
-  display:inline-block;margin-top:.3rem;font-size:.75rem;font-weight:600;
-  color:var(--green);border:1px dashed var(--line);border-radius:999px;
-  padding:.12rem .55rem;cursor:text;background:none;font-family:var(--sans);
-}
-.aisle.empty{color:var(--muted);opacity:.65}
-li.done .aisle{opacity:.4}
-.aisle-input{
-  margin-top:.3rem;font-size:.75rem;font-family:var(--sans);
-  border:1px solid var(--green);border-radius:999px;padding:.12rem .55rem;
-  background:var(--card);color:var(--ink);width:11rem;max-width:100%;
-}
-.aisle-input:focus{outline:2px solid var(--amber);outline-offset:1px}
+/* ---- notes: quieter than the list ---- */
+.notes-h{font-size:19px;font-weight:800;margin:32px 2px 10px}
+.gear{background:var(--card);border-radius:18px;padding:14px 16px;margin:0 0 10px;box-shadow:0 1px 0 var(--rule)}
+.gear h3{font-size:15px;font-weight:800;margin:0 0 5px}
+.gear p{font-size:13.5px;color:var(--ink-soft);margin:0 0 7px;line-height:1.5}
+.gear p:last-child{margin-bottom:0}
+.picnic-gear p{font-size:13px}
+.gear-note{color:var(--ink-faded) !important;font-style:italic}
+footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5}
 
-/* ---- gear + footer ---- */
-.gear{background:var(--card);border:1px solid var(--line);border-radius:8px;
-  padding:1.1rem 1.15rem;margin:0 0 2.4rem}
-.gear h3{font-family:var(--serif);font-size:1.1rem;margin:0 0 .4rem;font-weight:600}
-.gear p{font-size:.87rem;color:var(--muted);margin:.4rem 0 0}
-.gear a{color:var(--green)}
-footer{font-size:.8rem;color:var(--muted);border-top:1px solid var(--line);padding-top:1.1rem}
-.toast{
-  position:fixed;left:50%;bottom:1.5rem;transform:translateX(-50%);
-  background:var(--ink);color:var(--paper);font-size:.85rem;font-weight:600;
-  padding:.6rem 1.1rem;border-radius:999px;opacity:0;pointer-events:none;
-  transition:opacity .2s;z-index:50;
+/* ---- action bar + toast ---- */
+.actionbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:color-mix(in srgb,var(--paper) 88%,transparent);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--rule);padding:10px 18px calc(10px + env(safe-area-inset-bottom,0))}
+.actionbar .in{max-width:640px;margin:0 auto;display:flex;gap:10px}
+.primary,.secondary{border:0;border-radius:16px;padding:14px 16px;font-size:15px;font-weight:800;cursor:pointer;transition:transform .12s}
+.primary{flex:1;background:var(--today);color:#fff}
+.secondary{background:var(--card);color:var(--ink);border:1px solid var(--rule)}
+.primary:active,.secondary:active{transform:scale(.97)}
+@media (prefers-color-scheme: dark){ .primary,.check svg{color:#14110D} .check svg{stroke:#14110D} .primary{color:#14110D} }
+.toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom,0));transform:translate(-50%,16px);opacity:0;z-index:30;
+  background:var(--ink);color:var(--paper);font-weight:700;font-size:14px;padding:10px 18px;border-radius:99px;pointer-events:none;
+  transition:opacity .25s,transform .35s var(--ease)}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media (prefers-reduced-motion: reduce){
+  .rise,.store.fade,.store-count.pop,li.justdone .check,.hero.alldone .ring-wrap{animation:none}
+  .ring-fg,.track span,.check,.check path,.name,.why,.meta,li.item,.toast,.seg button{transition:none}
 }
-.toast.show{opacity:1}
-@media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-
-<div class="wrap">
-  <header class="top">
-    <h1>Grocery run</h1>
-    <p class="dates"><span id="weekLabel">Shop Thu Sep 24</span> &middot; WinCo weekly, Costco this week too, plus picnic extras</p>
-    <p class="lede">Burgers, quesadillas, tacos, pasta, air-fryer chicken, cheesy scrambles, and fruit every day. Each item names the exact product to grab and why. <strong>Check your freezer space before you go</strong> — the Costco half of this list is a month of chicken, a bag of chunks, a box of sausage, and a spare bag of cheese. Tap anything you already have &mdash; it stays crossed off if you close the page. Tap the aisle chip under an item to note where it lives; those notes carry over to next week's list.</p>
+<main class="wrap">
+  <header class="mast rise" style="--i:0">
+    <div>
+      <div class="eyebrow" id="weekLabel"></div>
+      <h1>Grocery list</h1>
+    </div>
+    <a class="back" href="index.html">‹ Kitchen</a>
   </header>
-</div>
 
-<div class="bar">
-  <div class="bar-inner">
-    <span class="count" id="count">0</span>
-    <span class="count-label" id="countLabel">items still to buy</span>
-    <button class="btn" id="copyBtn" type="button">Copy what's left</button>
-    <button class="btn" id="resetBtn" type="button">Reset</button>
-  </div>
-</div>
+  <section class="hero rise" style="--i:1" id="hero" aria-label="Shopping progress">
+    <div class="ring-wrap">
+      <svg class="ring" viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="ring-bg" cx="60" cy="60" r="52"></circle>
+        <circle class="ring-fg" id="ringFg" cx="60" cy="60" r="52"></circle>
+      </svg>
+      <div class="ring-center"><div class="big" id="count">0</div><div class="big-lbl" id="countLabel">left</div></div>
+    </div>
+    <div class="side">
+      <div class="side-top" id="sideTop"></div>
+      <div class="bars" id="bars"></div>
+    </div>
+  </section>
 
-<div class="wrap">
-  <div id="flagged"></div>
+  <p class="lede rise" style="--i:2" id="lede"></p>
+  <div id="flagged" class="rise" style="--i:2"></div>
+  <nav class="seg rise" style="--i:3" id="seg" role="tablist" aria-label="Store"></nav>
   <div id="stores"></div>
 
+  <h2 class="notes-h">Notes</h2>
   <div class="gear picnic-only">
     <h3>Choco Boy &mdash; not at WinCo or Costco</h3>
     <p>Orion Choco Boy is a Korean snack, so neither store carries it. Your options: an Asian grocery in Provo or Orem (call ahead to check), or order online now from Weee! or Walmart.com &mdash; the Walmart listing is a third-party seller, and neither is guaranteed by Friday. If you can't find it, <strong>Pocky</strong> is the easy stand-in: same chocolate-dipped biscuit idea, and far more widely stocked.</p>
@@ -212,12 +221,14 @@ footer{font-size:.8rem;color:var(--muted);border-top:1px solid var(--line);paddi
     <p><strong>Small knife and napkins:</strong> a paring knife with a blade cover for the apples and cheese, and store-brand napkins. Not researched here.</p>
   </div>
 
-  <footer>
-    WinCo every week, sized for about 7 home meals. Costco once a month for what keeps &mdash; this first trip is both. On WinCo-only weeks, set COSTCO_TRIP to false at the top of the file and the Costco section disappears. Prices marked "est." come from older or out-of-area reports; the shelf tag wins.
-  </footer>
-</div>
+  <footer>WinCo every week, sized for about 7 home meals. Costco once a month for what keeps &mdash; this first trip is both. On WinCo-only weeks, set COSTCO_TRIP to false at the top of the file and the Costco section disappears. Prices marked "est." come from older or out-of-area reports; the shelf tag wins.</footer>
+</main>
 
-<div class="toast" id="toast">Copied</div>
+<div class="actionbar"><div class="in">
+  <button class="primary" id="copyBtn" type="button">Copy what's left</button>
+  <button class="secondary" id="resetBtn" type="button">Reset</button>
+</div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
 /* HOW THE SHOPPING WORKS NOW
@@ -309,8 +320,8 @@ var DATA = [
         {n:"Bread", a:"1 loaf", t:"store brand", p:"check shelf", w:"Toast with breakfast."}
       ]},
       {name:"Pantry", items:[
-        {n:"Sweet Baby Ray's Honey Barbecue Sauce", a:"1 bottle, if out", t:"researched", p:"est. ~$3",
-         w:"Honey, not Original \u2014 the Original has a touch of heat and the honey one doesn't. Lasts a month or more."},
+        {n:"Garlic powder", a:"1 small jar, only if out", t:"store brand", p:"check shelf",
+         w:"Cane's-style dip for chicken chunks and quesadillas: 1 tbsp mayo + \u00bd tbsp ketchup + garlic powder + lots of black pepper."},
         {n:"Post Honey Roasted Granola", a:"1 bag, only if out", t:"store brand", p:"check shelf",
          w:"The crunchy granola on your Yoplait mornings. Your standing rule is to always have it on the list."},
         {n:"Ritz crackers", a:"1 box \u2014 2 this week (1 for the picnic)", t:"store brand", p:"check shelf",
@@ -320,7 +331,7 @@ var DATA = [
         {n:"Cinnamon Protein Cheerios", a:"1 box", t:"researched", p:"check shelf",
          w:"Rushed-morning breakfast. Sporked's top-rated protein cereal because it doesn't taste like protein cereal. 8 g protein, about double regular cereal. Costco sold a 30 oz box for $7.79 in August \u2014 cheaper there if they have it on this trip."},
         {n:"Pasta", a:"1 lb, any shape", t:"store brand", p:"check shelf", w:"For the Rao's."},
-        {n:"Ketchup and mayo", a:"only if low", t:"store brand", p:"check shelf", w:"Burger sauce is 1 tbsp of each."},
+        {n:"Ketchup and mayo", a:"only if low", t:"store brand", p:"check shelf", w:"Burger sauce and the Cane's-style dip are both mayo + ketchup."},
         {n:"Peanut butter", a:"1 jar, only if out", t:"store brand", p:"check shelf", w:"Campus-day lunch: PB-honey tortilla. 2 tbsp per lunch."},
         {n:"Honey", a:"1 bottle, only if out", t:"store brand", p:"check shelf", w:"Campus-day lunch, 1 tbsp each."}
       ]},
@@ -364,228 +375,240 @@ var DATA = [
   }
 ];
 
-/* ===== CHANGE THESE TWO LINES EACH WEEK — nothing else ===== */
-var WEEK_START = "2026-09-24";                     // drives the checkmark storage key
-var WEEK_LABEL = "Shop Thu Sep 24";
-var COSTCO_TRIP = true;
-var PICNIC_WEEK = true;   // one-time picnic section. Set false next week and it disappears.   // true on the monthly Costco week, false on WinCo-only weeks. Next Costco run: about Oct 23.        // drives the date line under the title
-/* =========================================================== */
+/* ===== CHANGE THESE EACH WEEK — nothing else ===== */
+var WEEK_START = "2026-09-24";   // checkmarks are saved per week under this date
+var WEEK_LABEL = "Shop Thu Sep 24";   // shown at the top and in the copied text
+var COSTCO_TRIP = true;   // true on the monthly Costco week; false hides the Costco section
+var PICNIC_WEEK = true;   // one-time picnic items and notes; false hides them
+/* ====================================================== */
 
-var KEY = "grocery_" + WEEK_START;   // checkmarks — scoped to this week, so a new week starts clean
-var AISLE_KEY = "groceryAisles_v1";  // aisle notes — shared by every week on this origin
-var state = {};
-var aisles = {};
+var KEY = "grocery_" + WEEK_START;   // checkmarks: this week only, so a new week starts clean
+var AISLE_KEY = "groceryAisles_v1";  // aisle notes: shared by every week, keyed by item name
+var LOW_KEY = "runningLow_v1";       // running-low flags, written by the kitchen app
+var state = {}, aisles = {}, filter = "all";
+var C = 326.73;
 
-function noteKey(name){
-  return String(name).toLowerCase().replace(/[^a-z0-9]+/g, "_");
+/* Switches run once, before anything is drawn, so the list, the ring,
+   the counts, and "Copy what's left" can never disagree. Item IDs are
+   assigned after filtering, exactly as before the redesign, so existing
+   checkmarks line up. */
+if(!COSTCO_TRIP) DATA = DATA.filter(function(st){ return !st.monthly; });
+if(!PICNIC_WEEK){
+  DATA.forEach(function(st){ st.groups = st.groups.filter(function(g){ return !g.temp; }); });
+  Array.prototype.forEach.call(document.querySelectorAll(".picnic-only"), function(el){ el.style.display = "none"; });
 }
 
+function noteKey(name){ return String(name).toLowerCase().replace(/[^a-z0-9]+/g, "_"); }
+function esc(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function reduceMotion(){ return !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches); }
 function load(){
-  try{
-    var raw = localStorage.getItem(KEY);
-    if(raw){ var o = JSON.parse(raw); if(o && typeof o === "object") state = o; }
-  }catch(e){ state = {}; }
-  try{
-    var rawA = localStorage.getItem(AISLE_KEY);
-    if(rawA){ var a = JSON.parse(rawA); if(a && typeof a === "object") aisles = a; }
-  }catch(e){ aisles = {}; }
+  try{ var o = JSON.parse(localStorage.getItem(KEY)); if(o && typeof o === "object") state = o; }catch(e){ state = {}; }
+  try{ var a = JSON.parse(localStorage.getItem(AISLE_KEY)); if(a && typeof a === "object") aisles = a; }catch(e){ aisles = {}; }
 }
-function save(){
-  try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){}
-}
-function saveAisles(){
-  try{ localStorage.setItem(AISLE_KEY, JSON.stringify(aisles)); }catch(e){}
-}
-
-function esc(s){
-  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+function saveAisles(){ try{ localStorage.setItem(AISLE_KEY, JSON.stringify(aisles)); }catch(e){} }
+function idOf(si, gi, ii){ return si + "-" + gi + "-" + ii; }
+var TAG = {"researched":"Researched", "store brand":"Store brand", "deal":"Deal"};
 
 function render(){
-  var host = document.getElementById("stores");
   var html = "";
   DATA.forEach(function(st, si){
-    html += '<section class="store">';
-    html += '<div class="store-head"><h2 class="store-name">' + esc(st.store) +
-            '</h2><span class="store-loc">' + esc(st.loc) + '</span></div>';
-    html += '<p class="store-note">' + esc(st.note) + '</p>';
+    html += '<section class="store rise" style="--i:' + (4 + si) + '" data-store="' + esc(st.store) + '">' +
+      '<div class="store-head"><div><h2>' + esc(st.store) + '</h2><p class="store-loc">' + esc(st.loc) + '</p></div>' +
+      '<span class="store-count" id="sc-' + si + '"></span></div>' +
+      (st.note ? '<p class="store-note">' + esc(st.note) + '</p>' : '');
     st.groups.forEach(function(g, gi){
-      html += '<p class="group">' + esc(g.name) + '</p><ul>';
+      html += '<div class="group"><div class="group-head"><span>' + esc(g.name) + '</span><span id="gl-' + si + '-' + gi + '"></span></div><ul class="card">';
       g.items.forEach(function(it, ii){
-        var id = si + "-" + gi + "-" + ii;
-        var done = state[id] ? " done" : "";
-        var key = noteKey(it.n);
-        var note = aisles[key] || "";
-        html += '<li class="item' + done + '" data-id="' + id + '" role="checkbox" tabindex="0" aria-checked="' +
-                (state[id] ? "true" : "false") + '">' +
-                '<span class="box"></span><span class="body">' +
-                '<span class="name">' + esc(it.n) + ' <span class="amt">(' + esc(it.a) + ')</span></span>' +
-                '<span class="why" style="display:block">' + esc(it.w) + '</span>' +
-                ((it.t || it.p) ? '<span class="meta">' +
-                  (it.t ? '<span class="tag tag-' + it.t.replace(/[^a-z]+/g,"-") + '">' + esc(it.t) + '</span>' : '') +
-                  (it.p ? '<span class="price">' + esc(it.p) + '</span>' : '') + '</span>' : '') +
-                '<button type="button" class="aisle' + (note ? "" : " empty") +
-                '" data-note="' + esc(key) + '">' + esc(note || "add aisle") + '</button>' +
-                '</span></li>';
+        var id = idOf(si, gi, ii), done = !!state[id], key = noteKey(it.n), note = aisles[key] || "";
+        html += '<li class="item' + (done ? " done" : "") + '" data-id="' + id + '" role="checkbox" tabindex="0" aria-checked="' + done + '">' +
+          '<span class="check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 12.5l4 4 8-9"/></svg></span>' +
+          '<span class="body"><span class="name">' + esc(it.n) + '</span>' +
+          '<span class="amt">' + esc(it.a) + '</span>' +
+          (it.w ? '<span class="why">' + esc(it.w) + '</span>' : '') +
+          '<span class="meta">' +
+            (it.t ? '<span class="tag ' + it.t.replace(/[^a-z]+/g, "") .replace("storebrand","") + '">' + esc(TAG[it.t] || it.t) + '</span>' : '') +
+            (it.p ? '<span class="price">' + esc(it.p) + '</span>' : '') +
+            '<button type="button" class="aisle' + (note ? "" : " empty") + '" data-note="' + esc(key) + '">' + esc(note || "Add aisle") + '</button>' +
+          '</span></span></li>';
       });
-      html += '</ul>';
+      html += '</ul></div>';
     });
     html += '</section>';
   });
-  host.innerHTML = html;
-  updateCount();
+  document.getElementById("stores").innerHTML = html;
+  applyFilter(false);
+  updateCounts(false);
 }
 
-function allIds(){
-  var ids = [];
-  DATA.forEach(function(st,si){ st.groups.forEach(function(g,gi){ g.items.forEach(function(it,ii){
-    ids.push(si + "-" + gi + "-" + ii);
-  });});});
-  return ids;
+/* ---- counts, ring, and per-store progress ---- */
+var shownLeft = null, storeWasDone = {};
+function tally(){
+  var t = {total:0, left:0, stores:[]};
+  DATA.forEach(function(st, si){
+    var s = {total:0, left:0, groups:[]};
+    st.groups.forEach(function(g, gi){
+      var gl = 0;
+      g.items.forEach(function(it, ii){ s.total++; if(!state[idOf(si,gi,ii)]){ s.left++; gl++; } });
+      s.groups.push(gl);
+    });
+    t.total += s.total; t.left += s.left; t.stores.push(s);
+  });
+  return t;
+}
+function updateCounts(fromTap){
+  var t = tally(), done = t.total - t.left;
+  var fg = document.getElementById("ringFg");
+  if(fg) fg.style.strokeDashoffset = String(C * (1 - (t.total ? done / t.total : 0)));
+  var el = document.getElementById("count"), lbl = document.getElementById("countLabel");
+  if(t.left === 0){ el.textContent = "\u2713"; lbl.textContent = "all done"; }
+  else {
+    lbl.textContent = "left";
+    var from = (shownLeft == null || !fromTap || reduceMotion()) ? t.left : shownLeft, to = t.left;
+    if(from === to){ el.textContent = to; }
+    else { var t0 = Date.now(); (function step(){ var k = Math.min(1, (Date.now() - t0) / 380);
+      el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3))); if(k < 1) requestAnimationFrame(step); })(); }
+  }
+  var hero = document.getElementById("hero");
+  if(fromTap && t.left === 0 && shownLeft !== 0 && !reduceMotion()){ hero.classList.remove("alldone"); void hero.offsetWidth; hero.classList.add("alldone"); }
+  shownLeft = t.left;
+  document.getElementById("sideTop").textContent = t.left === 0 ? "Everything's in the cart." : done + " of " + t.total + " in the cart";
+  document.getElementById("bars").innerHTML = DATA.map(function(st, si){
+    var s = t.stores[si], pct = s.total ? (s.total - s.left) / s.total * 100 : 0;
+    return '<div class="bar-row"><b>' + esc(st.store) + '</b><div class="track"><span style="width:' + pct + '%"></span></div><span>' + (s.total - s.left) + '/' + s.total + '</span></div>';
+  }).join("");
+  DATA.forEach(function(st, si){
+    var s = t.stores[si], sc = document.getElementById("sc-" + si); if(!sc) return;
+    var isDone = s.left === 0;
+    sc.textContent = isDone ? "\u2713 Done" : s.left + " left";
+    sc.classList.toggle("done", isDone);
+    if(fromTap && isDone && !storeWasDone[si] && !reduceMotion()){ sc.classList.remove("pop"); void sc.offsetWidth; sc.classList.add("pop"); }
+    storeWasDone[si] = isDone;
+    s.groups.forEach(function(gl, gi){ var g = document.getElementById("gl-" + si + "-" + gi); if(g) g.textContent = gl ? gl + " left" : "\u2713"; });
+  });
 }
 
-function updateCount(){
-  var ids = allIds();
-  var left = 0;
-  ids.forEach(function(id){ if(!state[id]) left++; });
-  document.getElementById("count").textContent = left;
-  document.getElementById("countLabel").textContent =
-    left === 0 ? "everything's checked off" :
-    (left === 1 ? "item still to buy" : "items still to buy") + " of " + ids.length;
+/* ---- store filter ---- */
+function renderSeg(){
+  var seg = document.getElementById("seg");
+  if(DATA.length < 2){ seg.style.display = "none"; return; }
+  var opts = [["all","All"]].concat(DATA.map(function(st){ return [st.store, st.store]; }));
+  seg.innerHTML = opts.map(function(o){
+    return '<button type="button" role="tab" aria-selected="' + (filter === o[0]) + '" data-f="' + esc(o[0]) + '">' + esc(o[1]) + '</button>'; }).join("");
 }
+function applyFilter(animate){
+  Array.prototype.forEach.call(document.querySelectorAll(".store"), function(sec){
+    var show = filter === "all" || sec.getAttribute("data-store") === filter;
+    sec.style.display = show ? "" : "none";
+    if(show && animate && !reduceMotion()){ sec.classList.remove("rise","fade"); void sec.offsetWidth; sec.classList.add("fade"); }
+  });
+}
+document.getElementById("seg").addEventListener("click", function(e){
+  var b = e.target.closest("button[data-f]"); if(!b) return;
+  filter = b.getAttribute("data-f"); renderSeg(); applyFilter(true);
+});
 
+/* ---- checking items off ---- */
 function toggle(li){
-  var id = li.getAttribute("data-id");
-  if(state[id]){ delete state[id]; li.classList.remove("done"); li.setAttribute("aria-checked","false"); }
-  else { state[id] = 1; li.classList.add("done"); li.setAttribute("aria-checked","true"); }
-  save();
-  updateCount();
+  var id = li.getAttribute("data-id"), on = !state[id];
+  if(on) state[id] = 1; else delete state[id];
+  li.classList.toggle("done", on); li.setAttribute("aria-checked", String(on));
+  if(on && !reduceMotion()){ li.classList.remove("justdone"); void li.offsetWidth; li.classList.add("justdone");
+    setTimeout(function(){ li.classList.remove("justdone"); }, 500); }
+  save(); updateCounts(true);
 }
-
 function editAisle(btn){
   var key = btn.getAttribute("data-note");
   var input = document.createElement("input");
-  input.type = "text";
-  input.className = "aisle-input";
-  input.value = aisles[key] || "";
-  input.placeholder = "e.g. back wall, freezer 3";
-  input.setAttribute("aria-label", "Aisle note");
-  btn.replaceWith(input);
-  input.focus();
-  input.select();
+  input.type = "text"; input.className = "aisle-input"; input.value = aisles[key] || "";
+  input.placeholder = "e.g. back wall, freezer 3"; input.setAttribute("aria-label", "Aisle note");
+  btn.replaceWith(input); input.focus(); input.select();
   var closed = false;
   function commit(){
-    if(closed) return;
-    closed = true;
+    if(closed) return; closed = true;
     var v = input.value.trim();
     if(v) aisles[key] = v; else delete aisles[key];
     saveAisles();
-    render();
+    var nb = document.createElement("button");
+    nb.type = "button"; nb.className = "aisle" + (v ? "" : " empty"); nb.setAttribute("data-note", key); nb.textContent = v || "Add aisle";
+    input.replaceWith(nb);
   }
   input.addEventListener("blur", commit);
   input.addEventListener("keydown", function(ev){
     if(ev.key === "Enter"){ ev.preventDefault(); commit(); }
-    if(ev.key === "Escape"){ closed = true; render(); }
+    if(ev.key === "Escape"){ input.value = aisles[key] || ""; commit(); }
   });
   input.addEventListener("click", function(ev){ ev.stopPropagation(); });
 }
-
 document.getElementById("stores").addEventListener("click", function(e){
   var chip = e.target.closest(".aisle");
   if(chip){ e.stopPropagation(); editAisle(chip); return; }
-  var li = e.target.closest("li.item");
-  if(li) toggle(li);
+  var li = e.target.closest("li.item"); if(li) toggle(li);
 });
 document.getElementById("stores").addEventListener("keydown", function(e){
-  if(e.key !== " " && e.key !== "Enter") return;
-  var li = e.target.closest("li.item");
-  if(li){ e.preventDefault(); toggle(li); }
+  if(e.target.matches && e.target.matches("li.item") && (e.key === " " || e.key === "Enter")){ e.preventDefault(); toggle(e.target); }
 });
 
-/* Running-low flags set in the kitchen app. Same origin, same storage, so
-   they show up here without this file ever being edited. */
-var LOW_KEY = "runningLow_v1";
+/* ---- running-low flags from the kitchen app ---- */
 function loadFlags(){ try{ var o = JSON.parse(localStorage.getItem(LOW_KEY)); return (o && typeof o === "object") ? o : {}; }catch(e){ return {}; } }
 function renderFlags(){
-  var host = document.getElementById("flagged"); if(!host) return;
-  var f = loadFlags(), keys = Object.keys(f);
+  var host = document.getElementById("flagged"), f = loadFlags(), keys = Object.keys(f);
   if(!keys.length){ host.innerHTML = ""; return; }
-  host.innerHTML = '<div class="flagged"><h3>Flagged in the app &mdash; running low</h3>' +
-    '<p>You marked these when you opened the last one. Grab them even if they\'re not on the list below.</p><ul>' +
+  host.innerHTML = '<div class="flagged"><h3>Running low, from the app</h3>' +
+    '<p>You flagged these when you opened the last one. Grab them even if they\'re not below.</p><ul>' +
     keys.map(function(k){ return "<li>" + esc(f[k].n || k) + "</li>"; }).join("") +
-    '</ul><button type="button" id="clearFlags">I bought these \u2014 clear the flags</button></div>';
+    '</ul><button type="button" id="clearFlags">I bought these \u2014 clear</button></div>';
   document.getElementById("clearFlags").addEventListener("click", function(){
     try{ localStorage.removeItem(LOW_KEY); }catch(e){}
     renderFlags(); toast("Flags cleared");
   });
 }
 
+/* ---- copy, reset, toast ---- */
 function buildText(){
   var out = ["Here's what I still need to buy for " + WEEK_LABEL + ":", ""];
   var fl = loadFlags(), fk = Object.keys(fl);
   if(fk.length){ out.push("FLAGGED AS RUNNING LOW"); fk.forEach(function(k){ out.push("  - " + (fl[k].n || k)); }); out.push(""); }
-  DATA.forEach(function(st,si){
+  DATA.forEach(function(st, si){
     var lines = [];
-    st.groups.forEach(function(g,gi){
-      g.items.forEach(function(it,ii){
-        var id = si + "-" + gi + "-" + ii;
-        if(!state[id]){
-          var note = aisles[noteKey(it.n)];
-          lines.push("  - " + it.n + " (" + it.a + ")" + (note ? " [" + note + "]" : ""));
-        }
-      });
-    });
-    if(lines.length){
-      out.push(st.store.toUpperCase() + " — " + st.loc);
-      out = out.concat(lines);
-      out.push("");
-    }
+    st.groups.forEach(function(g, gi){ g.items.forEach(function(it, ii){
+      if(!state[idOf(si,gi,ii)]){ var note = aisles[noteKey(it.n)];
+        lines.push("  - " + it.n + " (" + it.a + ")" + (note ? " [" + note + "]" : "")); }
+    }); });
+    if(lines.length){ out.push(st.store.toUpperCase() + " \u2014 " + st.loc); out = out.concat(lines); out.push(""); }
   });
   if(out.length <= 2) return "Nothing left to buy for " + WEEK_LABEL + ".";
   return out.join("\n").trim();
 }
-
+var toastTimer = null;
 function toast(msg){
-  var t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  setTimeout(function(){ t.classList.remove("show"); }, 1600);
+  var t = document.getElementById("toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(toastTimer); toastTimer = setTimeout(function(){ t.classList.remove("on"); }, 1700);
 }
-
 document.getElementById("copyBtn").addEventListener("click", function(){
   var text = buildText();
   function fallback(){
-    var ta = document.createElement("textarea");
-    ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+    var ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
     document.body.appendChild(ta); ta.select();
-    try{ document.execCommand("copy"); toast("Copied"); }
-    catch(e){ toast("Copy failed — select the text manually"); }
+    try{ document.execCommand("copy"); toast("Copied"); }catch(e){ toast("Couldn't copy"); }
     document.body.removeChild(ta);
   }
-  if(navigator.clipboard && navigator.clipboard.writeText){
-    navigator.clipboard.writeText(text).then(function(){ toast("Copied"); }, fallback);
-  } else { fallback(); }
+  if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(function(){ toast("Copied"); }, fallback);
+  else fallback();
 });
-
 document.getElementById("resetBtn").addEventListener("click", function(){
-  state = {};
-  save();
-  render();
-  toast("List reset");
+  if(!confirm("Uncheck everything on this week's list? Aisle notes stay.")) return;
+  state = {}; save(); shownLeft = null; storeWasDone = {};
+  render(); toast("Reset");
 });
 
-/* Hide the monthly store on weeks it isn't part of the trip. Done once, up
-   front, so the list, the counter, and "Copy what's left" all agree. */
-if(!COSTCO_TRIP) DATA = DATA.filter(function(st){ return !st.monthly; });
-if(!PICNIC_WEEK){
-  DATA.forEach(function(st){ st.groups = st.groups.filter(function(g){ return !g.temp; }); });
-  /* the Choco Boy, food-safety, and gear boxes are picnic-only too */
-  Array.prototype.forEach.call(document.querySelectorAll(".picnic-only"), function(el){ el.style.display="none"; });
-}
+/* ---- start ---- */
 load();
-var lbl = document.getElementById("weekLabel");
-if(lbl) lbl.textContent = WEEK_LABEL;
-document.title = "Grocery — " + WEEK_LABEL;
+document.getElementById("weekLabel").textContent = WEEK_LABEL;
+document.title = "Grocery \u2014 " + WEEK_LABEL;
+document.getElementById("lede").innerHTML = "Tap anything you already have, or as it goes in the cart. Tap an aisle chip to remember where it lives \u2014 it carries over to future lists." +
+  (COSTCO_TRIP ? " <b>Costco week:</b> check your freezer space before you go." : "");
+renderSeg();
 render();
 renderFlags();
 </script>
