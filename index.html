@@ -648,6 +648,167 @@
     .v3-tiles.swap .v3-tile, .tabbar button.on .ico svg, .v3-day .v3-dot, .v3-sheet.open > * { animation: none; }
   }
 </style>
+<script>
+/* ===================== Kitchen sync (v3.8) =====================
+   Keeps the kitchen app's saved data in step across devices through your own
+   Cloudflare Worker (kitchen-sync). Shared by index.html and grocery.html.
+
+   - Only the kitchen app's own keys are synced. This origin also hosts Daily
+     Protocol, so nothing outside the allowlist below ever leaves the device.
+   - Each key carries the time it last changed; the newer copy wins, key by
+     key, so logging breakfast on your phone and scanning a label on your
+     laptop never overwrite each other.
+   - Before a sync overwrites anything here, the old values are kept so
+     "Undo last sync" in Settings can put them back.
+   - The password is typed in Settings and stays on the device. It is never
+     in the page source, which is public on GitHub. */
+(function(){
+  var CFG="kitchenSync_v1", META="kitchenSyncMeta_v1", ACK="kitchenSyncAck_v1", UNDO="kitchenSyncUndo_v1";
+  var EXACT=["mealRatings_v1","pantryItems_v2","pantryPrefs_v1","myMeals_v1","weightGoal_v1","stock_v1",
+             "ingLinks_v1","runningLow_v1","recentMeals_v1","ingAliases_v1","groceryAisles_v1"];
+  var PREFIX=["day_v1_","prepdone-","kitchen-shop-","thuCheck_","grocery_"];
+  function synced(k){ if(typeof k!=="string") return false; if(EXACT.indexOf(k)>=0) return true;
+    for(var i=0;i<PREFIX.length;i++){ if(k.indexOf(PREFIX[i])===0) return true; } return false; }
+
+  var LS; try{ LS=window.localStorage; }catch(e){ return; }
+  var S=Storage.prototype, rawSet=S.setItem, rawDel=S.removeItem, rawGet=S.getItem;
+  function get(k){ return rawGet.call(LS,k); }
+  function put(k,v){ try{ rawSet.call(LS,k,v); }catch(e){} }
+  function del(k){ rawDel.call(LS,k); }
+  function rj(k,d){ try{ var v=JSON.parse(get(k)); return v==null?d:v; }catch(e){ return d; } }
+  function wj(k,o){ put(k,JSON.stringify(o)); }
+  function cfg(){ return rj(CFG,null); }
+
+  var applying=false, timer=null, busy=false, again=false;
+  function touch(k){ if(applying) return; var m=rj(META,{}); m[k]=Date.now(); wj(META,m); schedule(1500); }
+  S.setItem=function(k,v){
+    if(this!==LS || !synced(k)) return rawSet.call(this,k,v);
+    var old=rawGet.call(this,k); rawSet.call(this,k,v); if(old!==String(v)) touch(k);
+  };
+  S.removeItem=function(k){
+    if(this!==LS || !synced(k)) return rawDel.call(this,k);
+    var had=rawGet.call(this,k)!=null; rawDel.call(this,k); if(had) touch(k);
+  };
+
+  function ready(){ var c=cfg(); return !!(c && c.url && c.token && c.on); }
+  function schedule(ms){ if(!ready()) return; clearTimeout(timer); timer=setTimeout(function(){ sync(); }, ms==null?1500:ms); }
+  function emit(){ try{ window.dispatchEvent(new CustomEvent("kitchensync",{detail:status()})); }catch(e){} }
+  function setLast(o){ var c=cfg(); if(!c) return; c.last=o; wj(CFG,c); emit(); }
+  function status(){ var c=cfg()||{}; return {on:!!c.on, url:c.url||"", last:c.last||null, undo:!!(rj(UNDO,null)||{}).at, pending:dirtyKeys().length}; }
+
+  function localKeys(){ var out=[]; for(var i=0;i<LS.length;i++){ var k=LS.key(i); if(synced(k)) out.push(k); } return out; }
+  function dirtyKeys(){
+    var m=rj(META,{}), a=rj(ACK,{}), out=[];
+    localKeys().forEach(function(k){ if(!a[k] || (m[k]||1)>a[k]) out.push(k); });
+    Object.keys(m).forEach(function(k){ if(synced(k) && get(k)==null && out.indexOf(k)<0 && (!a[k] || m[k]>a[k])) out.push(k); });
+    return out;
+  }
+  function endpoint(c){ return c.url.replace(/\/+$/,"").replace(/\/sync$/,"")+"/sync"; }
+
+  /* mode: undefined = normal merge; "adopt" = take everything from the cloud;
+     "probe" = just look at what the cloud has, change nothing; "force" =
+     normal merge even mid-task (you tapped Sync now).
+     Downloads only land when you're not in the middle of something. The app
+     keeps what it read at open in memory, so pulling under an open form and
+     then saving that form would write the old copy back over the new one.
+     Mid-task, a sync only uploads; the download waits until you're done. */
+  var pullWaiting=false;
+  function sync(mode, over){
+    var c=over||cfg();
+    if(!c || !c.url || !c.token) return Promise.resolve({ok:false, msg:"Sync isn't set up on this device."});
+    if(!over && !c.on) return Promise.resolve({ok:false, msg:"Sync is off."});
+    if(busy){ again=true; return Promise.resolve({ok:false, msg:"busy"}); }
+    busy=true;
+    var m=rj(META,{}), keys={}, sent=[];
+    if(!mode || mode==="force"){ dirtyKeys().forEach(function(k){ keys[k]={v:get(k), t:m[k]||1}; sent.push(k); }); }
+    var since=(mode==="adopt"||mode==="probe")?0:(c.since||0);
+    return fetch(endpoint(c),{method:"POST", headers:{"Authorization":"Bearer "+c.token, "Content-Type":"application/json"},
+                              body:JSON.stringify({since:since, keys:keys})})
+      .then(function(r){
+        var er=null;
+        if(r.status===401) er=new Error("The password doesn't match the one in your Worker.");
+        else if(!r.ok) er=new Error("Your Worker answered with an error ("+r.status+").");
+        if(er){ er.user=true; throw er; }
+        return r.json();
+      })
+      .then(function(res){
+        var srv=res.keys||{};
+        if(mode==="probe") return {ok:true, count:Object.keys(srv).length};
+        var pushOnly=!mode && !quiet();
+        var meta=rj(META,{}), ack=rj(ACK,{}), undo={}, changed=[];
+        Object.keys(srv).forEach(function(k){
+          if(!synced(k)) return;
+          if(pushOnly){ if(sent.indexOf(k)>=0 && srv[k].t===(meta[k]||1)) ack[k]=srv[k].t; else pullWaiting=true; return; }
+          var e=srv[k], lt=meta[k]||0, cur=get(k);
+          if(mode==="adopt" || e.t>lt){
+            if(cur!==e.v){ undo[k]=cur; changed.push(k); applying=true; if(e.v==null) del(k); else put(k,e.v); applying=false; }
+            meta[k]=e.t;
+          }
+          if(e.t>=(meta[k]||0)) ack[k]=e.t;
+        });
+        wj(META,meta); wj(ACK,ack);
+        if(changed.length) wj(UNDO,{at:Date.now(), keys:undo});
+        var c2=cfg()||c; if(!pushOnly) c2.since=res.at||c2.since||0; c2.last={at:Date.now(), ok:true, pulled:changed.length, pushed:sent.length}; wj(CFG,c2);
+        emit();
+        if(changed.length) remoteChanged();
+        return {ok:true, pulled:changed.length, pushed:sent.length};
+      })
+      .catch(function(err){
+        var msg=(err && err.user) ? err.message : "Couldn't reach your Worker. You may be offline, or the address is wrong.";
+        if(!over) setLast({at:Date.now(), ok:false, msg:msg});
+        return {ok:false, msg:msg};
+      })
+      .then(function(r){ busy=false; if(again){ again=false; schedule(300); } return r; });
+  }
+
+  /* New data arrived from another device. The app reads storage once when it
+     opens, so reload, unless you're in the middle of something. */
+  var reloadWaiting=false;
+  function quiet(){
+    if(document.querySelector(".v3-sheet.open, .overlay.show")) return false;
+    var a=document.activeElement; if(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return false;
+    return true;
+  }
+  function remoteChanged(){
+    if(quiet()){ location.reload(); return; }
+    reloadWaiting=true;   /* after "Sync now" or first connect, from inside Settings */
+  }
+  setInterval(function(){
+    if(!quiet()) return;
+    if(reloadWaiting){ location.reload(); return; }
+    if(pullWaiting && !busy){ pullWaiting=false; sync(); }
+  }, 1500);
+
+  document.addEventListener("visibilitychange", function(){
+    if(document.hidden){ if(dirtyKeys().length) sync(); }
+    else sync();
+  });
+  window.addEventListener("online", function(){ sync(); });
+  window.addEventListener("pageshow", function(e){ if(e.persisted) sync(); });
+  setInterval(function(){ if(!document.hidden) sync(); }, 5*60*1000);
+  if(ready()) setTimeout(function(){ sync(); }, 400);
+
+  window.KitchenSync={
+    status:status, sync:function(){ return sync("force"); },
+    /* first connect on a device: test the password, see whether the cloud
+       already has data, and let Settings ask which copy to keep */
+    probe:function(url,token){ return sync("probe",{url:url, token:token, on:true}); },
+    connect:function(url,token,keep){
+      var c={url:url, token:token, on:true, since:0, last:null}; wj(CFG,c); del(ACK);
+      if(keep==="cloud") return sync("adopt");
+      if(keep==="device"){ var m=rj(META,{}), now=Date.now(); localKeys().forEach(function(k){ m[k]=now; }); wj(META,m); }
+      return sync();
+    },
+    off:function(){ var c=cfg(); if(c){ c.on=false; wj(CFG,c); } emit(); },
+    forget:function(){ del(CFG); del(ACK); emit(); },
+    undo:function(){
+      var u=rj(UNDO,null); if(!u || !u.keys) return false;
+      Object.keys(u.keys).forEach(function(k){ var v=u.keys[k]; if(v==null) LS.removeItem(k); else LS.setItem(k,v); });
+      del(UNDO); return true;
+    }
+  };
+})();
+</script>
 </head>
 <body>
 
@@ -1307,6 +1468,7 @@ function renderWeekLists(host){
   <div class="sheet">
     <button class="close" onclick="document.getElementById('settingsOverlay').classList.remove('show')">×</button>
     <h2>Settings</h2>
+    <div class="sync-box" id="syncBox"></div>
     <label>USDA FoodData Central API key <span style="text-transform:none;font-weight:400">(optional)</span></label>
     <input type="text" id="usdaKey" placeholder="Paste your free key here">
     <p class="settings-note">Works without this — uses Open Food Facts by default. Adding a free USDA key gives much better coverage for US store brands. Get one in 1 minute at <a href="https://fdc.nal.usda.gov/api-key-signup.html" target="_blank">fdc.nal.usda.gov</a>. Stored only on this device.</p>
@@ -3232,7 +3394,7 @@ function checkSanity(){
 }
 
 /* ----- settings / weight goal ----- */
-function openSettings(){ if($("setCurW")) $("setCurW").value=wgoal.cur||""; if($("setGoalW")) $("setGoalW").value=wgoal.goal||""; $("settingsOverlay").classList.add("show"); }
+function openSettings(){ if(typeof renderSyncBox==="function") renderSyncBox();  if($("setCurW")) $("setCurW").value=wgoal.cur||""; if($("setGoalW")) $("setGoalW").value=wgoal.goal||""; $("settingsOverlay").classList.add("show"); }
 function saveKey(){ prefs.usdaKey=($("usdaKey").value||"").trim(); savePrefs(); showToast("Settings saved"); }
 
 /* ----- export / copy ----- */
@@ -5122,6 +5284,77 @@ function stepPItemPer(k,d){
   renderPantryItem(); renderRotation();
 }
 
+
+/* ---- Settings: sync across devices (v3.8) ---- */
+let syncAsk=null;   /* {url, token} while asking which copy to keep */
+function agoText(t){
+  const s=Math.round((Date.now()-t)/1000);
+  if(s<45) return "just now"; if(s<90) return "a minute ago";
+  const m=Math.round(s/60); if(m<60) return m+" minutes ago";
+  const h=Math.round(m/60); if(h<24) return h+" hour"+(h===1?"":"s")+" ago";
+  const d=Math.round(h/24); return d+" day"+(d===1?"":"s")+" ago";
+}
+function hasKitchenData(){
+  for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i);
+    if(k==="pantryItems_v2"||k==="ingLinks_v1"||k.indexOf("day_v1_")===0) return true; }
+  return false;
+}
+function renderSyncBox(){
+  const host=$("syncBox"); if(!host||!window.KitchenSync) return;
+  const st=KitchenSync.status();
+  let h='<div class="sync-h">Sync across devices</div>';
+  if(syncAsk){
+    h+='<p class="sync-p">Your cloud already has kitchen data. Which copy should this device use?</p>'+
+      '<button class="btn primary" type="button" onclick="syncFinish(\'cloud\')">Use the cloud data</button>'+
+      '<p class="sync-small">Pick this on a new device. Anything saved here that the cloud doesn’t have is kept.</p>'+
+      '<button class="btn ghost sync-wide" type="button" onclick="syncFinish(\'device\')">Keep this device’s data</button>'+
+      '<p class="sync-small">Pick this only if this device has the newer data. Where both have the same thing, this device wins.</p>'+
+      '<button class="sync-link" type="button" onclick="syncAsk=null;renderSyncBox()">Cancel</button>';
+  } else if(!st.on){
+    h+='<p class="sync-p">Keeps your pantry, labels, logs, weigh-ins and grocery checkmarks the same on every device, and backs them up. Uses your kitchen-sync Worker.</p>'+
+      '<label>Worker address</label><input type="url" id="syncUrl" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="https://kitchen-sync.skyfro04.workers.dev" value="'+esc(st.url||"")+'">'+
+      '<label>Sync password</label><input type="password" id="syncTok" autocomplete="current-password" placeholder="The SYNC_TOKEN you set in Cloudflare">'+
+      '<div class="sync-err" id="syncErr" role="alert"></div>'+
+      '<button class="btn primary" type="button" id="syncGo" onclick="syncStart()">Turn on sync</button>';
+  } else {
+    const L=st.last;
+    const line = !L ? 'Connecting…'
+      : L.ok ? '<span class="sync-ok">✓ Synced '+agoText(L.at)+'</span>'
+      : '<span class="sync-bad">Last try failed '+agoText(L.at)+'. '+esc(L.msg||"")+'</span>';
+    h+='<p class="sync-p">'+line+(st.pending?'<br><span class="sync-small">'+st.pending+' change'+(st.pending===1?'':'s')+' waiting to upload</span>':'')+'</p>'+
+      '<div class="sync-row"><button class="btn ghost" type="button" onclick="syncNow(this)">Sync now</button>'+
+      (st.undo?'<button class="btn ghost" type="button" onclick="syncUndo()">Undo last sync</button>':'')+'</div>'+
+      '<button class="sync-link" type="button" onclick="KitchenSync.off();renderSyncBox()">Turn off on this device</button>';
+  }
+  host.innerHTML=h;
+}
+function syncStart(){
+  let url=($("syncUrl").value||"").trim(); const tok=($("syncTok").value||"").trim();
+  const err=$("syncErr");
+  if(url && !/^https?:\/\//i.test(url)) url="https://"+url;
+  if(!/^https:\/\/[^\s/]+/i.test(url)){ err.textContent="Paste the Worker's address, starting with https://"; return; }
+  if(!tok){ err.textContent="Enter the sync password."; return; }
+  err.textContent=""; const b=$("syncGo"); b.disabled=true; b.textContent="Checking…";
+  KitchenSync.probe(url,tok).then(function(r){
+    b.disabled=false; b.textContent="Turn on sync";
+    if(!r.ok){ err.textContent=r.msg; return; }
+    if(r.count>0 && hasKitchenData()){ syncAsk={url:url, token:tok}; renderSyncBox(); return; }
+    KitchenSync.connect(url,tok,r.count>0?"cloud":null).then(syncDone);
+  });
+}
+function syncFinish(which){ const a=syncAsk; syncAsk=null; if(!a) return; renderSyncBox(); KitchenSync.connect(a.url,a.token,which).then(syncDone); }
+function syncDone(r){
+  renderSyncBox();
+  if(r&&r.ok&&r.pulled){ showToast("Sync is on — loading your data"); setTimeout(function(){ location.reload(); }, 700); return; }
+  showToast(r&&r.ok?"Sync is on":"Sync is on, but the first sync failed. Try Sync now.");
+}
+function syncNow(btn){ if(btn){ btn.disabled=true; btn.textContent="Syncing…"; }
+  KitchenSync.sync().then(function(r){ renderSyncBox();
+    if(r&&r.ok&&r.pulled){ showToast("Synced — updating"); setTimeout(function(){ location.reload(); }, 700); }
+    else if(r&&r.ok) showToast("Everything's up to date"); }); }
+function syncUndo(){ if(KitchenSync.undo()){ showToast("Put back what this device had"); setTimeout(function(){ location.reload(); }, 600); } }
+window.addEventListener("kitchensync", function(){ const o=$("settingsOverlay"); if(o && o.classList.contains("show") && !syncAsk) renderSyncBox(); });
+
 /* ---- Shop screen: the last-one rule, in one place ---- */
 function lowPanelHTML(){
   const low=loadLow(), keys=Object.keys(INGR).sort(function(a,b){ return INGR[a].n.localeCompare(INGR[b].n); });
@@ -6703,7 +6936,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v3.7.0 · 2026-09-29";   // bump this each time you upload a new index.html
+const APP_VERSION="v3.8.0 · 2026-09-29";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
@@ -6771,6 +7004,23 @@ const APP_VERSION="v3.7.0 · 2026-09-29";   // bump this each time you upload a 
   .v3-link-new { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 12px; }
   .v3-link-new svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; display: block; }
   .v3-add-link { background: var(--today-soft); color: var(--ink); border-radius: 14px; padding: 11px 13px; font-size: 13.5px; line-height: 1.45; margin: 12px 0 2px; }
+
+  /* v3.8 sync box in Settings */
+  .sync-box { background: var(--paper); border-radius: 18px; padding: 14px 14px 12px; margin: 12px 0 6px; }
+  .sync-h { font-size: 16px; font-weight: 800; color: var(--ink); }
+  .sync-p { font-size: 13.5px; color: var(--ink-faded); line-height: 1.45; margin: 4px 0 10px; }
+  .sync-small { display: block; font-size: 12px; color: var(--ink-faded); line-height: 1.4; margin: 6px 2px 12px; }
+  .sync-ok { color: var(--green); font-weight: 800; }
+  .sync-bad { color: var(--orange); font-weight: 700; }
+  .sync-err { font-size: 13px; color: var(--orange); font-weight: 700; margin: 8px 2px 0; }
+  .sync-box .btn { width: 100%; margin-top: 12px; }
+  .sync-box .btn.primary + .sync-small { margin-bottom: 4px; }
+  .sync-wide { margin-top: 6px !important; }
+  .sync-row { display: flex; gap: 8px; } .sync-row .btn { flex: 1; margin-top: 0; }
+  .sync-link { display: block; margin: 10px auto 0; border: 0; background: none; font: inherit; font-size: 13px; font-weight: 700; color: var(--ink-faded); text-decoration: underline; cursor: pointer; }
+  .overlay .sheet input[type=password], .overlay .sheet input[type=url] { width: 100%; padding: 13px 14px; font-family: 'Manrope', sans-serif; font-size: 16px; color: var(--ink); background: var(--card); border: 1.5px solid var(--rule); border-radius: 12px; }
+  .sync-box input[type=password], .sync-box input[type=url] { background: var(--card) !important; }
+  .overlay .sheet input[type=password]:focus, .overlay .sheet input[type=url]:focus { outline: none; border-color: var(--today); }
   /* layers: backdrop 80 < sheets 81 < second backdrop 83 < linker 84 < legacy overlays 110 */
   .v3-back2 { z-index: 83; }
   #v3-link { z-index: 84; }
