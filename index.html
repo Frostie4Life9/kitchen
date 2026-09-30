@@ -500,8 +500,28 @@
   .v3-steps { margin: 0 0 18px; padding: 0; list-style: none; counter-reset: st; }
   .v3-steps li { counter-increment: st; position: relative; padding: 0 0 12px 34px; font-size: 14.5px; line-height: 1.5; }
   .v3-steps li::before { content: counter(st); position: absolute; left: 0; top: 0; width: 23px; height: 23px; border-radius: 50%; background: var(--paper); color: var(--ink); font-size: 12px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
-  .v3-steps .timer { display: flex; width: max-content; margin-top: 8px; }
-  .v3-steps .timer button { font-family: inherit; }
+  /* v3.6.1 step timer — same card language as the tiles and ingredient rows */
+  .v3-timer { --p: 0; position: relative; overflow: hidden; display: flex; align-items: center; gap: 12px; margin: 10px 0 2px; padding: 8px 8px 10px; background: var(--paper); border-radius: 16px; max-width: 280px; transition: background .25s; }
+  .v3-timer-go { flex: none; width: 40px; height: 40px; border: 0; border-radius: 50%; background: var(--today); color: var(--card); display: grid; place-items: center; cursor: pointer; transition: transform .12s, background .25s; }
+  .v3-timer-go:active, .v3-timer-reset:active { transform: scale(.92); }
+  .v3-timer svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; display: block; }
+  .v3-timer-read { flex: 1; min-width: 0; line-height: 1.1; }
+  .v3-timer-read b { display: block; font-size: 20px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--ink); letter-spacing: -.01em; }
+  .v3-timer-read small { font-size: 11.5px; font-weight: 700; color: var(--ink-faded); }
+  .v3-timer-reset { flex: none; width: 34px; height: 34px; border: 0; border-radius: 50%; background: transparent; color: var(--ink-faded); display: grid; place-items: center; cursor: pointer; transition: opacity .2s, transform .12s; }
+  .v3-timer-reset svg { width: 17px; height: 17px; }
+  .v3-timer.idle .v3-timer-reset { opacity: 0; pointer-events: none; }
+  .v3-timer-bar { position: absolute; left: 12px; right: 12px; bottom: 4px; height: 3px; border-radius: 3px; background: var(--rule); overflow: hidden; opacity: 0; transition: opacity .25s; }
+  .v3-timer-bar i { display: block; height: 100%; width: 100%; background: var(--today); border-radius: inherit; transform-origin: left; transform: scaleX(var(--p)); transition: transform 1s linear; }
+  .v3-timer.run .v3-timer-bar, .v3-timer.paused .v3-timer-bar { opacity: 1; }
+  .v3-timer.run .v3-timer-read b { color: var(--today); }
+  .v3-timer.paused .v3-timer-go { background: var(--ink-faded); }
+  .v3-timer.done { background: var(--orange-soft); }
+  .v3-timer.done .v3-timer-go { background: var(--orange); animation: v3-ring 1.1s ease-in-out infinite; }
+  .v3-timer.done .v3-timer-read b, .v3-timer.done .v3-timer-read small { color: var(--orange); }
+  @keyframes v3-ring { 0%,100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--orange) 45%, transparent); } 60% { box-shadow: 0 0 0 9px transparent; } }
+  .v3-timer-go:focus-visible, .v3-timer-reset:focus-visible { outline: 3px solid var(--today); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .v3-timer, .v3-timer-go, .v3-timer-bar i, .v3-timer-reset { transition: none; } .v3-timer.done .v3-timer-go { animation: none; } }
   body.v3-sheet-up #timerChip:not(.ringing) { display: none; }
   body.v3-sheet-up #timerChip.ringing { bottom: auto; top: calc(14px + env(safe-area-inset-top)); }
   .v3-log-btn { width: 100%; border: 0; font: inherit; font-size: 16px; font-weight: 800; color: #fff; background: var(--today); border-radius: 16px; padding: 16px; cursor: pointer; transition: transform .12s; }
@@ -631,6 +651,57 @@
 </head>
 <body>
 
+<!-- v3.7: sheets live at page level so they can open from any tab -->
+  <div class="v3-back" id="v3-back" onclick="closeRotSheet();closeMealLog();closeLinker();closePantryItem()"></div>
+  <div class="v3-back v3-back2" id="v3-back2" onclick="closeLinker()"></div>
+  <div class="v3-sheet" id="v3-pitem" role="dialog" aria-modal="true" aria-labelledby="v3-pitem-title" aria-hidden="true">
+    <div class="v3-grab"></div>
+    <h2 id="v3-pitem-title"></h2>
+    <div class="v3-pitem-sub" id="v3-pitem-sub"></div>
+    <div class="v3-sheet-nums" id="v3-pitem-nums"></div>
+    <div id="v3-pitem-use"></div>
+    <div class="v3-pitem-btns" id="v3-pitem-btns"></div>
+  </div>
+  <div class="v3-sheet" id="v3-meal" role="dialog" aria-modal="true" aria-labelledby="v3-meal-title" aria-hidden="true">
+    <div class="v3-grab"></div>
+    <h2 id="v3-meal-title">Log a meal</h2>
+    <div id="v3-meal-recent"></div>
+    <div class="v3-label">Rough estimates</div>
+    <div class="v3-chips" id="v3-meal-presets"></div>
+    <p class="v3-hint">Tap one to fill it in, then adjust if you know better. Close is good enough.</p>
+    <label class="v3-field"><span>What was it?</span><input id="v3-meal-name" type="text" placeholder="Burger and fries at 7 Brothers" autocomplete="off"></label>
+    <div class="v3-row2">
+      <label class="v3-field"><span>Calories</span><input id="v3-meal-cal" type="number" inputmode="numeric" placeholder="1100"></label>
+      <label class="v3-field"><span>Protein (g)</span><input id="v3-meal-pro" type="number" inputmode="numeric" placeholder="optional"></label>
+    </div>
+    <div class="v3-label">Which meal?</div>
+    <div class="v3-chips" id="v3-meal-slot"></div>
+    <div class="v3-err" id="v3-meal-err" role="alert"></div>
+    <button class="v3-log-btn" type="button" onclick="submitMealLog()">Log this meal</button>
+  </div>
+  <div class="v3-sheet" id="v3-link" role="dialog" aria-modal="true" aria-labelledby="v3-link-title" aria-hidden="true">
+    <div class="v3-grab"></div>
+    <h2 id="v3-link-title">Use your label</h2>
+    <p class="v3-hint" id="v3-link-sub" style="margin:4px 2px 14px"></p>
+    <label class="v3-field"><span>Find it in your pantry</span><input id="v3-link-q" type="search" placeholder="Search your scanned items" autocomplete="off" oninput="renderLinkList()"></label>
+    <div class="v3-link-new" id="v3-link-new"></div>
+    <div id="v3-link-list"></div>
+    <div id="v3-link-per"></div>
+    <div class="v3-err" id="v3-link-err" role="alert"></div>
+    <button class="v3-log-btn" type="button" onclick="saveLink()">Use this label</button>
+    <button class="v3-ghost" type="button" id="v3-link-unlink" onclick="unlinkIng()">Go back to the estimate</button>
+  </div>
+  <div class="v3-sheet" id="v3-sheet" role="dialog" aria-modal="true" aria-labelledby="v3-sheet-title" aria-hidden="true">
+    <div class="v3-grab"></div>
+    <h2 id="v3-sheet-title"></h2>
+    <div class="v3-sheet-nums" id="v3-sheet-nums"></div>
+    <p class="v3-sheet-desc" id="v3-sheet-desc"></p>
+    <div class="v3-ings" id="v3-sheet-ings"></div>
+    <ol class="v3-steps" id="v3-sheet-steps"></ol>
+    <button class="v3-log-btn" id="v3-sheet-log" type="button">Log it</button>
+  </div>
+
+
 <!-- ============ TODAY ============ -->
 <div class="screen" id="screen-today">
   <div class="masthead">
@@ -720,44 +791,6 @@
     <div id="t-protein"></div><div id="t-macros"></div>
   </div>
 
-  <div class="v3-back" id="v3-back" onclick="closeRotSheet();closeMealLog();closeLinker()"></div>
-  <div class="v3-sheet" id="v3-meal" role="dialog" aria-modal="true" aria-labelledby="v3-meal-title" aria-hidden="true">
-    <div class="v3-grab"></div>
-    <h2 id="v3-meal-title">Log a meal</h2>
-    <div id="v3-meal-recent"></div>
-    <div class="v3-label">Rough estimates</div>
-    <div class="v3-chips" id="v3-meal-presets"></div>
-    <p class="v3-hint">Tap one to fill it in, then adjust if you know better. Close is good enough.</p>
-    <label class="v3-field"><span>What was it?</span><input id="v3-meal-name" type="text" placeholder="Burger and fries at 7 Brothers" autocomplete="off"></label>
-    <div class="v3-row2">
-      <label class="v3-field"><span>Calories</span><input id="v3-meal-cal" type="number" inputmode="numeric" placeholder="1100"></label>
-      <label class="v3-field"><span>Protein (g)</span><input id="v3-meal-pro" type="number" inputmode="numeric" placeholder="optional"></label>
-    </div>
-    <div class="v3-label">Which meal?</div>
-    <div class="v3-chips" id="v3-meal-slot"></div>
-    <div class="v3-err" id="v3-meal-err" role="alert"></div>
-    <button class="v3-log-btn" type="button" onclick="submitMealLog()">Log this meal</button>
-  </div>
-  <div class="v3-sheet" id="v3-link" role="dialog" aria-modal="true" aria-labelledby="v3-link-title" aria-hidden="true">
-    <div class="v3-grab"></div>
-    <h2 id="v3-link-title">Use your label</h2>
-    <p class="v3-hint" id="v3-link-sub" style="margin:4px 2px 14px"></p>
-    <label class="v3-field"><span>Find it in your pantry</span><input id="v3-link-q" type="search" placeholder="Search your scanned items" autocomplete="off" oninput="renderLinkList()"></label>
-    <div id="v3-link-list"></div>
-    <div id="v3-link-per"></div>
-    <div class="v3-err" id="v3-link-err" role="alert"></div>
-    <button class="v3-log-btn" type="button" onclick="saveLink()">Use this label</button>
-    <button class="v3-ghost" type="button" id="v3-link-unlink" onclick="unlinkIng()">Go back to the estimate</button>
-  </div>
-  <div class="v3-sheet" id="v3-sheet" role="dialog" aria-modal="true" aria-labelledby="v3-sheet-title" aria-hidden="true">
-    <div class="v3-grab"></div>
-    <h2 id="v3-sheet-title"></h2>
-    <div class="v3-sheet-nums" id="v3-sheet-nums"></div>
-    <p class="v3-sheet-desc" id="v3-sheet-desc"></p>
-    <div class="v3-ings" id="v3-sheet-ings"></div>
-    <ol class="v3-steps" id="v3-sheet-steps"></ol>
-    <button class="v3-log-btn" id="v3-sheet-log" type="button">Log it</button>
-  </div>
 </div>
 
 <!-- ============ CALENDAR ============ -->
@@ -802,47 +835,35 @@
 <!-- ============ PANTRY ============ -->
 <div class="screen" id="screen-pantry">
   <div class="masthead">
-    <h1 class="page">Pantry</h1>
-    <button class="pill-btn" id="p-settings-btn">⚙️ Settings</button>
+    <div>
+      <h1 class="page">Pantry</h1>
+      <div class="v3-sub">The labels behind your meal numbers</div>
+    </div>
+    <button class="v3-icon-btn" id="p-settings-btn" type="button" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
   </div>
 
-  <div class="seg">
-    <button id="seg-ing" class="on" onclick="setPantryView('ing')">🧂 Ingredients</button>
-    <button id="seg-rec" onclick="setPantryView('rec')">📖 Recipes &amp; meals</button>
-    <button id="seg-eat" onclick="setPantryView('eat')">📍 Eating out</button>
+  <div class="v3-seg" role="tablist" aria-label="Pantry sections">
+    <button id="seg-ing" type="button" role="tab" aria-selected="true" onclick="setPantryView('ing')">Labels</button>
+    <button id="seg-eat" type="button" role="tab" aria-selected="false" onclick="setPantryView('eat')">Eating out</button>
   </div>
+  <button id="seg-rec" type="button" hidden></button>
 
   <div id="pantry-ingredients">
-    <div class="totals">
-      <div class="stat"><div class="label">Items</div><div class="val" id="totItems">0</div></div>
-      <div class="stat"><div class="label">Total Cal</div><div class="val" id="totCal">0</div></div>
-      <div class="stat protein"><div class="label">Protein</div><div class="val" id="totPro">0<span class="unit">g</span></div></div>
+    <div id="p-cover"></div>
+    <div class="v3-p-actions">
+      <button class="v3-p-act primary" type="button" onclick="pendingLinkKey=null;openScan()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 8v8M11 8v8M14 8v8M17 8v8"/></svg><span>Scan a label</span></button>
+      <button class="v3-p-act" type="button" onclick="pendingLinkKey=null;openAdd()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Type one in</span></button>
     </div>
-    <div class="actions">
-      <button class="act-btn primary" onclick="openScan()">📷 Scan</button>
-      <button class="act-btn" onclick="openAdd()">✏️ Add</button>
-      <button class="act-btn" onclick="sendToClaude()">📋 Copy</button>
-    </div>
-    <input type="text" id="search" placeholder="🔍 Search ingredients…" oninput="render()">
-    <div class="control-row">
-      <select id="sortKey" onchange="render()">
-        <option value="recent">Sort: Recently added</option>
-        <option value="name">Name (A–Z)</option>
-        <option value="cal">Calories</option>
-        <option value="pro">Protein</option>
-        <option value="carb">Carbs</option>
-        <option value="fat">Fat</option>
-        <option value="pd">Protein density</option>
-        <option value="cat">Food category</option>
-      </select>
-      <button class="dir-btn" id="dirBtn" onclick="toggleDir()" title="Sort direction">↓</button>
-      <button class="dir-btn" id="groupBtn" onclick="toggleGroup()" title="Group by category">▦</button>
-      <button class="dir-btn" id="statsBtn" onclick="openStats()" title="Pantry stats">📊</button>
-      <button class="dir-btn" id="selBtn" onclick="toggleSelect()" title="Select items">☑</button>
-    </div>
-    <div class="cat-chips" id="catChips"></div>
-    <div class="section-label"><span id="listLabel">Your Pantry</span><span style="display:flex;gap:6px"><button class="copybtn orange" onclick="sendGrocery()">🛒 Grocery</button><button class="copybtn" onclick="sendToClaude()">📋 Copy all</button></span></div>
+    <input type="search" id="search" class="v3-search" placeholder="Search your labels" autocomplete="off" oninput="render()">
     <div id="list"></div>
+    <button class="v3-ghost" type="button" onclick="sendToClaude()">Copy my pantry for Claude</button>
+    <!-- Older pantry controls. Still read by legacy code, never shown. -->
+    <div hidden>
+      <span id="totItems"></span><span id="totCal"></span><span id="totPro"></span><span id="listLabel"></span>
+      <select id="sortKey"><option value="recent">recent</option><option value="name">name</option></select>
+      <button id="dirBtn"></button><button id="groupBtn"></button><button id="statsBtn"></button><button id="selBtn"></button>
+      <div id="catChips"></div>
+    </div>
   </div>
 
   <div id="pantry-recipes" style="display:none">
@@ -864,11 +885,11 @@
   </div>
 
   <div id="pantry-eatingout" style="display:none">
-    <p class="hint" style="margin-bottom:4px">Save meals you eat out — your Jersey Mike's tub, restaurant orders — with their real calories, then log them to any day with the ＋ button. Grouped by restaurant.</p>
-    <div class="actions" style="margin-top:10px">
-      <button class="act-btn primary" onclick="openAddEatingOut()">＋ Add restaurant meal</button>
+    <p class="v3-note" style="margin:0 2px 12px">Go-to orders with their real numbers. Tap one to log it.</p>
+    <div class="v3-p-actions">
+      <button class="v3-p-act primary" type="button" onclick="openAddEatingOut()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Save a restaurant meal</span></button>
     </div>
-    <input type="text" id="eoSearch" placeholder="🔍 Search meals or restaurants…" oninput="renderEatingOut()">
+    <input type="search" id="eoSearch" class="v3-search" placeholder="Search meals or restaurants" autocomplete="off" oninput="renderEatingOut()">
     <div id="eoList"></div>
   </div>
 </div>
@@ -1243,6 +1264,7 @@ function renderWeekLists(host){
     <button class="close" onclick="closeAdd()">×</button>
     <h2 id="addTitle">Add an ingredient</h2>
     <p class="hint" id="addHint">Scan a barcode, or type a name/number to look it up. Then check the numbers and save.</p>
+    <div class="v3-add-link" id="addLinkNote" hidden></div>
     <label>Barcode number <span style="text-transform:none;font-weight:400">(optional)</span></label>
     <div class="row">
       <input type="text" id="mBarcode" inputmode="numeric" placeholder="e.g. 894700010038">
@@ -1277,7 +1299,7 @@ function renderWeekLists(host){
     </div>
     <label>Note <span style="text-transform:none;font-weight:400">(optional)</span></label>
     <input type="text" id="mNote" placeholder="e.g. fridge door · for Tuesday meals">
-    <button class="btn primary" style="width:100%;margin-top:18px" onclick="saveItem()">Add to Pantry</button>
+    <button class="btn primary" id="addBtnSave" style="width:100%;margin-top:18px" onclick="saveItem()">Add to pantry</button>
   </div>
 </div>
 
@@ -1617,7 +1639,14 @@ function showTab(name){
   #timerChip.ringing{ background:var(--orange); animation:alarmpulse 0.85s ease-in-out infinite; }
   #timerChip .tc-ico{ font-size:15px; }
   /* v3.6: centre without transform, so the ringing pulse (which animates transform) can't knock it off-centre */
-  #timerChip{ left:0; right:0; margin:0 auto; width:max-content; transform:none; }
+  #timerChip{ left:0; right:0; margin:0 auto; width:max-content; transform:none; background:var(--card); color:var(--ink); border:1px solid var(--rule); font-family:'Manrope',sans-serif; font-size:13px; padding:8px 16px 8px 10px; box-shadow:0 10px 30px -12px rgba(31,26,20,.45); }
+  #timerChip .tc-ico{ width:30px; height:30px; border-radius:50%; background:var(--today); color:var(--card); display:grid; place-items:center; }
+  #timerChip .tc-ico svg{ width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; }
+  #timerChip .tc-t{ font-size:16px; font-variant-numeric:tabular-nums; }
+  #timerChip .tc-s{ color:var(--ink-faded); font-weight:700; }
+  #timerChip.ringing{ background:var(--orange); color:var(--card); border-color:transparent; animation:none; }
+  #timerChip.ringing .tc-ico{ background:var(--card); color:var(--orange); animation:v3-ring 1.1s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce){ #timerChip.ringing .tc-ico{ animation:none; } }
   .digest-badge{ display:none; align-items:center; gap:12px; margin:0 0 16px; padding:13px 15px; border-radius:15px; background:linear-gradient(135deg,var(--today-soft),var(--paper-warm)); border:1px solid var(--today); }
   .digest-badge.show{ display:flex; }
   .digest-badge.ready{ background:linear-gradient(135deg,var(--green-soft,#e8f3ea),var(--paper-warm)); border-color:var(--green); }
@@ -3023,27 +3052,7 @@ function itemHTML(it){
     ${selectMode?"":`<div class="item-actions">${logb}${star}${del}</div>`}
   </div>`;
 }
-function render(){
-  const items=visibleItems();
-  // totals reflect the ingredient pantry only (qty-weighted) — restaurant meals excluded
-  const ingItems=ingredientItems();
-  let tc=0, tp=0; ingItems.forEach(i=>{ const q=i.qty||1; tc+=(i.cal||0)*q; tp+=(i.pro||0)*q; });
-  $("totItems").textContent=ingItems.length;
-  $("totCal").textContent=tc.toLocaleString();
-  $("totPro").innerHTML=Math.round(tp)+'<span class="unit">g</span>';
-  $("listLabel").textContent = prefs.cat==="all" ? "Your Pantry" : catLabel(prefs.cat);
-  const list=$("list");
-  if(!items.length){ list.innerHTML=`<div class="empty"><span class="big">Nothing here yet</span>Tap <b>Scan</b> or <b>Add</b> to start building your pantry.</div>`; updateSelbar(); return; }
-  if(prefs.grouped){
-    const groups={}; items.forEach(i=>{ (groups[i.cat]=groups[i.cat]||[]).push(i); });
-    let html="";
-    CATS.forEach(([v,l])=>{ if(groups[v]){ html+=`<div class="group-head">${l}</div>`+groups[v].map(itemHTML).join(""); } });
-    list.innerHTML=html;
-  } else {
-    list.innerHTML=items.map(itemHTML).join("");
-  }
-  updateSelbar();
-}
+function render(){ renderPantry(); }
 function toggleDir(){ prefs.dir=prefs.dir==="asc"?"desc":"asc"; $("dirBtn").textContent=prefs.dir==="asc"?"↑":"↓"; savePrefs(); render(); }
 function toggleGroup(){ prefs.grouped=!prefs.grouped; $("groupBtn").classList.toggle("on",prefs.grouped); savePrefs(); render(); }
 function toggleFav(id){ const it=pantry.find(i=>i.id===id); if(it){ it.fav=!it.fav; savePantry(); render(); } }
@@ -3150,12 +3159,17 @@ function openAdd(){
   editingId=null; addMode='ing'; $("addTitle").textContent="Add an ingredient";
   ["mBarcode","mName","mServing","mCal","mPro","mCarb","mFat","mNote","mRest"].forEach(id=>$(id).value="");
   $("mCat").value=""; applyAddMode(); $("lookupResult").classList.remove("show"); $("sanityBox").classList.remove("show");
+  const ln=$("addLinkNote");
+  if(ln){ const k=pendingLinkKey&&INGR[pendingLinkKey]?pendingLinkKey:null; ln.hidden=!k;
+    if(k) ln.innerHTML='Saving this links it to <b>'+esc(INGR[k].n.toLowerCase())+'</b>, so every meal that uses it switches to this label.'; }
+  $("addBtnSave").textContent="Add to pantry";
   $("addOverlay").classList.add("show");
 }
 function openAddEatingOut(){
   editingId=null; addMode='eat'; $("addTitle").textContent="Add a restaurant meal";
   ["mBarcode","mName","mServing","mCal","mPro","mCarb","mFat","mNote","mRest"].forEach(id=>$(id).value="");
   $("mCat").value="eatingout"; applyAddMode(); $("lookupResult").classList.remove("show"); $("sanityBox").classList.remove("show");
+  pendingLinkKey=null; if($("addLinkNote")) $("addLinkNote").hidden=true; $("addBtnSave").textContent="Save meal";
   $("addOverlay").classList.add("show");
 }
 function lookupNutrition(){
@@ -3173,9 +3187,10 @@ function openEdit(id){
   $("mCal").value=it.cal||""; $("mPro").value=it.pro||""; $("mCarb").value=it.carb??""; $("mFat").value=it.fat??"";
   $("mNote").value=it.note||""; $("mCat").value=it.cat||""; $("mRest").value=it.restaurant||""; applyAddMode();
   $("lookupResult").classList.remove("show"); checkSanity();
+  pendingLinkKey=null; if($("addLinkNote")) $("addLinkNote").hidden=true; $("addBtnSave").textContent="Save changes";
   $("addOverlay").classList.add("show");
 }
-function closeAdd(){ $("addOverlay").classList.remove("show"); }
+function closeAdd(){ $("addOverlay").classList.remove("show"); pendingLinkKey=null; }
 function num(id){ const v=parseFloat($(id).value); return isNaN(v)?null:v; }
 function saveItem(){
   const name=($("mName").value||"").trim(); if(!name){ showToast("Give it a name first"); return; }
@@ -3183,10 +3198,21 @@ function saveItem(){
   const cat = (addMode==='eat') ? "eatingout" : ($("mCat").value||categorize(name));
   const data={ name, serving:($("mServing").value||"").trim(), cal:num("mCal")||0, pro:num("mPro")||0,
     carb:num("mCarb"), fat:num("mFat"), cat, restaurant, note:($("mNote").value||"").trim(), barcode:($("mBarcode").value||"").trim() };
+  let newId=null;
   if(editingId){ const it=pantry.find(i=>i.id===editingId); Object.assign(it,data); }
-  else { pantry.push(Object.assign({id:uid(),fav:false,needBuy:false,qty:1,scanned:!!data.barcode,added:Date.now()},data)); }
+  else { newId=uid(); pantry.push(Object.assign({id:newId,fav:false,needBuy:false,qty:1,scanned:!!data.barcode,added:Date.now()},data)); }
+  const linkTo=(newId && addMode!=='eat' && pendingLinkKey && INGR[pendingLinkKey]) ? pendingLinkKey : null;
+  if(linkTo){ const o=loadLinks(); o[linkTo]={id:newId, per:1}; saveLinks(o); }
+  const wasEdit=!!editingId;
   savePantry(); buildCatUI(); render(); if(typeof renderEatingOut==="function") renderEatingOut(); closeAdd();
-  showToast(editingId?"Updated":(addMode==='eat'?"Saved restaurant meal":"Added to pantry"));
+  if(typeof sheetKey!=="undefined" && sheetKey) renderRotSheet();
+  if(typeof renderRotation==="function") renderRotation();
+  if(linkTo){
+    showToast(INGR[linkTo].n+" now use this label");
+    if(activeTab==="pantry") setTimeout(function(){ openPantryItem(newId); }, 250);   /* check the serving math */
+    return;
+  }
+  showToast(wasEdit?"Updated":(addMode==='eat'?"Saved restaurant meal":"Added to pantry"));
 }
 function checkSanity(){
   const box=$("sanityBox"); const cal=num("mCal"), p=num("mPro"), c=num("mCarb"), f=num("mFat");
@@ -3259,30 +3285,28 @@ function restorePantry(){
 
 /* ----- pantry sub-view toggle + recipes ----- */
 function setPantryView(v){
+  if(v==="rec") v="ing";                       /* the old recipes view is retired */
   pantryView=v;
-  $("seg-ing").classList.toggle("on",v==="ing");
-  $("seg-rec").classList.toggle("on",v==="rec");
-  $("seg-eat").classList.toggle("on",v==="eat");
+  $("seg-ing").setAttribute("aria-selected", v==="ing");
+  $("seg-eat").setAttribute("aria-selected", v==="eat");
   $("pantry-ingredients").style.display = v==="ing"?"block":"none";
-  $("pantry-recipes").style.display = v==="rec"?"block":"none";
+  $("pantry-recipes").style.display = "none";
   $("pantry-eatingout").style.display = v==="eat"?"block":"none";
-  $("selbar").classList.toggle("show", v==="ing" && selectMode && activeTab==="pantry");
-  if(v==="rec"){ renderMyMeals(); renderRecipes(); }
-  if(v==="eat") renderEatingOut();
+  $("selbar").classList.remove("show");
+  if(v==="eat") renderEatingOut(); else renderPantry();
 }
 function renderEatingOut(){
   const host=$("eoList"); if(!host) return;
   const q=($("eoSearch").value||"").trim().toLowerCase();
-  let items=pantry.filter(i=>i.cat==="eatingout");
+  let items=eatingOutItems();
   if(q) items=items.filter(i=>(i.name||"").toLowerCase().includes(q)||(i.restaurant||"").toLowerCase().includes(q));
-  if(!items.length){ host.innerHTML=`<div class="empty"><span class="big">No restaurant meals yet</span>Tap <b>＋ Add restaurant meal</b> to save a go-to order like your Jersey Mike's tub, then log it any day with the ＋ button.</div>`; return; }
+  if(!items.length){ host.innerHTML='<p class="v3-empty">'+(q?'Nothing matches that search.':'No saved orders yet. Save a go-to order once and it\u2019s one tap to log after that.')+'</p>'; return; }
   const groups={};
   items.forEach(i=>{ const r=(i.restaurant||"").trim()||"Other"; (groups[r]=groups[r]||[]).push(i); });
-  const names=Object.keys(groups).sort((a,b)=>a.localeCompare(b));
-  host.innerHTML=names.map(r=>{
-    const list=groups[r].sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(itemHTML).join("");
-    return `<div class="eo-group"><div class="eo-head">📍 ${esc(r)}</div>${list}</div>`;
-  }).join("");
+  let n=0;
+  host.innerHTML=Object.keys(groups).sort((a,b)=>a.localeCompare(b)).map(r=>
+    '<div class="v3-p-group"><div class="v3-p-gh">'+esc(r)+'</div><div class="v3-p-list">'+
+    groups[r].sort((a,b)=>(a.name||"").localeCompare(b.name||"")).map(it=>pItemHTML(it,n++)).join("")+'</div></div>').join("");
 }
 /* ===== "Your meals" — quick combos you build from pantry items =====
    A saved meal lives in its OWN store, never in `pantry`. That separation is the
@@ -4781,13 +4805,29 @@ function renderRotSheet(){
 }
 /* ---- step timers on the recipe sheet (share the old cook-timer engine) ---- */
 function rotTimerKey(it,i){ return it.n+"#"+i; }
-function rotTimerHTML(it,i,t){
+const TMR_ICO={
+  play:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z" fill="currentColor" stroke="none"/></svg>',
+  pause:'<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="5.5" width="3.6" height="13" rx="1.2" fill="currentColor" stroke="none"/><rect x="13.4" y="5.5" width="3.6" height="13" rx="1.2" fill="currentColor" stroke="none"/></svg>',
+  check:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 12.5l4.2 4.2 8.8-9.2"/></svg>',
+  reset:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4.5v4h4"/></svg>',
+  clock:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="7.5"/><path d="M12 9.5V13l2.4 1.6M9.5 3h5"/></svg>',
+  bell:'<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 1.5h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/></svg>'
+};
+function rotTimerState(it,i,dur){
   const ts=activeTimers[rotTimerKey(it,i)];
-  const running=!!(ts&&ts.endAt&&!ts.done), done=!!(ts&&ts.done);
-  const disp=done?"Done!":fmtTime(ts?remainOf(ts):t);
-  return '<div class="timer'+(done?' done':'')+'" id="rtmr-'+i+'"><span class="tt" id="rtmr-tt-'+i+'">'+disp+'</span>'+
-    '<button type="button" id="rtmr-pp-'+i+'" aria-label="'+(running?'Pause':'Start')+' timer" onclick="rotTimerToggle('+i+')">'+(done?'\u2713':running?'\u23F8':'\u25B6')+'</button>'+
-    '<button type="button" aria-label="Reset timer" onclick="rotTimerReset('+i+')">\u21BA</button></div>';
+  const st=!ts?"idle":ts.done?"done":ts.endAt?"run":"paused";
+  const rem=st==="done"?0:(ts?remainOf(ts):dur);
+  return {st:st, rem:rem, p:Math.min(1,Math.max(0,1-rem/dur))};
+}
+const TMR_LBL={idle:"Timer", run:"Running", paused:"Paused", done:"Done"};
+function rotTimerHTML(it,i,t){
+  const S=rotTimerState(it,i,t);
+  return '<div class="v3-timer '+S.st+'" id="rtmr-'+i+'" style="--p:'+S.p.toFixed(4)+'">'+
+    '<button type="button" class="v3-timer-go" id="rtmr-pp-'+i+'" onclick="rotTimerToggle('+i+')" aria-label="'+(S.st==="run"?"Pause":S.st==="done"?"Silence":"Start")+' timer">'+
+      TMR_ICO[S.st==="run"?"pause":S.st==="done"?"check":"play"]+'</button>'+
+    '<div class="v3-timer-read"><b id="rtmr-tt-'+i+'">'+fmtTime(S.rem)+'</b><small id="rtmr-st-'+i+'">'+TMR_LBL[S.st]+'</small></div>'+
+    '<button type="button" class="v3-timer-reset" onclick="rotTimerReset('+i+')" aria-label="Reset timer">'+TMR_ICO.reset+'</button>'+
+    '<span class="v3-timer-bar" aria-hidden="true"><i></i></span></div>';
 }
 function rotTimerToggle(i){
   const f=rotItem(sheetKey); if(!f||!f.it.tm) return;
@@ -4814,12 +4854,17 @@ function syncRotTimerDOM(){
   const f=rotItem(sheetKey); if(!f||!f.it.tm) return;
   f.it.tm.forEach(function(dur,i){
     if(!dur) return;
-    const ts=activeTimers[rotTimerKey(f.it,i)], el=$("rtmr-"+i); if(!el) return;
-    const running=!!(ts&&ts.endAt&&!ts.done), done=!!(ts&&ts.done);
-    $("rtmr-tt-"+i).textContent=done?"Done!":fmtTime(ts?remainOf(ts):dur);
-    el.classList.toggle("done",done);
-    const b=$("rtmr-pp-"+i); b.textContent=done?"\u2713":running?"\u23F8":"\u25B6";
-    b.setAttribute("aria-label",done?"Silence timer":running?"Pause timer":"Start timer");
+    const el=$("rtmr-"+i); if(!el) return;
+    const S=rotTimerState(f.it,i,dur);
+    if(!el.classList.contains(S.st)){
+      el.className="v3-timer "+S.st;
+      const b=$("rtmr-pp-"+i);
+      b.innerHTML=TMR_ICO[S.st==="run"?"pause":S.st==="done"?"check":"play"];
+      b.setAttribute("aria-label",(S.st==="run"?"Pause":S.st==="done"?"Silence":"Start")+" timer");
+      $("rtmr-st-"+i).textContent=TMR_LBL[S.st];
+    }
+    $("rtmr-tt-"+i).textContent=fmtTime(S.rem);
+    el.style.setProperty("--p",S.p.toFixed(4));
   });
 }
 function closeRotSheet(){
@@ -4867,18 +4912,29 @@ function openLinker(key){
   $("v3-link-q").value=""; $("v3-link-err").textContent="";
   $("v3-link-unlink").style.display=L?"block":"none";
   renderLinkList(); renderLinkPer(L?L.per:1);
+  $("v3-link-new").innerHTML='<button type="button" class="v3-p-act primary" onclick="linkScan(\'scan\')">'+TMR_SCAN+'<span>Scan it</span></button>'+
+    '<button type="button" class="v3-p-act" onclick="linkScan(\'type\')">'+TMR_PLUS+'<span>Type it in</span></button>';
   const sh=$("v3-link"); sh.classList.add("open"); sh.setAttribute("aria-hidden","false"); sh.scrollTop=0;
-  $("v3-back").classList.add("open");
+  /* The linker opens on top of the recipe sheet. Before v3.7 it sat underneath
+     it (same layer, earlier in the page), so tapping an ingredient looked like
+     it did nothing. It now has its own layer and its own backdrop. */
+  const onTop=$("v3-sheet").classList.contains("open") || $("v3-pitem").classList.contains("open");
+  $(onTop?"v3-back2":"v3-back").classList.add("open");
+}
+function linkScan(how){
+  const k=linkKey; closeLinker(); pendingLinkKey=k;
+  if(how==="scan") openScan(); else openAdd();
 }
 function closeLinker(){
   const sh=$("v3-link"); if(!sh || !sh.classList.contains("open")) return;
   sh.classList.remove("open"); sh.setAttribute("aria-hidden","true");
-  if(!$("v3-sheet").classList.contains("open")) $("v3-back").classList.remove("open");
+  $("v3-back2").classList.remove("open");
+  if(!$("v3-sheet").classList.contains("open") && !$("v3-pitem").classList.contains("open")) $("v3-back").classList.remove("open");
 }
 function renderLinkList(){
   const host=$("v3-link-list"); if(!host) return;
   const items=ingredientItems();
-  if(!items.length){ host.innerHTML='<p class="v3-empty">Your pantry is empty. Scan this item\u2019s barcode first (Pantry \u2192 Scan), then come back here to link it. Until then, the estimate is used.</p>'; return; }
+  if(!items.length){ host.innerHTML='<p class="v3-empty">Nothing scanned yet. Scan the package above and it links itself. Until then, the estimate is used.</p>'; return; }
   const q=($("v3-link-q").value||"").trim().toLowerCase();
   const hints=(INGR[linkKey].q||"").split(" ");
   const score=function(it){ const n=(it.name||"").toLowerCase(); return hints.some(function(h){ return h && n.indexOf(h)>=0; })?1:0; };
@@ -4894,22 +4950,177 @@ function renderLinkPer(v){
   if(!linkPick){ host.innerHTML=''; return; }
   const it=ingredientItems().find(function(i){ return i.id===linkPick; }); if(!it){ host.innerHTML=''; return; }
   const cur = (v!=null) ? v : (parseFloat(($("v3-link-servings")||{}).value)||1);
-  host.innerHTML='<label class="v3-field"><span>One '+esc(INGR[linkKey].u)+' of '+esc(INGR[linkKey].n.toLowerCase())+' = how many servings of this label?</span>'+
+  host.innerHTML='<label class="v3-field"><span>'+esc(unitPhrase(INGR[linkKey].u))+' of '+esc(INGR[linkKey].n.toLowerCase())+' = how many servings of this label?</span>'+
     '<input id="v3-link-servings" type="number" inputmode="decimal" step="0.25" min="0.05" value="'+cur+'"></label>'+
-    '<p class="v3-hint">The label\u2019s serving is '+(it.serving?'\u201c'+esc(it.serving)+'\u201d':'not listed')+'. If that matches one '+esc(INGR[linkKey].u)+', leave it at 1.</p>';
+    '<p class="v3-hint">The label\u2019s serving is '+(it.serving?'\u201c'+esc(it.serving)+'\u201d':'not listed')+'. If that matches '+esc(unitPhrase(INGR[linkKey].u))+', leave it at 1.</p>';
 }
 function saveLink(){
   if(!linkPick){ $("v3-link-err").textContent="Pick an item from your pantry first."; return; }
   const per=parseFloat(($("v3-link-servings")||{}).value);
   if(!(per>0)){ $("v3-link-err").textContent="Enter how many label servings make one "+INGR[linkKey].u+"."; return; }
   const o=loadLinks(); o[linkKey]={id:linkPick, per:per}; saveLinks(o);
-  closeLinker(); if(sheetKey) renderRotSheet(); renderRotation(); showToast("Using your label for "+INGR[linkKey].n.toLowerCase());
+  closeLinker(); if(sheetKey) renderRotSheet(); renderRotation(); renderPantry(); if(pitemId) renderPantryItem(); showToast("Using your label for "+INGR[linkKey].n.toLowerCase());
 }
 function unlinkIng(){
   const o=loadLinks(); delete o[linkKey]; saveLinks(o);
-  closeLinker(); if(sheetKey) renderRotSheet(); renderRotation(); showToast("Back to the estimate");
+  closeLinker(); if(sheetKey) renderRotSheet(); renderRotation(); renderPantry(); showToast("Back to the estimate");
 }
 document.addEventListener("keydown", function(e){ if(e.key==="Escape") closeLinker(); });
+
+/* ================= v3.7 — PANTRY =================
+   The pantry's job now is one thing: hold the labels behind your meal
+   numbers. Each scanned item says which ingredient it stands in for, and the
+   card at the top shows how much of the rotation runs on real labels. */
+let pendingLinkKey=null, pitemId=null;
+const TMR_SCAN='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 8v8M11 8v8M14 8v8M17 8v8"/></svg>';
+const TMR_PLUS='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
+/* Fresh produce has no barcode and the estimates are USDA values anyway,
+   so it never counts against you here. */
+const NO_LABEL={banana:1, apple:1, orange:1, fruit:1, grapes:1, lettuce:1, onion:1};
+function ingUse(){
+  const use={};
+  ROTATION.forEach(function(sec){ sec.items.forEach(function(it){ (it.parts||[]).forEach(function(pt){
+    const u=use[pt[0]]||(use[pt[0]]={cards:{}, cal:0});
+    u.cards[it.k]=1; u.cal+=INGR[pt[0]]?INGR[pt[0]].e[0]*pt[1]:0;
+  }); }); });
+  Object.keys(use).forEach(function(k){ use[k].n=Object.keys(use[k].cards).length; });
+  return use;
+}
+function linksFor(id){ const L=loadLinks(); return Object.keys(L).filter(function(k){ return L[k].id===id && INGR[k]; }); }
+/* Whole-word matching, so "Breaded chicken" doesn't suggest bread. Plurals
+   count, and long stems (strawberr) match as prefixes. Only the best
+   matches are shown. */
+function ingSuggest(it){
+  const words=(it.name||"").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
+  const hit=function(h){ return words.some(function(w){ return w===h || w===h+"s" || w===h+"es" || (h.length>=6 && w.indexOf(h)===0); }); };
+  const sc={}; let top=0;
+  Object.keys(INGR).forEach(function(k){ if(NO_LABEL[k]) return;
+    const n=(INGR[k].q||"").split(" ").filter(function(h){ return h && hit(h); }).length;
+    if(n){ sc[k]=n; if(n>top) top=n; } });
+  return Object.keys(sc).filter(function(k){ return sc[k]>=Math.max(1,top-1); }).sort(function(a,b){ return sc[b]-sc[a]; });
+}
+function renderPantryCover(){
+  const host=$("p-cover"); if(!host) return;
+  const use=ingUse(), links=loadLinks();
+  const keys=Object.keys(use).filter(function(k){ return !NO_LABEL[k]; });
+  const done=keys.filter(function(k){ return links[k] && linkedItem(k); });
+  const todo=keys.filter(function(k){ return done.indexOf(k)<0; }).sort(function(a,b){ return use[b].cal-use[a].cal; });
+  const pct=keys.length?done.length/keys.length:0;
+  host.innerHTML='<div class="v3-p-cover">'+
+    '<div class="v3-p-cover-top"><div><b>'+done.length+' of '+keys.length+'</b><span>meal ingredients use your labels</span></div>'+
+    '<div class="v3-p-pct">'+Math.round(pct*100)+'%</div></div>'+
+    '<div class="v3-pro-track"><span style="width:'+(pct*100).toFixed(1)+'%"></span></div>'+
+    (todo.length
+      ? '<div class="v3-label" style="margin:14px 2px 8px">Scan next · biggest impact first</div><div class="v3-chips" style="margin:0">'+
+        todo.slice(0,6).map(function(k){ return '<button type="button" class="v3-chip" onclick="openLinker(\''+k+'\')">'+esc(INGR[k].n)+'<small>'+use[k].n+' meal'+(use[k].n===1?'':'s')+'</small></button>'; }).join('')+'</div>'
+      : '<p class="v3-note" style="margin:12px 2px 0">Every packaged ingredient runs on your labels. Fresh fruit and veg use USDA values.</p>')+
+    '</div>';
+}
+function pItemHTML(it,i){
+  const eo=it.cat==="eatingout";
+  let use='';
+  if(eo){ use=''; }
+  else {
+    const ks=linksFor(it.id), u=ingUse();
+    if(ks.length){
+      const meals={}; ks.forEach(function(k){ if(u[k]) Object.keys(u[k].cards).forEach(function(c){ meals[c]=1; }); });
+      const m=Object.keys(meals).length;
+      use='<span class="v3-pi-use">✓ '+esc(ks.map(function(k){ return INGR[k].n.toLowerCase(); }).join(', '))+(m?' · '+m+' meal'+(m===1?'':'s'):'')+'</span>';
+    } else use='<span class="v3-pi-use none">Not in a meal yet · tap to assign</span>';
+  }
+  return '<button type="button" class="v3-pi" style="--i:'+(i||0)+'" onclick="openPantryItem(\''+it.id+'\')">'+
+    '<span class="v3-pi-main"><b>'+esc(it.name)+'</b><small>'+esc(it.serving||'1 serving')+'</small>'+use+'</span>'+
+    '<span class="v3-pi-nums"><b>'+(Math.round(it.cal||0))+'</b> cal<br>'+(Math.round((it.pro||0)*10)/10)+' g protein</span></button>';
+}
+function renderPantry(){
+  if(!$("list")) return;
+  renderPantryCover();
+  const q=(($("search")||{}).value||"").trim().toLowerCase();
+  let items=ingredientItems().filter(function(i){ return !q || (i.name||"").toLowerCase().indexOf(q)>=0; });
+  const host=$("list");
+  if(!ingredientItems().length){
+    host.innerHTML='<div class="v3-p-empty"><b>Nothing scanned yet</b><p>Start with the chips above — eggs, cheddar, tortillas. Scan the package and it links itself, so every meal that uses it switches from the estimate to your label.</p></div>';
+    return;
+  }
+  if(!items.length){ host.innerHTML='<p class="v3-empty">Nothing matches that search.</p>'; return; }
+  const inUse=[], other=[];
+  items.forEach(function(it){ (linksFor(it.id).length?inUse:other).push(it); });
+  const byName=function(a,b){ return (a.name||"").localeCompare(b.name||""); };
+  inUse.sort(byName); other.sort(byName);
+  let n=0, html='';
+  if(inUse.length) html+='<div class="v3-p-group"><div class="v3-p-gh">In your meals</div><div class="v3-p-list">'+inUse.map(function(it){ return pItemHTML(it,n++); }).join('')+'</div></div>';
+  if(other.length) html+='<div class="v3-p-group"><div class="v3-p-gh">'+(inUse.length?'Everything else':'Your labels')+'</div><div class="v3-p-list">'+other.map(function(it){ return pItemHTML(it,n++); }).join('')+'</div></div>';
+  host.innerHTML=html;
+}
+
+/* ---- one pantry item ---- */
+function openPantryItem(id){
+  const it=pantry.find(function(i){ return i.id===id; }); if(!it) return;
+  pitemId=id; renderPantryItem();
+  const sh=$("v3-pitem"); sh.classList.add("open"); sh.setAttribute("aria-hidden","false"); sh.scrollTop=0;
+  $("v3-back").classList.add("open");
+}
+function closePantryItem(){
+  if(!pitemId) return; pitemId=null;
+  const sh=$("v3-pitem"); sh.classList.remove("open"); sh.setAttribute("aria-hidden","true");
+  if(!$("v3-sheet").classList.contains("open") && !$("v3-link").classList.contains("open")) $("v3-back").classList.remove("open");
+}
+function renderPantryItem(){
+  const it=pantry.find(function(i){ return i.id===pitemId; }); if(!it){ closePantryItem(); return; }
+  const eo=it.cat==="eatingout";
+  $("v3-pitem-title").textContent=it.name;
+  $("v3-pitem-sub").textContent=[eo?(it.restaurant||''):'', 'Per '+(it.serving||'serving'), it.scanned?'Scanned':''].filter(Boolean).join(' · ');
+  const f=function(v){ return v==null?'–':(Math.round(v*10)/10); };
+  $("v3-pitem-nums").innerHTML='<div><b>'+f(it.cal)+'</b>calories</div><div><b>'+f(it.pro)+' g</b>protein</div><div><b>'+f(it.carb)+' g</b>carbs</div><div><b>'+f(it.fat)+' g</b>fat</div>';
+  const use=$("v3-pitem-use");
+  if(eo){ use.innerHTML=''; }
+  else {
+    const links=loadLinks(), mine=linksFor(it.id), sug=ingSuggest(it), u=ingUse();
+    const chip=function(k){
+      const on=mine.indexOf(k)>=0, other=!on && links[k] && linkedItem(k);
+      return '<button type="button" class="v3-chip" aria-pressed="'+on+'" onclick="togglePItemLink(\''+k+'\')">'+esc(INGR[k].n)+
+        (other?'<small>replaces '+esc(shortName(other.item.name))+'</small>':(u[k]?'<small>'+u[k].n+'</small>':''))+'</button>';
+    };
+    const rest=Object.keys(INGR).filter(function(k){ return !NO_LABEL[k] && sug.indexOf(k)<0; }).sort(function(a,b){ return INGR[a].n.localeCompare(INGR[b].n); });
+    let h='<div class="v3-pitem-h">What is this in your meals?</div>'+
+      '<p class="v3-hint" style="margin:0 2px 10px">Pick the ingredient it stands in for. Every meal using that ingredient switches from the estimate to this label. The number on each chip is how many meals use it.</p>';
+    if(sug.length) h+='<div class="v3-label">Looks like</div><div class="v3-chips">'+sug.map(chip).join('')+'</div>';
+    h+='<details class="v3-pitem-more"'+(sug.length?'':' open')+'><summary>'+(sug.length?'Something else':'All ingredients')+'</summary><div class="v3-chips" style="margin-top:10px">'+rest.map(chip).join('')+'</div></details>';
+    if(mine.length){
+      h+='<div class="v3-pitem-h" style="margin-top:18px">Serving math</div>';
+      h+=mine.map(function(k){
+        const per=links[k].per>0?links[k].per:1, g=INGR[k];
+        return '<div class="v3-per"><div class="v3-per-t"><b>'+esc(unitPhrase(g.u))+' of '+esc(g.n.toLowerCase())+'</b><small>= this many servings of the label ('+esc(it.serving||'1 serving')+')</small></div>'+
+          '<div class="v3-per-step"><button type="button" aria-label="Less" onclick="stepPItemPer(\''+k+'\',-0.25)">−</button>'+
+          '<input type="number" inputmode="decimal" step="0.25" min="0.05" value="'+per+'" aria-label="Servings" onchange="setPItemPer(\''+k+'\',this.value)">'+
+          '<button type="button" aria-label="More" onclick="stepPItemPer(\''+k+'\',0.25)">+</button></div></div>';
+      }).join('')+'<p class="v3-hint" style="margin:6px 2px 0">If the label’s serving matches the recipe unit, leave it at 1.</p>';
+    }
+    use.innerHTML=h;
+  }
+  $("v3-pitem-btns").innerHTML=
+    '<button type="button" class="v3-log-btn" onclick="const i=\''+it.id+'\';closePantryItem();openPortion(i)">Log a serving to today</button>'+
+    '<div class="v3-row2" style="margin-top:10px"><button type="button" class="v3-ghost" style="margin:0" onclick="const i=\''+it.id+'\';closePantryItem();openEdit(i)">Edit numbers</button>'+
+    '<button type="button" class="v3-ghost danger" style="margin:0" onclick="const i=\''+it.id+'\';closePantryItem();removeItem(i)">Remove</button></div>';
+}
+/* "egg" -> "1 egg", but "3 oz" stays "3 oz" */
+function unitPhrase(u){ return /^\d/.test(u)?u:'1 '+u; }
+function shortName(n){ n=n||''; return n.length>22?n.slice(0,21)+'…':n; }
+function togglePItemLink(k){
+  const o=loadLinks();
+  if(o[k] && o[k].id===pitemId){ delete o[k]; saveLinks(o); showToast(INGR[k].n+" back to the estimate"); }
+  else { o[k]={id:pitemId, per:1}; saveLinks(o); showToast(INGR[k].n+" now use this label"); }
+  renderPantryItem(); renderPantry(); renderRotation();
+}
+function setPItemPer(k,v){
+  const o=loadLinks(), n=parseFloat(v); if(!o[k] || !(n>0)) { renderPantryItem(); return; }
+  o[k].per=Math.round(n*100)/100; saveLinks(o); renderRotation();
+}
+function stepPItemPer(k,d){
+  const o=loadLinks(); if(!o[k]) return;
+  o[k].per=Math.max(0.25, Math.round(((o[k].per||1)+d)*100)/100); saveLinks(o);
+  renderPantryItem(); renderRotation();
+}
 
 /* ---- Shop screen: the last-one rule, in one place ---- */
 function lowPanelHTML(){
@@ -6283,14 +6494,14 @@ function updateTimerChip(){
   if(!keys.length){ chip.classList.remove("show","ringing"); return; }
   if(keys.some(k=>activeTimers[k].done)){
     chip.classList.add("show","ringing");
-    chip.innerHTML='<span class="tc-ico">🔔</span> Timer done — tap to stop';
+    chip.innerHTML='<span class="tc-ico">'+(typeof TMR_ICO!=="undefined"?TMR_ICO.bell:'')+'</span> Timer done \u00b7 tap to stop';
     return;
   }
   let soonest=null;
   keys.forEach(k=>{ const t=activeTimers[k]; if(t.endAt&&!t.done){ const r=remainOf(t); if(soonest==null||r<soonest) soonest=r; } });
   if(soonest==null){ chip.classList.remove("show","ringing"); return; }
   chip.classList.add("show"); chip.classList.remove("ringing");
-  chip.innerHTML='<span class="tc-ico">⏱️</span> '+fmtTime(soonest)+' · tap to open recipe';
+  chip.innerHTML='<span class="tc-ico">'+(typeof TMR_ICO!=="undefined"?TMR_ICO.clock:'')+'</span><b class="tc-t">'+fmtTime(soonest)+'</b><span class="tc-s">Open recipe</span>';
 }
 function timerChipTap(){
   if(Object.keys(activeTimers).some(k=>activeTimers[k].done)){
@@ -6492,7 +6703,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v3.6.0 · 2026-09-29";   // bump this each time you upload a new index.html
+const APP_VERSION="v3.7.0 · 2026-09-29";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
@@ -6508,5 +6719,79 @@ const APP_VERSION="v3.6.0 · 2026-09-29";   // bump this each time you upload a 
   const vEl=$("appVersion"); if(vEl) vEl.textContent=APP_VERSION;
 })();
 </script>
+
+<style>
+  /* ===================== v3.7 pantry + shared forms ===================== */
+  .v3-sub { font-size: 14px; font-weight: 500; color: var(--ink-faded); margin-top: 4px; }
+  .v3-icon-btn { width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--rule); background: var(--card); color: var(--ink-soft); display: grid; place-items: center; cursor: pointer; flex: none; }
+  .v3-icon-btn svg, .v3-p-act svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; display: block; }
+  .v3-icon-btn:active, .v3-p-act:active, .v3-pi:active { transform: scale(.97); }
+  .v3-p-cover { background: var(--card); border-radius: 22px; padding: 16px 16px 16px; margin: 0 0 12px; box-shadow: 0 1px 0 var(--rule); }
+  .v3-p-cover-top { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+  .v3-p-cover-top b { display: block; font-size: 19px; font-weight: 800; color: var(--ink); }
+  .v3-p-cover-top span { font-size: 13px; color: var(--ink-faded); }
+  .v3-p-pct { font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 30px; line-height: 1; color: var(--green); font-variant-numeric: tabular-nums; }
+  .v3-p-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 12px; }
+  .v3-p-act { display: flex; align-items: center; justify-content: center; gap: 8px; border: 1.5px solid var(--rule); background: var(--card); color: var(--ink); font: inherit; font-size: 14px; font-weight: 800; border-radius: 16px; padding: 13px 10px; cursor: pointer; transition: transform .12s; }
+  .v3-p-act.primary { background: var(--today); border-color: var(--today); color: #fff; }
+  #pantry-eatingout .v3-p-actions { grid-template-columns: 1fr; }
+  #screen-pantry #search.v3-search, #screen-pantry #eoSearch.v3-search, .v3-search { width: 100%; font: inherit; font-size: 16px; color: var(--ink); background: var(--card); border: 1.5px solid var(--rule); border-radius: 14px; padding: 12px 14px; margin: 0 0 16px; font-family: 'Manrope', sans-serif; }
+  .v3-search:focus { outline: none; border-color: var(--today); }
+  .v3-p-group { margin: 0 0 18px; }
+  .v3-p-gh { font-size: 13px; font-weight: 800; color: var(--ink-faded); margin: 0 4px 8px; }
+  .v3-p-list { background: var(--card); border-radius: 20px; box-shadow: 0 1px 0 var(--rule); overflow: hidden; }
+  .v3-pi { display: flex; width: 100%; gap: 12px; align-items: center; text-align: left; border: 0; background: transparent; font: inherit; color: var(--ink); padding: 13px 16px; cursor: pointer; border-top: 1px solid var(--rule-soft); transition: background .15s, transform .12s; animation: v3-content-in .3s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--i,0) * 25ms); }
+  .v3-p-list .v3-pi:first-child { border-top: 0; }
+  .v3-pi-main { flex: 1; min-width: 0; }
+  .v3-pi-main b { display: block; font-size: 14.5px; font-weight: 700; line-height: 1.3; }
+  .v3-pi-main small { display: block; font-size: 12px; color: var(--ink-faded); margin-top: 1px; }
+  .v3-pi-use { display: inline-block; font-size: 11.5px; font-weight: 800; color: var(--green); background: var(--green-soft); border-radius: 99px; padding: 2px 8px; margin-top: 6px; }
+  .v3-pi-use.none { color: var(--ink-faded); background: var(--paper); font-weight: 700; }
+  .v3-pi-nums { flex: none; text-align: right; font-size: 12px; color: var(--ink-faded); line-height: 1.4; }
+  .v3-pi-nums b { font-size: 16px; font-weight: 800; color: var(--ink); }
+  .v3-p-empty { background: var(--card); border-radius: 20px; padding: 18px; box-shadow: 0 1px 0 var(--rule); margin-bottom: 14px; }
+  .v3-p-empty b { font-size: 16px; }
+  .v3-p-empty p { font-size: 13.5px; color: var(--ink-faded); line-height: 1.5; margin: 6px 0 0; }
+  .v3-pitem-sub { font-size: 13px; color: var(--ink-faded); margin: -2px 0 4px; }
+  .v3-pitem-h { font-size: 15px; font-weight: 800; color: var(--ink); margin: 16px 2px 6px; }
+  .v3-pitem-more summary { font-size: 13px; font-weight: 700; color: var(--today); cursor: pointer; margin: 0 2px; list-style: none; }
+  .v3-pitem-more summary::-webkit-details-marker { display: none; }
+  .v3-pitem-more summary::after { content: " \25BE"; }
+  .v3-pitem-more[open] summary::after { content: " \25B4"; }
+  .v3-per { display: flex; align-items: center; gap: 10px; background: var(--paper); border-radius: 14px; padding: 10px 10px 10px 13px; margin: 0 0 8px; }
+  .v3-per-t { flex: 1; min-width: 0; }
+  .v3-per-t b { display: block; font-size: 13.5px; }
+  .v3-per-t small { font-size: 11.5px; color: var(--ink-faded); }
+  .v3-per-step { display: flex; align-items: center; gap: 4px; flex: none; }
+  .v3-per-step button { width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid var(--rule); background: var(--card); color: var(--ink); font: inherit; font-weight: 800; font-size: 16px; cursor: pointer; }
+  .v3-per-step input { width: 52px; text-align: center; font: inherit; font-size: 15px; font-weight: 800; color: var(--ink); background: transparent; border: 0; }
+  .v3-pitem-btns { margin-top: 20px; }
+  .v3-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .v3-ghost.danger { color: var(--orange); }
+  .v3-link-new { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 12px; }
+  .v3-link-new svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; display: block; }
+  .v3-add-link { background: var(--today-soft); color: var(--ink); border-radius: 14px; padding: 11px 13px; font-size: 13.5px; line-height: 1.45; margin: 12px 0 2px; }
+  /* layers: backdrop 80 < sheets 81 < second backdrop 83 < linker 84 < legacy overlays 110 */
+  .v3-back2 { z-index: 83; }
+  #v3-link { z-index: 84; }
+
+  /* the older form sheets (add, edit, scan, log a portion, settings) wear the v3 look */
+  .overlay { background: rgba(31,26,20,.38); }
+  .overlay .sheet { background: var(--card); border-top: 0; border-radius: 26px 26px 0 0; padding: 10px 20px calc(24px + env(safe-area-inset-bottom)); box-shadow: 0 -12px 40px -20px rgba(31,26,20,.5); animation: slideup .34s cubic-bezier(.2,.85,.25,1); }
+  .overlay .sheet::before { content: ""; display: block; width: 38px; height: 5px; border-radius: 99px; background: var(--rule); margin: 0 auto 16px; }
+  .overlay .sheet h2 { font-family: 'Fraunces', Georgia, serif; font-weight: 800; font-size: 26px; line-height: 1.1; letter-spacing: -.01em; margin: 0 44px 6px 0; }
+  .overlay .sheet .close { width: 34px; height: 34px; border-radius: 50%; background: var(--paper); font-size: 20px; display: grid; place-items: center; margin-top: -2px; }
+  .overlay .sheet .hint { font-size: 13.5px; color: var(--ink-faded); line-height: 1.45; }
+  .overlay .sheet label { text-transform: none; letter-spacing: 0; font-size: 13px; font-weight: 700; color: var(--ink-soft); margin: 14px 2px 5px; }
+  .overlay .sheet input[type=text], .overlay .sheet input[type=number], .overlay .sheet select, .overlay .sheet textarea { background: var(--paper); border: 1.5px solid var(--rule); border-radius: 12px; }
+  .overlay .sheet input:focus, .overlay .sheet select:focus, .overlay .sheet textarea:focus { border-color: var(--today); }
+  .overlay .btn.primary { background: var(--today); border: 0; color: #fff; border-radius: 16px; padding: 16px; font-size: 16px; font-weight: 800; }
+  .overlay .btn.ghost { border-radius: 12px; }
+  @media (prefers-color-scheme: dark) {
+    .overlay { background: rgba(0,0,0,.55); }
+    .overlay .btn.primary, .v3-p-act.primary { color: #10160F; }
+  }
+  @media (prefers-reduced-motion: reduce) { .v3-pi { animation: none; } .overlay .sheet { animation: none; } }
+</style>
 </body>
 </html>
