@@ -5111,7 +5111,7 @@ function openRotSheet(k){
   $("v3-back").classList.add("open");
   document.body.classList.add("v3-sheet-up");
   const sh=$("v3-sheet"); if(!sh.classList.contains("open")){ sh.classList.add("open"); sh.setAttribute("aria-hidden","false"); sh.scrollTop=0;
-    setTimeout(function(){ const b=$("v3-sheet-log"); if(b && b.focus) b.focus(); }, reduceMotion()?0:300); }
+    setTimeout(function(){ const b=$("v3-sheet-log"); if(b && b.focus) b.focus({preventScroll:true}); }, reduceMotion()?0:300); }
 }
 function pickFruit(k){ sheetFruit=k; renderRotSheet(); }
 function renderRotSheet(){
@@ -5224,7 +5224,7 @@ function closeRotSheet(){
   document.body.classList.remove("v3-sheet-up");
   const sh=$("v3-sheet"); if(sh){ sh.classList.remove("open"); sh.setAttribute("aria-hidden","true"); }
   const bk=$("v3-back"); if(bk) bk.classList.remove("open");
-  if(sheetReturn && sheetReturn.focus){ try{ sheetReturn.focus(); }catch(e){} } sheetReturn=null;
+  if(sheetReturn && sheetReturn.focus){ try{ sheetReturn.focus({preventScroll:true}); }catch(e){} } sheetReturn=null;
 }
 document.addEventListener("keydown", function(e){ if(e.key==="Escape" && sheetKey) closeRotSheet(); });
 
@@ -5641,7 +5641,7 @@ function closeMealLog(){
   const sh=$("v3-meal"); if(!sh || !sh.classList.contains("open")) return;
   sh.classList.remove("open"); sh.setAttribute("aria-hidden","true");
   $("v3-back").classList.remove("open");
-  if(mealReturn && mealReturn.focus){ try{ mealReturn.focus(); }catch(e){} } mealReturn=null;
+  if(mealReturn && mealReturn.focus){ try{ mealReturn.focus({preventScroll:true}); }catch(e){} } mealReturn=null;
 }
 function submitMealLog(){
   const n=($("v3-meal-name").value||"").trim() || "Meal";
@@ -7143,7 +7143,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v3.10.0 · 2026-09-30";   // bump this each time you upload a new index.html
+const APP_VERSION="v3.11.0 · 2026-10-01";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
@@ -7249,6 +7249,71 @@ const APP_VERSION="v3.10.0 · 2026-09-30";   // bump this each time you upload a
     .overlay .btn.primary, .v3-p-act.primary { color: #10160F; }
   }
   @media (prefers-reduced-motion: reduce) { .v3-pi { animation: none; } .overlay .sheet { animation: none; } }
+</style>
+<script>
+/* ===== v3.11 — swipe a sheet down to close it =====
+   Before this, a downward swipe on a recipe went to the page underneath, and
+   Safari treated it as pull-to-refresh. Now: while any sheet is open the page
+   behind it can't scroll or refresh, and dragging a sheet down when it's
+   already scrolled to its top follows your finger and closes it past ~110 px
+   (or on a quick flick). Shorter drags spring back. */
+(function(){
+  const CLOSERS={ "v3-sheet":"closeRotSheet", "v3-meal":"closeMealLog", "v3-link":"closeLinker", "v3-pitem":"closePantryItem",
+                  "addOverlay":"closeAdd", "scanOverlay":"closeScan" };
+  function anyOpen(){ return !!document.querySelector(".v3-sheet.open, .overlay.show"); }
+  function syncLock(){ document.documentElement.classList.toggle("sheet-lock", anyOpen()); }
+  new MutationObserver(syncLock).observe(document.body,{subtree:true, attributes:true, attributeFilter:["class"]});
+
+  function closeSheet(sh){
+    const ov=sh.closest(".overlay");
+    const id=ov?ov.id:sh.id, fn=CLOSERS[id];
+    if(fn && typeof window[fn]==="function"){ window[fn](); return; }
+    if(ov) ov.classList.remove("show");
+  }
+  let d=null;
+  function sheetFrom(t){ return t && t.closest ? t.closest(".v3-sheet.open, .overlay.show .sheet") : null; }
+  document.addEventListener("touchstart",function(e){
+    const sh=sheetFrom(e.target); if(!sh || e.touches.length!==1){ d=null; return; }
+    if(e.target.closest("input, textarea, select")){ d=null; return; }
+    d={sh:sh, y0:e.touches[0].clientY, x0:e.touches[0].clientX, t0:Date.now(), dy:0, on:false, top:sh.scrollTop<=0};
+  },{passive:true});
+  document.addEventListener("touchmove",function(e){
+    if(!d) return;
+    const dy=e.touches[0].clientY-d.y0, dx=e.touches[0].clientX-d.x0;
+    if(!d.on){
+      if(!d.top || dy<=6 || Math.abs(dx)>Math.abs(dy)){ if(Math.abs(dy)>6||Math.abs(dx)>6){ if(!d.top||dy<0) d=null; } return; }
+      d.on=true; d.sh.style.transition="none";
+    }
+    e.preventDefault();
+    d.dy=Math.max(0,dy);
+    d.sh.style.transform="translateY("+d.dy+"px)";
+  },{passive:false});
+  function end(){
+    if(!d) return; const g=d; d=null; if(!g.on) return;
+    const v=g.dy/Math.max(1,Date.now()-g.t0);           /* px per ms */
+    const sh=g.sh, legacy=!!sh.closest(".overlay");
+    if(g.dy>110 || (v>0.6 && g.dy>40)){
+      if(legacy){
+        sh.style.transition="transform .22s ease-in"; sh.style.transform="translateY(100%)";
+        setTimeout(function(){ closeSheet(sh); sh.style.transition=""; sh.style.transform=""; }, 220);
+      } else {
+        sh.style.transition=""; sh.style.transform=""; closeSheet(sh);   /* slides out from where your finger left it */
+      }
+    } else {
+      sh.style.transition="transform .25s cubic-bezier(.2,.85,.25,1)"; sh.style.transform="";
+      setTimeout(function(){ sh.style.transition=""; }, 260);
+    }
+  }
+  document.addEventListener("touchend",end,{passive:true});
+  document.addEventListener("touchcancel",end,{passive:true});
+})();
+</script>
+<style>
+  /* no scrolling, bouncing, or pull-to-refresh behind an open sheet */
+  html.sheet-lock, html.sheet-lock body { overflow: hidden; overscroll-behavior: none; }
+  .v3-sheet, .overlay .sheet { overscroll-behavior: contain; }
+  .overlay { overscroll-behavior: none; }
+  .v3-grab { width: 44px; height: 5px; margin-bottom: 18px; cursor: grab; }
 </style>
 </body>
 </html>
