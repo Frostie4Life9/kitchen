@@ -382,7 +382,7 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
     <p><strong>Small knife and napkins:</strong> a paring knife with a blade cover for the apples and cheese, and store-brand napkins. Not researched here.</p>
   </div>
 
-  <footer>WinCo every week, sized for about 7 home meals. Costco once a month for what keeps &mdash; this first trip is both. On WinCo-only weeks, set COSTCO_TRIP to false at the top of the file and the Costco section disappears. Prices marked "est." come from older or out-of-area reports; the shelf tag wins.</footer>
+  <footer>WinCo every week, sized for about 7 home meals. Costco once a month for what keeps (chicken, chunks, sausage, cheese, Rao's, protein bars) &mdash; next Costco run is around Oct 24. Out of one of those before then? Add it to Running low in the app and it shows at the top here. Prices marked "est." come from older or out-of-area reports; the shelf tag wins.</footer>
 </main>
 
 <div class="actionbar"><div class="in">
@@ -446,17 +446,17 @@ var DATA = [
          w:"Burgers and meat sauce. Skip if you still have one."}
       ]},
       {name:"Deli counter", items:[
-        {n:"Oven-roasted turkey, fresh-sliced", a:"1 lb \u2014 2 lb this week (1 for the picnic)", t:"researched", p:"check shelf",
+        {n:"Oven-roasted turkey, fresh-sliced", a:"1 lb", t:"researched", p:"check shelf",
          w:"Omelets, wraps, snack boxes, turkey melts. Fresh-sliced beats the watery pressed packages, and premium brands run about $17/lb for barely any difference. Ask for it thin."},
-        {n:"Provolone, sliced", a:"1/2 lb \u2014 1 lb this week (half for the picnic)", t:"store brand", p:"check shelf",
-         w:"Wraps, snack boxes, turkey melts, and the picnic sandwiches."}
+        {n:"Provolone, sliced", a:"1/2 lb", t:"store brand", p:"check shelf",
+         w:"Wraps, snack boxes, and turkey melts."}
       ]},
       {name:"Meat", items:[
-        {n:"85/15 ground beef", a:"2 lb", t:"researched", p:"est. $4.28\u20135.98/lb",
-         w:"Two burger nights, a taco night, and a pasta night. Cheaper here than Costco right now. Freeze whatever you won't cook in 2 days."}
+        {n:"85/15 ground beef", a:"1\u20132 lb \u2014 count what's left in your freezer first", t:"researched", p:"est. $4.28\u20135.98/lb",
+         w:"1 lb covers three meals (cut it in thirds: burger, tacos, pasta). Get 2 lb if you want burgers twice. Freeze whatever you won't cook in 2 days."}
       ]},
       {name:"Dairy + eggs", items:[
-        {n:"Large eggs", a:"30, or skip if you still have a dozen", t:"store brand", p:"est. ~$5.75",
+        {n:"Large eggs", a:"30, or skip if you still have a dozen or more", t:"store brand", p:"est. ~$5.75",
          w:"Daily cheesy scrambles. The 30-pack is cheaper per egg and keeps for weeks."},
         {n:"Milk", a:"1 gallon", t:"store brand", p:"check shelf",
          w:"Cereal mornings and French toast. A glass alongside also adds protein to a light breakfast."},
@@ -478,14 +478,15 @@ var DATA = [
          w:"Tacos. Same fallback: Mission regular."},
         {n:"Hamburger buns", a:"1 pack of 8", t:"store brand", p:"check shelf",
          w:"Brioche if you want burger night to feel special. Freeze half so they don't go stale."},
-        {n:"Bread", a:"1 loaf", t:"store brand", p:"check shelf", w:"Toast with breakfast."}
+        {n:"Sourdough loaf, in-store bakery", a:"1 loaf, only if you're under about 5 slices", t:"store brand", p:"about $3.58",
+         w:"Toast, French toast, and turkey melts. Last week's loaf is good through Oct 8 \u2014 or freeze half and toast from frozen. Already set up in your pantry at 1.6 oz a slice."}
       ]},
       {name:"Pantry", items:[
         {n:"Garlic powder", a:"1 small jar, only if out", t:"store brand", p:"check shelf",
          w:"Cane's-style dip for chicken chunks and quesadillas: 1 tbsp mayo + \u00bd tbsp ketchup + garlic powder + lots of black pepper."},
         {n:"Post Honey Roasted Granola", a:"1 bag, only if out", t:"store brand", p:"check shelf",
          w:"The crunchy granola on your Yoplait mornings. Your standing rule is to always have it on the list."},
-        {n:"Ritz crackers", a:"1 box \u2014 2 this week (1 for the picnic)", t:"store brand", p:"check shelf",
+        {n:"Ritz crackers", a:"1 box, only if out", t:"store brand", p:"check shelf",
          w:"Chicken-and-crackers packs and snack boxes."},
         {n:"Shelf-stable chicken pouches", a:"4", t:"store brand", p:"check shelf",
          w:"The no-fridge lunch protein for Wednesdays and Fridays. StarKist or store brand; any chunk white chicken pouch works. Not researched here."},
@@ -537,10 +538,10 @@ var DATA = [
 ];
 
 /* ===== CHANGE THESE EACH WEEK — nothing else ===== */
-var WEEK_START = "2026-09-24";   // checkmarks are saved per week under this date
-var WEEK_LABEL = "Shop Thu Sep 24";   // shown at the top and in the copied text
-var COSTCO_TRIP = true;   // true on the monthly Costco week; false hides the Costco section
-var PICNIC_WEEK = true;   // one-time picnic items and notes; false hides them
+var WEEK_START = "2026-10-03";   // checkmarks are saved per week under this date
+var WEEK_LABEL = "Shop Sat Oct 3";   // shown at the top and in the copied text
+var COSTCO_TRIP = false;   // true on the monthly Costco week; false hides the Costco section
+var PICNIC_WEEK = false;   // one-time picnic items and notes; false hides them
 /* ====================================================== */
 
 var KEY = "grocery_" + WEEK_START;   // checkmarks: this week only, so a new week starts clean
@@ -716,7 +717,7 @@ function renderFlags(){
   var host = document.getElementById("flagged"), f = loadFlags(), keys = Object.keys(f);
   if(!keys.length){ host.innerHTML = ""; return; }
   host.innerHTML = '<div class="flagged"><h3>Running low, from the app</h3>' +
-    '<p>You flagged these when you opened the last one. Grab them even if they\'re not below.</p><ul>' +
+    '<p>You added these in the app. Grab them even if they\'re not below.</p><ul>' +
     keys.map(function(k){ return "<li>" + esc(f[k].n || k) + "</li>"; }).join("") +
     '</ul><button type="button" id="clearFlags">I bought these \u2014 clear</button></div>';
   document.getElementById("clearFlags").addEventListener("click", function(){
@@ -767,7 +768,7 @@ document.getElementById("resetBtn").addEventListener("click", function(){
 load();
 document.getElementById("weekLabel").textContent = WEEK_LABEL;
 document.title = "Grocery \u2014 " + WEEK_LABEL;
-document.getElementById("lede").innerHTML = "Tap anything you already have, or as it goes in the cart. Tap an aisle chip to remember where it lives \u2014 it carries over to future lists." +
+document.getElementById("lede").innerHTML = "Before you go: check your kitchen and tap off anything you already have. Items marked \u201conly if out\u201d are just a reminder to look. In the store, tap each one as it goes in the cart." +
   (COSTCO_TRIP ? " <b>Costco week:</b> check your freezer space before you go." : "");
 renderSeg();
 render();
