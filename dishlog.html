@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>DishLog</title>
 <style>
-  html,body{margin:0;padding:0;height:100%;background:#1F1A14;font-family:system-ui,sans-serif}
-  body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+  html,body{margin:0;padding:0;height:100%;background:#FAF6F0;font-family:system-ui,sans-serif}
+  body{display:block;min-height:100vh;padding:0}
   /* Stub sendPrompt for standalone usage — it just alerts that this is a local copy */
 </style>
 <script>
@@ -48,11 +48,12 @@ body{font-family:'Manrope',system-ui,sans-serif;color:#1F1A14;background:transpa
   --card:#FFFFFF;--surface:#F2ECE2;
   --r:12px;--rs:8px;
 }
-.frame{width:540px;height:740px;margin:0 auto;background:var(--cream);border-radius:20px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.18);position:relative}
+.frame{width:100%;max-width:560px;height:100vh;height:100dvh;margin:0 auto;background:var(--cream);overflow:hidden;display:flex;flex-direction:column;position:relative}
+@media (min-width:600px){.frame{border-left:1px solid var(--border);border-right:1px solid var(--border)}}
 .scrollable{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--border) transparent}
 .scrollable::-webkit-scrollbar{width:3px}
 .scrollable::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
-.screen{display:none}.screen.active{display:flex;flex-direction:column;height:100%;animation:fadeUp .18s ease both}
+.screen{display:none}.screen.active{display:flex;flex-direction:column;flex:1;min-height:0;animation:fadeUp .18s ease both}
 @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
 button{font-family:'Manrope',system-ui,sans-serif;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
@@ -375,7 +376,7 @@ details.sync-box[open]>summary::before{transform:rotate(90deg)}
 @keyframes sync-spin{to{transform:rotate(360deg)}}
 
 /* ── app switcher (shared with Kitchen / Grocery / Lift / Protocol) ── */
-.applinks{display:flex;gap:6px;padding:10px 16px 2px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.applinks{flex-shrink:0;display:flex;gap:6px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:var(--cream);overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .applinks::-webkit-scrollbar{display:none}
 .logo-title,.rest-hero-name,.rest-name{font-style:italic;letter-spacing:-.01em}
 .applinks a{flex:0 0 auto;display:flex;align-items:center;gap:5px;text-decoration:none;border:1px solid var(--border);background:var(--card);color:var(--ink3);border-radius:999px;padding:6px 12px;font-family:'Manrope',sans-serif;font-size:11.5px;font-weight:500;letter-spacing:.03em;white-space:nowrap}
@@ -385,6 +386,9 @@ details.sync-box[open]>summary::before{transform:rotate(90deg)}
 .api-key-row input{flex:1;min-width:0;border:1px solid var(--border);border-radius:8px;padding:8px 10px;font:400 12px 'Manrope',sans-serif;background:var(--cream);color:var(--ink)}
 .api-key-note{font-size:10.5px;color:var(--ink3);line-height:1.5;margin-bottom:8px}
 </style>
+
+<h2 class="sr-only">DishLog v17 — inline badge editor + conservative auto-sync</h2>
+<div class="frame" id="app">
 <nav class="applinks" aria-label="Apps">
   <a href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h13v4a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M17 12.5h3M8 4.5c0 1.5 1.5 1.5 1.5 3M12 4.5c0 1.5 1.5 1.5 1.5 3"/></svg>Kitchen</a>
   <a href="grocery.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.2l2.2 11h10.4l2-7.5H6.4"/><circle cx="9.5" cy="19.5" r="1.4"/><circle cx="16.5" cy="19.5" r="1.4"/></svg>Grocery</a>
@@ -392,9 +396,6 @@ details.sync-box[open]>summary::before{transform:rotate(90deg)}
   <a class="here" aria-current="page" href="dishlog.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3v5a2 2 0 0 0 4 0V3M7 10v11M17 21V3c-2 0-3.5 2.5-3.5 6s1.5 4 3.5 4"/></svg>DishLog</a>
   <a href="https://frostie4life9.github.io/daily_schedule/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5"/><path d="M8 9l1.5 1.5L12 8M8 15l1.5 1.5L12 14M14.5 9.5H16M14.5 15.5H16"/></svg>Protocol</a>
 </nav>
-
-<h2 class="sr-only">DishLog v17 — inline badge editor + conservative auto-sync</h2>
-<div class="frame" id="app">
 
 <div id="s-home" class="screen active">
   <div class="topbar" style="flex-shrink:0">
