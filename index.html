@@ -59,6 +59,15 @@
   .pill-btn.dark { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
   /* ===== bottom tab bar ===== */
+
+  /* ===== app switcher (shared across Kitchen / Grocery / Lift / Protocol) ===== */
+  .applinks { display:flex; gap:6px; padding:10px 16px 0; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .applinks::-webkit-scrollbar { display:none; }
+  .applinks a { flex:0 0 auto; display:flex; align-items:center; gap:5px; text-decoration:none; border:1px solid var(--rule);
+    background:rgba(255,255,255,.65); color:var(--ink-faded); border-radius:999px; padding:6px 12px;
+    font-family:'Manrope',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:.04em; white-space:nowrap; }
+  .applinks a.here { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .applinks a svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
   .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 80; background: rgba(250,246,240,0.94); backdrop-filter: blur(12px); border-top: 1px solid var(--rule); display: flex; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); }
   .tabbar button { flex: 1; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--ink-faded); font-family: 'Manrope', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 0; }
   .tabbar button .ico { font-size: 19px; line-height: 1; filter: grayscale(0.4) opacity(0.65); }
@@ -824,6 +833,16 @@
 </head>
 <body>
 
+<!-- ============ APP SWITCHER ============ -->
+<nav class="applinks" aria-label="Apps">
+  <a class="here" aria-current="page" href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h13v4a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M17 12.5h3M8 4.5c0 1.5 1.5 1.5 1.5 3M12 4.5c0 1.5 1.5 1.5 1.5 3"/></svg>Kitchen</a>
+  <a href="grocery.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.2l2.2 11h10.4l2-7.5H6.4"/><circle cx="9.5" cy="19.5" r="1.4"/><circle cx="16.5" cy="19.5" r="1.4"/></svg>Grocery</a>
+  <a href="workout.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7v10M17.5 7v10M4 9.5v5M20 9.5v5M6.5 12h11"/></svg>Lift</a>
+  <a href="dishlog.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3v5a2 2 0 0 0 4 0V3M7 10v11M17 21V3c-2 0-3.5 2.5-3.5 6s1.5 4 3.5 4"/></svg>DishLog</a>
+  <a href="https://frostie4life9.github.io/daily_schedule/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5"/><path d="M8 9l1.5 1.5L12 8M8 15l1.5 1.5L12 14M14.5 9.5H16M14.5 15.5H16"/></svg>Protocol</a>
+</nav>
+
+
 <!-- v3.7: sheets live at page level so they can open from any tab -->
   <div class="v3-back" id="v3-back" onclick="closeRotSheet();closeMealLog();closeLinker();closePantryItem()"></div>
   <div class="v3-back v3-back2" id="v3-back2" onclick="closeLinker()"></div>
@@ -1027,7 +1046,8 @@
       <button class="v3-p-act primary" type="button" onclick="pendingLinkKey=null;openScan()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3"/><path d="M8 8v8M11 8v8M14 8v8M17 8v8"/></svg><span>Scan a label</span></button>
       <button class="v3-p-act" type="button" onclick="pendingLinkKey=null;openAdd()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg><span>Type one in</span></button>
     </div>
-    <input type="search" id="search" class="v3-search" placeholder="Search your labels" autocomplete="off" oninput="render()">
+    <input type="search" id="search" class="v3-search" placeholder="Search your labels or brands" autocomplete="off" oninput="render()">
+    <div class="v3-seg v3-seg-sm" id="p-group" role="tablist" aria-label="Group pantry"></div>
     <div id="list"></div>
     <button class="v3-ghost" type="button" onclick="sendToClaude()">Copy my pantry for Claude</button>
     <!-- Older pantry controls. Still read by legacy code, never shown. -->
@@ -1443,6 +1463,8 @@ function renderWeekLists(host){
       <input type="text" id="mBarcode" inputmode="numeric" placeholder="e.g. 894700010038">
       <button class="btn ghost" style="flex:0 0 auto" onclick="barcodeLookup()">Look up</button>
     </div>
+    <div id="brandRow"><label>Brand <span style="text-transform:none;font-weight:400">(optional)</span></label>
+    <input type="text" id="mBrand" placeholder="e.g. Kirkland Signature" autocomplete="off"></div>
     <label>Product name</label>
     <div class="row">
       <input type="text" id="mName" placeholder="e.g. Chobani Plain Nonfat">
@@ -3277,7 +3299,8 @@ function closeScan(){ stopScanner(); $("scanOverlay").classList.remove("show"); 
 
 /* ----- food lookups (Open Food Facts + optional USDA) ----- */
 function fill(d){
-  if(d.name && !$("mName").value) $("mName").value=d.name;
+  if(d.brand && !$("mBrand").value) $("mBrand").value=d.brand;
+  if(d.name && !$("mName").value){ const b=($("mBrand").value||"").trim(); $("mName").value=b?stripBrand(d.name,b):d.name; }
   if(d.serving) $("mServing").value=d.serving;
   if(d.cal!=null) $("mCal").value=Math.round(d.cal);
   if(d.pro!=null) $("mPro").value=Math.round(d.pro*10)/10;
@@ -3289,7 +3312,8 @@ function showLookup(html){ const r=$("lookupResult"); r.innerHTML=html; r.classL
 function computeOFF(p){
   const n=p.nutriments||{}; const serv=p.serving_quantity||100;
   const per=(k)=> n[k+"_serving"]!=null ? n[k+"_serving"] : (n[k+"_100g"]!=null ? n[k+"_100g"]*serv/100 : null);
-  return { name:p.product_name||p.generic_name||"", serving:p.serving_size||(serv?serv+"g":""),
+  const brand=((p.brands||"").split(",")[0]||"").trim();
+  return { brand:brand, name:p.product_name||p.generic_name||"", serving:p.serving_size||(serv?serv+"g":""),
     cal: per("energy-kcal"), pro: per("proteins"), carb: per("carbohydrates"), fat: per("fat") };
 }
 function barcodeLookup(){
@@ -3328,10 +3352,11 @@ let addMode='ing';
 function applyAddMode(){
   $("restRow").style.display = addMode==='eat' ? 'block':'none';
   $("catRow").style.display  = addMode==='eat' ? 'none':'block';
+  $("brandRow").style.display = addMode==='eat' ? 'none':'block';
 }
 function openAdd(){
   editingId=null; addMode='ing'; $("addTitle").textContent="Add an ingredient";
-  ["mBarcode","mName","mServing","mCal","mPro","mCarb","mFat","mNote","mRest"].forEach(id=>$(id).value="");
+  ["mBarcode","mBrand","mName","mServing","mCal","mPro","mCarb","mFat","mNote","mRest"].forEach(id=>$(id).value="");
   $("mCat").value=""; applyAddMode(); $("lookupResult").classList.remove("show"); $("sanityBox").classList.remove("show");
   const ln=$("addLinkNote");
   if(ln){ const k=pendingLinkKey&&INGR[pendingLinkKey]?pendingLinkKey:null; ln.hidden=!k;
@@ -3341,7 +3366,7 @@ function openAdd(){
 }
 function openAddEatingOut(){
   editingId=null; addMode='eat'; $("addTitle").textContent="Add a restaurant meal";
-  ["mBarcode","mName","mServing","mCal","mPro","mCarb","mFat","mNote","mRest"].forEach(id=>$(id).value="");
+  ["mBarcode","mBrand","mName","mServing","mCal","mPro","mCarb","mFat","mNote","mRest"].forEach(id=>$(id).value="");
   $("mCat").value="eatingout"; applyAddMode(); $("lookupResult").classList.remove("show"); $("sanityBox").classList.remove("show");
   pendingLinkKey=null; if($("addLinkNote")) $("addLinkNote").hidden=true; $("addBtnSave").textContent="Save meal";
   $("addOverlay").classList.add("show");
@@ -3357,7 +3382,7 @@ function openEdit(id){
   const it=pantry.find(i=>i.id===id); if(!it) return;
   editingId=id; addMode = it.cat==='eatingout' ? 'eat' : 'ing';
   $("addTitle").textContent = addMode==='eat' ? "Edit restaurant meal" : "Edit ingredient";
-  $("mBarcode").value=it.barcode||""; $("mName").value=it.name||""; $("mServing").value=it.serving||"";
+  $("mBarcode").value=it.barcode||""; $("mName").value=it.name||""; $("mBrand").value=it.brand||""; $("mServing").value=it.serving||"";
   $("mCal").value=it.cal||""; $("mPro").value=it.pro||""; $("mCarb").value=it.carb??""; $("mFat").value=it.fat??"";
   $("mNote").value=it.note||""; $("mCat").value=it.cat||""; $("mRest").value=it.restaurant||""; applyAddMode();
   $("lookupResult").classList.remove("show"); checkSanity();
@@ -3367,10 +3392,13 @@ function openEdit(id){
 function closeAdd(){ $("addOverlay").classList.remove("show"); pendingLinkKey=null; }
 function num(id){ const v=parseFloat($(id).value); return isNaN(v)?null:v; }
 function saveItem(){
-  const name=($("mName").value||"").trim(); if(!name){ showToast("Give it a name first"); return; }
+  let name=($("mName").value||"").trim(); if(!name){ showToast("Give it a name first"); return; }
+  let brand=(addMode==='eat')?"":($("mBrand").value||"").trim();
+  if(brand) name=stripBrand(name,brand);
+  else if(addMode!=='eat'){ const sp=splitBrand(name); if(sp){ brand=sp.brand; name=sp.name; } }
   const restaurant=($("mRest").value||"").trim();
   const cat = (addMode==='eat') ? "eatingout" : ($("mCat").value||categorize(name));
-  const data={ name, serving:($("mServing").value||"").trim(), cal:num("mCal")||0, pro:num("mPro")||0,
+  const data={ name, brand, serving:($("mServing").value||"").trim(), cal:num("mCal")||0, pro:num("mPro")||0,
     carb:num("mCarb"), fat:num("mFat"), cat, restaurant, note:($("mNote").value||"").trim(), barcode:($("mBarcode").value||"").trim() };
   let newId=null;
   if(editingId){ const it=pantry.find(i=>i.id===editingId); Object.assign(it,data); }
@@ -3411,7 +3439,7 @@ function saveKey(){ prefs.usdaKey=($("usdaKey").value||"").trim(); savePrefs(); 
 
 /* ----- export / copy ----- */
 function buildExport(items,title){
-  const lines=items.map(i=>`• ${i.name}${i.serving?` (${i.serving})`:""} — ${i.cal||0} cal, ${i.pro||0}g protein${i.carb!=null?`, ${i.carb}g C`:""}${i.fat!=null?`, ${i.fat}g F`:""}${i.note?` [${i.note}]`:""}`);
+  const lines=items.map(i=>`• ${fullName(i)}${i.serving?` (${i.serving})`:""} — ${i.cal||0} cal, ${i.pro||0}g protein${i.carb!=null?`, ${i.carb}g C`:""}${i.fat!=null?`, ${i.fat}g F`:""}${i.note?` [${i.note}]`:""}`);
   let tc=0,tp=0; items.forEach(i=>{ tc+=(i.cal||0); tp+=(i.pro||0); });
   return `${title}\n\n${lines.join("\n")}\n\nTotal: ${tc} cal · ${Math.round(tp)}g protein across ${items.length} item(s).`;
 }
@@ -5151,7 +5179,7 @@ function renderRotSheet(){
       return '<div class="v3-ing"><button type="button" class="v3-ing-main" onclick="openLinker(\''+key+'\')">'+
         '<b>'+esc(g.n)+(pt[2]?' <span style="font-weight:400;color:var(--ink-faded)">(optional)</span>':'')+'</b>'+
         '<small>'+esc(ingAmtText(key,pt[1]))+'</small>'+
-        (L?'<small class="lab">\u2713 '+esc(L.item.name)+'</small>':'<small>Estimate \u00b7 tap to use your label</small>')+
+        (L?'<small class="lab">\u2713 '+esc(fullName(L.item))+'</small>':'<small>Estimate \u00b7 tap to use your label</small>')+
         '</button><button type="button" class="v3-ing-low" aria-pressed="'+on+'" onclick="toggleRunLow(\''+key+'\');renderRotSheet();renderRotation()">'+(on?'Running low':'Low?')+'</button></div>';
     }).join('');
 }
@@ -5290,11 +5318,11 @@ function renderLinkList(){
   const q=($("v3-link-q").value||"").trim().toLowerCase();
   const hints=(INGR[linkKey].q||"").split(" ");
   const score=function(it){ const n=(it.name||"").toLowerCase(); return hints.some(function(h){ return h && n.indexOf(h)>=0; })?1:0; };
-  let list=items.filter(function(it){ return !q || (it.name||"").toLowerCase().indexOf(q)>=0; });
+  let list=items.filter(function(it){ return !q || fullName(it).toLowerCase().indexOf(q)>=0; });
   list.sort(function(a,b){ return score(b)-score(a) || (a.name||"").localeCompare(b.name||""); });
   host.innerHTML=list.slice(0,30).map(function(it){
     return '<button type="button" class="v3-pick" aria-pressed="'+(linkPick===it.id)+'" onclick="linkPick=\''+it.id+'\';renderLinkList();renderLinkPer()">'+
-      '<b>'+esc(it.name)+'</b><small>'+(it.cal||0)+' cal \u00b7 '+(it.pro||0)+' g protein per serving'+(it.serving?' ('+esc(it.serving)+')':'')+'</small></button>';
+      (it.brand?'<small class="v3-pick-brand">'+esc(it.brand)+'</small>':'')+'<b>'+esc(it.name)+'</b><small>'+(it.cal||0)+' cal \u00b7 '+(it.pro||0)+' g protein per serving'+(it.serving?' ('+esc(it.serving)+')':'')+'</small></button>';
   }).join('') || '<p class="v3-empty">Nothing matches that search.</p>';
 }
 function renderLinkPer(v){
@@ -5381,29 +5409,79 @@ function pItemHTML(it,i){
     } else use='<span class="v3-pi-use none">Not in a meal yet · tap to assign</span>';
   }
   return '<button type="button" class="v3-pi" style="--i:'+(i||0)+'" onclick="openPantryItem(\''+it.id+'\')">'+
-    '<span class="v3-pi-main"><b>'+esc(it.name)+'</b><small>'+esc(it.serving||'1 serving')+'</small>'+use+'</span>'+
+    '<span class="v3-pi-main">'+(it.brand&&!eo&&!pBrandHidden?'<span class="v3-pi-brand">'+esc(it.brand)+'</span>':'')+'<b>'+esc(it.name)+'</b><small>'+esc(it.serving||'1 serving')+'</small>'+use+'</span>'+
     '<span class="v3-pi-nums"><b>'+(Math.round(it.cal||0))+'</b> cal<br>'+(Math.round((it.pro||0)*10)/10)+' g protein</span></button>';
 }
 function renderPantry(){
   if(!$("list")) return;
   renderPantryCover();
   const q=(($("search")||{}).value||"").trim().toLowerCase();
-  let items=ingredientItems().filter(function(i){ return !q || (i.name||"").toLowerCase().indexOf(q)>=0; });
+  let items=ingredientItems().filter(function(i){ return !q || fullName(i).toLowerCase().indexOf(q)>=0; });
   const host=$("list");
+  const g=prefs.pgroup||"meals";
+  pBrandHidden=(g==="brand");
+  const gb=$("p-group"); if(gb) gb.innerHTML=[["meals","By meal"],["brand","By brand"],["az","A\u2013Z"]].map(function(x){
+    return '<button type="button" role="tab" aria-selected="'+(g===x[0])+'" onclick="setPantryGroup(\''+x[0]+'\')">'+x[1]+'</button>'; }).join('');
   if(!ingredientItems().length){
     host.innerHTML='<div class="v3-p-empty"><b>Nothing scanned yet</b><p>Start with the chips above — eggs, cheddar, tortillas. Scan the package and it links itself, so every meal that uses it switches from the estimate to your label.</p></div>';
     return;
   }
   if(!items.length){ host.innerHTML='<p class="v3-empty">Nothing matches that search.</p>'; return; }
+  const byName=function(a,b){ return (a.name||"").localeCompare(b.name||"") || (a.brand||"").localeCompare(b.brand||""); };
+  const grp=function(title,list,n0){ return '<div class="v3-p-group"><div class="v3-p-gh">'+esc(title)+'</div><div class="v3-p-list">'+list.map(function(it,i){ return pItemHTML(it,n0+i); }).join('')+'</div></div>'; };
+  if(g==="az"){ host.innerHTML=grp(items.length+' label'+(items.length===1?'':'s'), items.slice().sort(byName), 0); return; }
+  if(g==="brand"){
+    const by={}; items.forEach(function(it){ const b=it.brand||""; (by[b]=by[b]||[]).push(it); });
+    const names=Object.keys(by).sort(function(a,b){ return (a===""?1:0)-(b===""?1:0) || a.localeCompare(b); });
+    let n0=0; host.innerHTML=names.map(function(b){ const h=grp(b||"No brand", by[b].sort(byName), n0); n0+=by[b].length; return h; }).join('');
+    return;
+  }
   const inUse=[], other=[];
   items.forEach(function(it){ (linksFor(it.id).length?inUse:other).push(it); });
-  const byName=function(a,b){ return (a.name||"").localeCompare(b.name||""); };
   inUse.sort(byName); other.sort(byName);
   let n=0, html='';
   if(inUse.length) html+='<div class="v3-p-group"><div class="v3-p-gh">In your meals</div><div class="v3-p-list">'+inUse.map(function(it){ return pItemHTML(it,n++); }).join('')+'</div></div>';
   if(other.length) html+='<div class="v3-p-group"><div class="v3-p-gh">'+(inUse.length?'Everything else':'Your labels')+'</div><div class="v3-p-list">'+other.map(function(it){ return pItemHTML(it,n++); }).join('')+'</div></div>';
   host.innerHTML=html;
 }
+
+/* ---- v3.12 brands: kept apart from the food's name ---- */
+const KNOWN_BRANDS=["Kirkland Signature","Kirkland","Great Value","WinCo Foods","WinCo","Mission","Tillamook","Jimmy Dean","Hillshire Farm","Hillshire",
+  "Yoplait","Post","Jif","Skippy","Rao's","Sweet Baby Ray's","Healthy Choice","Progresso","Prego","Kroger","Barebells","Quest","StarKist","Ritz","Nabisco",
+  "Kodiak","Kraft","Oscar Mayer","Sargento","Dave's Killer Bread","Nature's Own","Sara Lee","Simple Truth","Just Bare","Tyson","Fage","Chobani","Oikos",
+  "Dannon","Fairlife","Premier Protein","Pure Protein","Nature Valley","Clif","Old El Paso","Ortega","Hidden Valley","Heinz","Hellmann's","Best Foods",
+  "Kerrygold","Land O Lakes","Land O'Lakes","Horizon","Lucerne","Signature Select","Private Selection","Smart Way","Bush's","Del Monte","Dole",
+  "Bob Evans","Ore-Ida","Lay's","Tostitos","Goldfish","Pepperidge Farm","Thomas'","Bimbo","La Banderita","Guerrero","General Mills","Kellogg's",
+  "Quaker","Malt-O-Meal","Annie's","Barilla","Ronzoni","De Cecco","Garofalo","Bertolli","Classico","Newman's Own","Ben's Original","Sabra",
+  "Boar's Head","Land O'Frost","Hormel","Foster Farms","Perdue","Applegate","Butterball","Jennie-O","Johnsonville","Aidells","Oroweat","Mission Foods",
+  "Cascadian Farm","Bear Naked","Simple Mills","Sun-Maid","Cuties","Halos","Wonderful","Grillo's","Siete","Kevin's","Real Good","Daisy","Philadelphia"];
+function splitBrand(name){
+  const n=(name||"").trim(), low=n.toLowerCase();
+  const hit=KNOWN_BRANDS.slice().sort(function(a,b){ return b.length-a.length; })
+    .find(function(b){ return low.indexOf(b.toLowerCase()+" ")===0; });
+  if(!hit) return null;
+  const rest=n.slice(hit.length).trim(); if(!rest) return null;
+  return {brand:hit, name:rest.charAt(0).toUpperCase()+rest.slice(1)};
+}
+function stripBrand(name,brand){
+  const n=(name||"").trim(), b=(brand||"").trim();
+  if(b && n.toLowerCase().indexOf(b.toLowerCase()+" ")===0){ const r=n.slice(b.length).trim(); if(r) return r.charAt(0).toUpperCase()+r.slice(1); }
+  return n;
+}
+function fullName(it){ return (it.brand?it.brand+" ":"")+(it.name||""); }
+/* one-time: pull known brands out of names saved before brands had a field */
+(function migrateBrands(){
+  try{ if(localStorage.getItem("pantryBrandSplit_v1")) return; }catch(e){ return; }
+  let changed=false;
+  try{
+    const raw=localStorage.getItem("pantryItems_v2"); const arr=raw?JSON.parse(raw):[];
+    if(Array.isArray(arr)) arr.forEach(function(it){ if(it && it.cat!=="eatingout" && !it.brand){ const sp=splitBrand(it.name); if(sp){ it.brand=sp.brand; it.name=sp.name; changed=true; } } });
+    if(changed) localStorage.setItem("pantryItems_v2",JSON.stringify(arr));
+    localStorage.setItem("pantryBrandSplit_v1","1");
+  }catch(e){}
+})();
+let pBrandHidden=false;
+function setPantryGroup(g){ prefs.pgroup=g; savePrefs(); renderPantry(); }
 
 /* ---- one pantry item ---- */
 function openPantryItem(id){
@@ -5421,7 +5499,7 @@ function renderPantryItem(){
   const it=pantry.find(function(i){ return i.id===pitemId; }); if(!it){ closePantryItem(); return; }
   const eo=it.cat==="eatingout";
   $("v3-pitem-title").textContent=it.name;
-  $("v3-pitem-sub").textContent=[eo?(it.restaurant||''):'', 'Per '+(it.serving||'serving'), it.scanned?'Scanned':''].filter(Boolean).join(' · ');
+  $("v3-pitem-sub").textContent=[eo?(it.restaurant||''):(it.brand||''), 'Per '+(it.serving||'serving'), it.scanned?'Scanned':''].filter(Boolean).join(' · ');
   const f=function(v){ return v==null?'–':(Math.round(v*10)/10); };
   $("v3-pitem-nums").innerHTML='<div><b>'+f(it.cal)+'</b>calories</div><div><b>'+f(it.pro)+' g</b>protein</div><div><b>'+f(it.carb)+' g</b>carbs</div><div><b>'+f(it.fat)+' g</b>fat</div>';
   const use=$("v3-pitem-use");
@@ -5431,7 +5509,7 @@ function renderPantryItem(){
     const chip=function(k){
       const on=mine.indexOf(k)>=0, other=!on && links[k] && linkedItem(k);
       return '<button type="button" class="v3-chip" aria-pressed="'+on+'" onclick="togglePItemLink(\''+k+'\')">'+esc(INGR[k].n)+
-        (other?'<small>replaces '+esc(shortName(other.item.name))+'</small>':(u[k]?'<small>'+u[k].n+'</small>':''))+'</button>';
+        (other?'<small>replaces '+esc(shortName(fullName(other.item)))+'</small>':(u[k]?'<small>'+u[k].n+'</small>':''))+'</button>';
     };
     const rest=Object.keys(INGR).filter(function(k){ return !NO_LABEL[k] && sug.indexOf(k)<0; }).sort(function(a,b){ return INGR[a].n.localeCompare(INGR[b].n); });
     let h='<div class="v3-pitem-h">What is this in your meals?</div>'+
@@ -7143,7 +7221,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v3.11.0 · 2026-10-01";   // bump this each time you upload a new index.html
+const APP_VERSION="v3.13.0 · 2026-10-05";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
@@ -7184,6 +7262,8 @@ const APP_VERSION="v3.11.0 · 2026-10-01";   // bump this each time you upload a
   .v3-p-list .v3-pi:first-child { border-top: 0; }
   .v3-pi-main { flex: 1; min-width: 0; }
   .v3-pi-main b { display: block; font-size: 14.5px; font-weight: 700; line-height: 1.3; }
+  .v3-pi-brand, .v3-pick-brand { display: block; font-size: 11.5px; font-weight: 700; color: var(--ink-faded); letter-spacing: .01em; margin-bottom: 1px; }
+  .v3-seg-sm { margin: -6px 0 16px; } .v3-seg-sm button { font-size: 12.5px; padding: 6px 4px; }
   .v3-pi-main small { display: block; font-size: 12px; color: var(--ink-faded); margin-top: 1px; }
   .v3-pi-use { display: inline-block; font-size: 11.5px; font-weight: 800; color: var(--green); background: var(--green-soft); border-radius: 99px; padding: 2px 8px; margin-top: 6px; }
   .v3-pi-use.none { color: var(--ink-faded); background: var(--paper); font-weight: 700; }
