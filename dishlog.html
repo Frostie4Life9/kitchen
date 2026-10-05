@@ -515,9 +515,63 @@ body{-webkit-font-smoothing:antialiased}
   .sheet-head{padding-top:18px!important}
   #s-add-rest .page-inner,#s-edit-rest .page-inner{max-width:720px;width:100%;margin:0 auto}
 }
+
+/* ── v18.1 journal features ── */
+.dl-search{margin:14px 16px 0;display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:0 13px;cursor:text}
+.dl-search:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-light)}
+.dl-search svg{width:17px;height:17px;stroke:var(--ink3);fill:none;stroke-width:2;stroke-linecap:round;flex:0 0 auto}
+.dl-search input{flex:1;min-width:0;border:0;background:transparent;font:500 15px 'Manrope',sans-serif;color:var(--ink);padding:12px 0;outline:none;-webkit-appearance:none}
+.sr-label{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);padding:8px 4px 0}
+.sr-row{width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:11px 13px;font:inherit;color:var(--ink);cursor:pointer}
+.sr-row:hover{border-color:var(--border2)}
+.sr-sw{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex:0 0 auto}
+.sr-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.sr-name{font-weight:700;font-size:14.5px}
+.sr-sub{font-size:12px;color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sr-score{font-family:'Fraunces',serif;font-weight:600;font-size:17px;border:1.5px solid;border-radius:10px;padding:3px 9px;flex:0 0 auto}
+.sr-unrated{font-size:11.5px;color:var(--ink3);flex:0 0 auto}
+.sr-more{font-size:12px;color:var(--ink3);text-align:center;padding:6px}
+.menu-row.dl-flash{border-color:var(--accent)!important;box-shadow:0 0 0 3px var(--accent-light)!important}
+#hist-area{display:none;padding:16px 12px 2px}
+.hist-head{display:flex;justify-content:space-between;align-items:baseline;padding:0 6px 10px}
+.hist-head span:first-child{font-family:'Fraunces',serif;font-style:italic;font-size:23px;color:var(--ink)}
+.hist-n{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)}
+.hist-rows{display:flex;flex-direction:column;gap:8px}
+.hist-row{width:100%;display:flex;align-items:center;gap:12px;text-align:left;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;cursor:pointer;font:inherit;color:var(--ink)}
+.hist-row:hover{border-color:var(--border2);box-shadow:var(--shadow)}
+.hist-score{flex:0 0 auto;min-width:50px;text-align:center;font-family:'Fraunces',serif;font-size:21px;font-weight:600;border:1.5px solid;border-radius:12px;padding:6px 4px}
+.hist-main{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.hist-name{font-weight:700;font-size:15px}
+.hist-combo{font-size:12.5px;color:var(--ink2);line-height:1.4}
+.hist-combo.dim{color:var(--ink3);font-style:italic}
+.hist-note{font-size:12px;color:var(--ink3);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hist-side{flex:0 0 auto;display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.hist-v{font-size:10.5px;font-weight:700;letter-spacing:.03em;padding:3px 8px;border-radius:999px;white-space:nowrap}
+.hv-again{background:var(--green-light);color:var(--green)}
+.hv-avoid{background:#FBE4E1;color:#A3321F}
+.hist-date{font-size:11px;color:var(--ink3)}
+.dl-same-btn{width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:3px;text-align:left;margin:14px 0 2px;padding:11px 14px;border-radius:14px;border:1.5px solid var(--accent-line);background:var(--accent-light);color:var(--accent);font:700 13.5px 'Manrope',sans-serif;cursor:pointer}
+.dl-same-sub{font-weight:500;font-size:12px;color:var(--ink2)}
+.dl-same-btn.done{border-color:var(--green);background:var(--green-light);color:var(--green)}
+.qa-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:16px;margin-bottom:14px;display:flex;flex-direction:column;gap:9px}
+.qa-title{font-family:'Fraunces',serif;font-style:italic;font-size:23px;color:var(--ink)}
+.qa-desc,.qa-hint{font-size:12.5px;color:var(--ink3);line-height:1.5}
+.qa-hint{font-size:11.5px}
+.qa-box .field-input{width:100%;padding:11px 12px!important;font-size:14.5px!important}
+.qa-box .btn-row{display:flex;gap:8px;margin-top:2px}
+.qa-box .btn-row button{flex:1;padding:12px 10px}
+.qa-or{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);text-align:center;margin:8px 0 14px}
+.dl-backup{display:flex;align-items:center;justify-content:center;gap:6px;margin:-8px 16px 26px;font-size:12px;color:var(--ink3)}
+.dl-backup button{background:none;border:0;color:var(--ink2);font:700 12px 'Manrope',sans-serif;cursor:pointer;padding:6px 2px;text-decoration:underline;text-underline-offset:3px}
+.dl-backup-when.warn{color:#A3321F;font-weight:700}
+@media (prefers-color-scheme:dark){.hv-avoid{background:#3A1E1A;color:#F0A296}.dl-backup-when.warn{color:#F0A296}}
+@media (min-width:900px){
+  #hist-area{padding:18px 16px 4px}
+  .hist-rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}
+}
 </style>
 
-<h2 class="sr-only">DishLog v18 — responsive two-pane layout, dark mode, Kitchen v3 styling</h2>
+<h2 class="sr-only">DishLog v18.1 — history, search, same-as-last-time, quick add, backup</h2>
 <div class="frame" id="app">
 <nav class="applinks" aria-label="Apps">
   <a href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h13v4a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M17 12.5h3M8 4.5c0 1.5 1.5 1.5 1.5 3M12 4.5c0 1.5 1.5 1.5 1.5 3"/></svg>Kitchen</a>
@@ -534,6 +588,7 @@ body{-webkit-font-smoothing:antialiased}
       <div><div class="logo-title">DishLog</div><div class="logo-sub">Your personal food memory</div></div>
     </div>
   </div>
+  <label class="dl-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg><input id="dl-q" type="search" placeholder="Search dishes and restaurants" autocomplete="off" oninput="dlSearch()"></label>
   <div class="sort-row">
     <button class="sc active" onclick="setSort('recent',this)">Recent</button>
     <button class="sc" onclick="setSort('rating',this)">Top rated</button>
@@ -545,6 +600,7 @@ body{-webkit-font-smoothing:antialiased}
       <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       Add a restaurant
     </button>
+    <div class="dl-backup"><button onclick="dlBackup()">Back up</button><span>/</span><button onclick="dlRestore()">Restore</button><span class="dl-backup-when" id="dl-backup-when"></span></div>
   </div>
 </div>
 
@@ -555,6 +611,17 @@ body{-webkit-font-smoothing:antialiased}
     <div style="width:60px"></div>
   </div>
   <div class="page-inner">
+    <div class="qa-box">
+      <div class="qa-title">Quick add</div>
+      <div class="qa-desc">At the counter now? Add the place with just its name, then log the dish you're eating. You can fill in the menu later.</div>
+      <input class="field-input" id="qa-name" type="text" placeholder="Restaurant name" autocomplete="off" onkeydown="if(event.key==='Enter')dlQuickAdd(false)">
+      <input class="field-input" id="qa-cuisine" type="text" placeholder="Type of food (optional)" autocomplete="off">
+      <input class="field-input" id="qa-loc" type="text" placeholder="Location (optional) — e.g. Provo, UT" autocomplete="off">
+      <div class="btn-row"><button class="bp" onclick="dlQuickAdd(false)">Add &amp; log a dish</button><button class="bs" id="qa-auto" onclick="dlQuickAdd(true)">Add + import menu</button></div>
+      <div class="qa-hint">“Import menu” uses your API key and web search — a one-time cost of a few cents to tens of cents per restaurant.</div>
+      <div class="sync-status" id="qa-status"></div>
+    </div>
+    <div class="qa-or">or build the full menu for free, manually</div>
     <div class="info-box"><strong>Step 1</strong> — Type a name and tap <strong>Ask Claude ↗</strong>.<br><strong>Step 2</strong> — Paste the JSON, then tap <strong>Import</strong>.</div>
     <div class="search-row"><input id="inp-rest-name" type="text" placeholder="e.g. Chili's, Olive Garden..." onkeydown="if(event.key==='Enter')askClaude()" /><button class="bp" onclick="askClaude()">Ask Claude ↗</button></div>
     <div class="field-label">Paste Claude's JSON here</div>
@@ -643,6 +710,7 @@ body{-webkit-font-smoothing:antialiased}
     </div>
   </div>
   <div class="scrollable" id="rest-scroll">
+    <div id="hist-area"></div>
     <div class="sug-area" id="sug-area"></div>
     <div id="menu-list"></div>
     <div class="add-item-row"><button class="bai" onclick="openSheet('sheet-add-item')">+ Add item</button></div>
@@ -665,6 +733,7 @@ body{-webkit-font-smoothing:antialiased}
       </div>
       <input type="range" class="rslider" id="rate-slider" min="0" max="10" step="0.5" value="0" oninput="onSlide(this.value)" />
       <div class="sticks"><span class="stk">0</span><span class="stk">2</span><span class="stk">4</span><span class="stk">6</span><span class="stk">8</span><span class="stk">10</span></div>
+      <div id="dl-same"></div>
       <div id="choices-wrap" style="display:none">
         <div class="field-label">Required choices</div>
         <div class="choices-section" id="choices-section"></div>
@@ -3852,6 +3921,160 @@ seedAll();
 // Backfill ratingKey on legacy ratings now that items exist with known names.
 migrateRatingsToRatingKey();
 dedup();purgeGhosts();processExpiry();save();renderHome();
+
+/* ════════════ v18.1 — journal features: history, search, same-as-last, quick add, backup ════════════ */
+function dlEsc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function dlComboText(r){
+  let parts=[],ch=r.choices||{};
+  Object.keys(ch).forEach(k=>{let v=ch[k];(Array.isArray(v)?v:[v]).forEach(x=>{if(x&&!/\(default\)/i.test(x))parts.push(String(x).replace(/^[^:]{1,24}:\s*/,''));});});
+  (r.mods||[]).forEach(m=>parts.push(String(m).replace(/^Add:\s*/i,'+ ')));
+  return parts.join(' · ');
+}
+function dlVerdict(v){return v>=7.5?['again','Order again']:(v<5?['avoid',"Don't reorder"]:null);}
+
+/* 1 — history at the top of each restaurant */
+function dlRenderHistory(rid){
+  let box=document.getElementById('hist-area');if(!box)return;
+  let rs=db.ratings.filter(r=>r.restId===rid&&r.rating!==null&&r.rating!==undefined&&db.items.some(i=>i.id===r.itemId));
+  if(!rs.length){box.innerHTML='';box.style.display='none';return;}
+  rs.sort((a,b)=>(b.rating-a.rating)||(b.ratedAt-a.ratedAt));
+  box.style.display='block';
+  box.innerHTML='<div class="hist-head"><span>Your history</span><span class="hist-n">'+rs.length+' rated</span></div><div class="hist-rows">'+rs.map(r=>{
+    let it=db.items.find(i=>i.id===r.itemId),v=dlVerdict(r.rating),combo=dlComboText(r),c=ratingColor(r.rating);
+    return '<button class="hist-row" onclick="openRateExisting(\''+r.itemId+'\',\''+r.id+'\')">'
+      +'<span class="hist-score" style="color:'+c+';border-color:'+c+'">'+fmtScore(r.rating)+'</span>'
+      +'<span class="hist-main"><span class="hist-name">'+dlEsc(it.name)+'</span>'
+      +(combo?'<span class="hist-combo">'+dlEsc(combo)+'</span>':'<span class="hist-combo dim">As it comes</span>')
+      +(r.notes?'<span class="hist-note">“'+dlEsc(r.notes)+'”</span>':'')+'</span>'
+      +'<span class="hist-side">'+(v?'<span class="hist-v hv-'+v[0]+'">'+v[1]+'</span>':'')+'<span class="hist-date">'+fmtDate(r.ratedAt)+'</span></span></button>';
+  }).join('')+'</div>';
+}
+const _dlRenderMenu=renderMenu;
+renderMenu=function(rid){let r=_dlRenderMenu.apply(this,arguments);dlRenderHistory(rid);if(DL_WIDE.matches)renderHome();return r;};
+
+/* 2 — search across every restaurant and dish */
+function dlBestRating(itemId){let rs=db.ratings.filter(r=>r.itemId===itemId&&r.rating!=null);return rs.length?rs.sort((a,b)=>b.rating-a.rating)[0]:null;}
+function dlSearch(){
+  let inp=document.getElementById('dl-q');let q=(inp&&inp.value||'').trim().toLowerCase();
+  let sr=document.querySelector('#s-home .sort-row');
+  if(!q){if(sr)sr.style.display='';renderHome();return;}
+  if(sr)sr.style.display='none';
+  let list=document.getElementById('rest-list');
+  let rests=db.restaurants.filter(r=>(r.name+' '+(r.cuisine||'')).toLowerCase().includes(q));
+  let items=db.items.filter(i=>(i.name||'').toLowerCase().includes(q))
+    .map(i=>({i,b:dlBestRating(i.id),r:db.restaurants.find(x=>x.id===i.restId)})).filter(x=>x.r);
+  items.sort((a,b)=>((b.b?b.b.rating:-1)-(a.b?a.b.rating:-1))||a.i.name.localeCompare(b.i.name));
+  let more=items.length>60;items=items.slice(0,60);
+  let h='';
+  if(rests.length)h+='<div class="sr-label">Restaurants</div>'+rests.map(r=>{let sw=getRS(r);return '<button class="sr-row" onclick="openRest(\''+r.id+'\')"><span class="sr-sw" style="background:'+sw[0]+'">'+sw[1]+'</span><span class="sr-main"><span class="sr-name">'+dlEsc(r.name)+'</span><span class="sr-sub">'+dlEsc(r.cuisine||'')+'</span></span></button>';}).join('');
+  if(items.length)h+='<div class="sr-label">Dishes</div>'+items.map(x=>{
+    let combo=x.b?dlComboText(x.b):'',c=x.b?ratingColor(x.b.rating):'';
+    return '<button class="sr-row" onclick="dlOpenItem(\''+x.i.id+'\')"><span class="sr-main"><span class="sr-name">'+dlEsc(x.i.name)+'</span><span class="sr-sub">'+dlEsc(x.r.name)+(combo?' · '+dlEsc(combo):'')+'</span></span>'
+      +(x.b?'<span class="sr-score" style="color:'+c+';border-color:'+c+'">'+fmtScore(x.b.rating)+'</span>':'<span class="sr-unrated">Not rated</span>')+'</button>';}).join('')
+    +(more?'<div class="sr-more">Showing the first 60 — keep typing to narrow it down.</div>':'');
+  if(!h)h='<div class="empty">Nothing matches “'+dlEsc(q)+'”.</div>';
+  list.innerHTML=h;
+}
+function dlOpenItem(itemId){
+  let it=db.items.find(i=>i.id===itemId);if(!it)return;
+  openRest(it.restId);
+  setTimeout(()=>{let row=document.querySelector('.menu-row[data-itemid="'+itemId+'"]');
+    if(row){row.scrollIntoView({block:'center',behavior:'smooth'});row.classList.add('dl-flash');setTimeout(()=>row.classList.remove('dl-flash'),1800);}},380);
+}
+
+/* 3 — "Same as last time" in the rating sheet */
+const _dlPrep=prepRateSheet;
+prepRateSheet=function(existing,mode){
+  let r=_dlPrep.apply(this,arguments);
+  let box=document.getElementById('dl-same');if(!box)return r;
+  box.innerHTML='';
+  if(existing)return r;
+  let prev=db.ratings.filter(x=>x.itemId===currentItemId&&((x.mods&&x.mods.length)||Object.keys(x.choices||{}).length)).sort((a,b)=>b.ratedAt-a.ratedAt)[0];
+  if(!prev)return r;
+  box.innerHTML='<button class="dl-same-btn" onclick="dlApplySame(\''+prev.id+'\')"><span>↺ Same as last time</span><span class="dl-same-sub">'
+    +dlEsc(dlComboText(prev)||'your usual choices')+(prev.rating!=null?' · you gave it '+fmtScore(prev.rating):'')+'</span></button>';
+  return r;
+};
+function dlApplySame(rid){
+  let prev=db.ratings.find(x=>x.id===rid);if(!prev)return;
+  currentChoices=JSON.parse(JSON.stringify(prev.choices||{}));currentMods=[...(prev.mods||[])];
+  let item=db.items.find(i=>i.id===currentItemId),rest=db.restaurants.find(x=>x.id===item.restId);
+  buildChoiceUI(item,rest);buildModUI(item,rest);
+  let b=document.querySelector('.dl-same-btn');if(b){b.classList.add('done');b.firstElementChild.textContent='✓ Filled in from last time';}
+}
+
+/* 4 — quick add (name only), with optional one-time menu import */
+async function dlAskClaudeJSON(prompt,maxTok){
+  let res;
+  try{res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
+    headers:{"Content-Type":"application/json","x-api-key":getApiKey(),"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
+    body:JSON.stringify({model:DL_SYNC_MODEL,max_tokens:maxTok,messages:[{role:"user",content:prompt}],tools:[{type:"web_search_20250305",name:"web_search",max_uses:5}]})});}
+  catch(e){throw new Error('Network error — check your connection, or use the free manual steps below.');}
+  if(!res.ok){
+    if(res.status===401)throw new Error('API key was rejected. Re-save it under Edit menu → Sync LTOs.');
+    if(res.status===429)throw new Error('Rate limited. Wait a minute and try again.');
+    throw new Error('Claude API returned '+res.status+'. Try the free manual steps below.');}
+  let data=await res.json();
+  let txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text||'').join('\n').replace(/```json|```/g,'').trim();
+  try{return JSON.parse(txt);}catch(_){}
+  let a=txt.indexOf('{'),z=txt.lastIndexOf('}');if(a>=0&&z>a){try{return JSON.parse(txt.slice(a,z+1));}catch(_){}}
+  if(data.stop_reason==='max_tokens')throw new Error('That menu was too long to finish in one go. Use the manual steps below.');
+  throw new Error('Could not read Claude’s reply. Try the manual steps below.');
+}
+function dlClearQA(){['qa-name','qa-cuisine','qa-loc'].forEach(i=>{let e=document.getElementById(i);if(e)e.value='';});let s=document.getElementById('qa-status');if(s)s.textContent='';}
+async function dlQuickAdd(withMenu){
+  let name=(document.getElementById('qa-name').value||'').trim(),st=document.getElementById('qa-status');
+  if(!name){st.textContent='Type the restaurant name first.';return;}
+  let cuisine=document.getElementById('qa-cuisine').value.trim(),loc=document.getElementById('qa-loc').value.trim();
+  let ex=db.restaurants.find(x=>x.name.toLowerCase()===name.toLowerCase());
+  if(!withMenu){
+    let id=ex?ex.id:uid();
+    if(!ex)db.restaurants.push({id,name,cuisine,address:loc,flavorLibrary:[],addedAt:NOW});
+    save();dlClearQA();openRest(id);setTimeout(()=>openSheet('sheet-add-item'),320);return;
+  }
+  if(!getApiKey()){st.textContent='Menu import needs your API key — open any restaurant → Edit menu → Sync LTOs to add it. Or use the free manual steps below.';return;}
+  let btn=document.getElementById('qa-auto');btn.disabled=true;
+  st.textContent='Looking up '+name+'’s menu… this usually takes 30–90 seconds.';
+  try{
+    let prompt=CLAUDE_PROMPT.replace('TIMESTAMP',NOW)+'\n\nRestaurant: "'+name+'"'+(loc?'\nLocation: '+loc:'')
+      +'\n\nUse web search to find the current menu, then reply with the JSON only.';
+    let data=await dlAskClaudeJSON(prompt,16000);
+    if(!data||!Array.isArray(data.items))throw new Error('Claude did not return a menu. Try the manual steps below.');
+    let id=ex?ex.id:uid();
+    if(!ex)db.restaurants.push({id,name,cuisine:cuisine||data.cuisine||'',address:loc||data.address||'',flavorLibrary:data.flavorLibrary||[],addedAt:NOW});
+    importItems(data,id);dedup();save();
+    btn.disabled=false;dlClearQA();openRest(id);
+  }catch(e){st.textContent=e.message;btn.disabled=false;}
+}
+
+/* 5 — backup & restore */
+function dlPaintBackup(){
+  let el=document.getElementById('dl-backup-when');if(!el)return;
+  let t=0;try{t=+(localStorage.getItem('dishlog_last_backup')||0);}catch(_){}
+  let n=db.ratings.filter(r=>r.rating!=null).length;
+  el.textContent=t?'· last saved '+fmtDate(t):(n?'· never backed up':'');
+  el.classList.toggle('warn',!t&&n>0);
+}
+function dlBackup(){
+  let json=JSON.stringify(db),name='dishlog-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  try{let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([json],{type:'application/json'}));a.download=name;
+    document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1500);}catch(_){}
+  try{localStorage.setItem('dishlog_last_backup',String(Date.now()));}catch(_){}
+  dlPaintBackup();showToast('Backup saved · '+db.restaurants.length+' restaurants, '+db.ratings.length+' ratings');
+}
+function dlRestore(){
+  let inp=document.createElement('input');inp.type='file';inp.accept='application/json,.json';
+  inp.onchange=()=>{let f=inp.files&&inp.files[0];if(!f)return;let rd=new FileReader();
+    rd.onload=()=>{let d;try{d=JSON.parse(rd.result);}catch(_){d=null;}
+      if(!d||!Array.isArray(d.restaurants)||!Array.isArray(d.items)||!Array.isArray(d.ratings)){showToast('That file isn’t a DishLog backup');return;}
+      if(!confirm('Replace everything in DishLog with this backup?\n\n'+d.restaurants.length+' restaurants · '+d.items.length+' dishes · '+d.ratings.length+' ratings'))return;
+      db=d;save();goHome();showToast('Restored from backup');};
+    rd.readAsText(f);};
+  inp.click();
+}
+const _dlRH2=renderHome;
+renderHome=function(){let r=_dlRH2.apply(this,arguments);let q=document.getElementById('dl-q');if(q&&q.value.trim())dlSearch();dlPaintBackup();return r;};
+dlPaintBackup();
 </script>
 </body>
 </html>
