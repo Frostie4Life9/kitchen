@@ -59,15 +59,6 @@
   .pill-btn.dark { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
   /* ===== bottom tab bar ===== */
-
-  /* ===== app switcher (shared across Kitchen / Grocery / Lift / Protocol) ===== */
-  .applinks { display:flex; gap:6px; padding:10px 16px 0; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
-  .applinks::-webkit-scrollbar { display:none; }
-  .applinks a { flex:0 0 auto; display:flex; align-items:center; gap:5px; text-decoration:none; border:1px solid var(--rule);
-    background:rgba(255,255,255,.65); color:var(--ink-faded); border-radius:999px; padding:6px 12px;
-    font-family:'Manrope',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:.04em; white-space:nowrap; }
-  .applinks a.here { background:var(--ink); color:var(--paper); border-color:var(--ink); }
-  .applinks a svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
   .tabbar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 80; background: rgba(250,246,240,0.94); backdrop-filter: blur(12px); border-top: 1px solid var(--rule); display: flex; padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); }
   .tabbar button { flex: 1; background: none; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; color: var(--ink-faded); font-family: 'Manrope', sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 4px 0; }
   .tabbar button .ico { font-size: 19px; line-height: 1; filter: grayscale(0.4) opacity(0.65); }
@@ -833,16 +824,6 @@
 </head>
 <body>
 
-<!-- ============ APP SWITCHER ============ -->
-<nav class="applinks" aria-label="Apps">
-  <a class="here" aria-current="page" href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h13v4a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M17 12.5h3M8 4.5c0 1.5 1.5 1.5 1.5 3M12 4.5c0 1.5 1.5 1.5 1.5 3"/></svg>Kitchen</a>
-  <a href="grocery.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.2l2.2 11h10.4l2-7.5H6.4"/><circle cx="9.5" cy="19.5" r="1.4"/><circle cx="16.5" cy="19.5" r="1.4"/></svg>Grocery</a>
-  <a href="workout.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7v10M17.5 7v10M4 9.5v5M20 9.5v5M6.5 12h11"/></svg>Lift</a>
-  <a href="dishlog.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3v5a2 2 0 0 0 4 0V3M7 10v11M17 21V3c-2 0-3.5 2.5-3.5 6s1.5 4 3.5 4"/></svg>DishLog</a>
-  <a href="https://frostie4life9.github.io/daily_schedule/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5"/><path d="M8 9l1.5 1.5L12 8M8 15l1.5 1.5L12 14M14.5 9.5H16M14.5 15.5H16"/></svg>Protocol</a>
-</nav>
-
-
 <!-- v3.7: sheets live at page level so they can open from any tab -->
   <div class="v3-back" id="v3-back" onclick="closeRotSheet();closeMealLog();closeLinker();closePantryItem()"></div>
   <div class="v3-back v3-back2" id="v3-back2" onclick="closeLinker()"></div>
@@ -1010,7 +991,8 @@
     <div class="dow">Sun</div><div class="dow">Mon</div><div class="dow">Tue</div><div class="dow">Wed</div><div class="dow">Thu</div><div class="dow">Fri</div><div class="dow">Sat</div>
   </div>
   <div class="cal-grid" id="cal-grid"></div>
-  <div class="legend">
+  <!-- v3.12.2: the old meal plan's legend and ratings button are hidden; old days still open read-only. -->
+  <div class="legend" hidden>
     <span class="legend-item"><span class="legend-swatch" style="background: var(--prep-bg); border: 1px solid var(--prep);"></span>Prep day</span>
     <span class="legend-item"><span class="legend-swatch" style="background: var(--today-soft); border: 1px solid var(--today);"></span>Today</span>
     <span class="legend-item" style="color: var(--parents); font-style: italic;">parents = parents cook</span>
@@ -1018,10 +1000,10 @@
 
   <div class="detail-panel" id="detail-panel"></div>
 
-  <div style="text-align:center; margin-top:22px;">
+  <div style="text-align:center; margin-top:22px;" hidden>
     <button class="ratings-export" id="ratings-export">Send ratings to Claude</button>
   </div>
-  <div class="footer-note">Tap a dish for the recipe · 👍 keep · 🤔 tweak · 👎 drop</div>
+  <div class="footer-note">Tap any day to see what you ate.</div>
 </div>
 
 <!-- ============ PANTRY ============ -->
@@ -2922,8 +2904,10 @@ function plannedDayTotals(ds){
   return {cal:c, pro:p};
 }
 
-if (!meals[todayStr]) { currentMonth = 4; currentYear = 2026; }
-let selectedDate = meals[todayStr] ? todayStr : "2026-05-23";
+/* v3.12.2: always open on today. This used to jump back to the old plan's
+   first day (May 23) whenever today had no old-plan entry — which, since the
+   rotation replaced the plan, is every day. */
+let selectedDate = todayStr;
 let expandedDish = {};
 
 function shorten(text, n){ if(!text) return ""; if(text.length<=n) return text; return text.slice(0,n-1)+"…"; }
@@ -3070,7 +3054,7 @@ function renderDetail(){
 
 $("prev-month").onclick=()=>{ currentMonth--; if(currentMonth<0){ currentMonth=11; currentYear--; } renderCalendar(); };
 $("next-month").onclick=()=>{ currentMonth++; if(currentMonth>11){ currentMonth=0; currentYear++; } renderCalendar(); };
-$("cal-today-btn").onclick=()=>{ if(meals[todayStr]){ selectedDate=todayStr; currentMonth=todayDate.getMonth(); currentYear=todayDate.getFullYear(); } else { selectedDate="2026-05-23"; currentMonth=4; currentYear=2026; } expandedDish={}; renderCalendar(); renderDetail(); };
+$("cal-today-btn").onclick=()=>{ selectedDate=todayStr; currentMonth=todayDate.getMonth(); currentYear=todayDate.getFullYear(); expandedDish={}; renderCalendar(); renderDetail(); };
 $("ratings-export").onclick=exportRatings;
 </script>
 <script>
@@ -4926,11 +4910,12 @@ const ROT_STEPS={
     ["Keep it cold","Pack an ice pack next to it. Turkey and cheese are fine for about 2 hours without one.",0],
     ["Eat","Stack a cracker, a cheese square, and a piece of turkey.",0]],
   melt:[
-    ["Build it","Lay out 2 slices of bread (sourdough if you have it). Put 1 slice of provolone on each, then 4 oz turkey (about 6 thin slices) on one side. Close it. Cheese touching both slices of bread is what glues it together.",0],
-    ["Butter the outside","Spread 1 tsp soft butter on the top of the sandwich, all the way to the edges.",0],
-    ["Cook side one","Nonstick pan on medium-low (about 4). Put the sandwich in butter-side down, then spread 1 tsp butter on the new top. Cook 3½ minutes, pressing gently with a spatula once or twice, until the bottom is golden.",210],
-    ["Flip","Flip and cook 3½ more minutes. Low heat is what melts the cheese before the bread burns — if it's browning faster than that, turn it down.",210],
-    ["Rest","Let it sit 1 minute before cutting it in half so the cheese doesn't all run out.",60]],
+    ["Warm the turkey first","Fold 4 oz turkey (about 6 thin slices) onto a plate and microwave 30–40 seconds, until warm but not hot. Cold turkey straight from the fridge soaks up all the pan's heat, and the cheese next to it never melts.",35],
+    ["Build it","Bread, 1 slice provolone, the warm turkey, the second slice of provolone, bread. Cheese touching both slices of bread is what glues it together.",0],
+    ["Butter the outside","Spread 1 tsp soft butter on the top slice, all the way to the edges.",0],
+    ["Cook side one, covered","Nonstick pan on medium-low (3–4). Put the sandwich in butter-side down, then butter the new top. Cover the pan with a lid — no lid? a sheet of foil or a plate on top works. The trapped heat melts the cheese while the bottom toasts. 4 minutes, until the bottom is golden.",240],
+    ["Flip and cover again","Flip, cover, and cook 3–4 more minutes. It's done when the cheese is oozing at the edges. Bread browning before the cheese melts? Turn the heat down a notch and keep it covered another minute.",210],
+    ["Rest","Let it sit 1 minute before cutting it in half, so the cheese doesn't all run out.",60]],
   wrap:[
     ["Spread","Lay a burrito-size tortilla flat and spread ½ tbsp mayo (a thin layer) across the middle.",0],
     ["Layer","4 oz turkey (about 6 thin slices), 2 slices provolone, and a handful of shredded lettuce, in a strip across the lower third of the tortilla.",0],
@@ -7221,7 +7206,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v3.13.0 · 2026-10-05";   // bump this each time you upload a new index.html
+const APP_VERSION="v3.12.2 · 2026-10-09";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
