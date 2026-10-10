@@ -157,6 +157,18 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
   .rise,.store.fade,.store-count.pop,li.justdone .check,.hero.alldone .ring-wrap{animation:none}
   .ring-fg,.track span,.check,.check path,.name,.why,.meta,li.item,.toast,.seg button{transition:none}
 }
+.costco-sw{display:block;margin-top:10px}
+.costco-sw button{font:inherit;font-size:13px;font-weight:800;color:var(--today);background:var(--today-soft,transparent);border:1.5px solid var(--today);border-radius:99px;padding:5px 12px;margin-left:2px;cursor:pointer}
+
+  /* ===== app switcher (shared across Kitchen / Grocery / Lift / DishLog / Protocol) =====
+     Added in the Oct 5 chat (v3.13.0); restored in v3.13.1 after later builds dropped it. */
+  .applinks { display:flex; gap:6px; padding:4px 0 8px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
+  .applinks::-webkit-scrollbar { display:none; }
+  .applinks a { flex:0 0 auto; display:flex; align-items:center; gap:5px; text-decoration:none; border:1px solid var(--rule);
+    background:var(--card); color:var(--ink-faded); border-radius:999px; padding:6px 12px;
+    font-family:'Manrope',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:.04em; white-space:nowrap; }
+  .applinks a.here { background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .applinks a svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
 </style>
 <script>
 /* ===================== Kitchen sync (v3.8) =====================
@@ -322,6 +334,13 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
 </head>
 <body>
 <main class="wrap">
+  <nav class="applinks" aria-label="Apps">
+    <a href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h13v4a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M17 12.5h3M8 4.5c0 1.5 1.5 1.5 1.5 3M12 4.5c0 1.5 1.5 1.5 1.5 3"/></svg>Kitchen</a>
+    <a class="here" aria-current="page" href="grocery.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.2l2.2 11h10.4l2-7.5H6.4"/><circle cx="9.5" cy="19.5" r="1.4"/><circle cx="16.5" cy="19.5" r="1.4"/></svg>Grocery</a>
+    <a href="workout.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7v10M17.5 7v10M4 9.5v5M20 9.5v5M6.5 12h11"/></svg>Lift</a>
+    <a href="dishlog.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3v5a2 2 0 0 0 4 0V3M7 10v11M17 21V3c-2 0-3.5 2.5-3.5 6s1.5 4 3.5 4"/></svg>DishLog</a>
+    <a href="https://frostie4life9.github.io/daily_schedule/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5"/><path d="M8 9l1.5 1.5L12 8M8 15l1.5 1.5L12 14M14.5 9.5H16M14.5 15.5H16"/></svg>Protocol</a>
+  </nav>
   <header class="mast rise" style="--i:0">
     <div>
       <div class="eyebrow" id="weekLabel"></div>
@@ -382,7 +401,7 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
     <p><strong>Small knife and napkins:</strong> a paring knife with a blade cover for the apples and cheese, and store-brand napkins. Not researched here.</p>
   </div>
 
-  <footer>WinCo every week, sized for about 7 home meals. Costco once a month for what keeps (chicken, chunks, sausage, cheese, Rao's, protein bars) &mdash; next Costco run is around Oct 24. Out of one of those before then? Add it to Running low in the app and it shows at the top here. Prices marked "est." come from older or out-of-area reports; the shelf tag wins.</footer>
+  <footer>WinCo every week, sized for about 7 home meals. Costco once a month for what keeps (chicken, chunks, sausage, cheese, Rao's, protein bars); it appears here on its own when it's due. Out of one of those before then? Add it to Running low in the app and it shows at the top here. Prices marked "est." come from older or out-of-area reports; the shelf tag wins.</footer>
 </main>
 
 <div class="actionbar"><div class="in">
@@ -537,12 +556,28 @@ var DATA = [
   }
 ];
 
-/* ===== CHANGE THESE EACH WEEK — nothing else ===== */
-var WEEK_START = "2026-10-03";   // checkmarks are saved per week under this date
-var WEEK_LABEL = "Shop Sat Oct 3";   // shown at the top and in the copied text
-var COSTCO_TRIP = false;   // true on the monthly Costco week; false hides the Costco section
-var PICNIC_WEEK = false;   // one-time picnic items and notes; false hides them
-/* ====================================================== */
+/* ===== The week runs itself (v4) =====
+   Nothing here needs editing week to week any more.
+   - The week starts Monday. Checkmarks are saved per week, so every Monday
+     the list starts clean on its own.
+   - Costco shows up automatically once it's been 4 weeks since your last
+     Costco trip (a trip counts when you check off anything from Costco).
+     The switch at the top turns it on or off for just this week. */
+function mondayOf(d){ var x=new Date(d.getFullYear(), d.getMonth(), d.getDate()); var k=(x.getDay()+6)%7; x.setDate(x.getDate()-k); return x; }
+function isoD(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+var MON = mondayOf(new Date());
+var WEEK_START = isoD(MON);
+var WEEK_LABEL = "Week of " + MON.toLocaleDateString("en-US", {month:"short", day:"numeric"});
+var COSTCO_KEY = "grocery_costco_" + WEEK_START, LAST_COSTCO_KEY = "grocery_lastCostco";
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ return null; } }
+function lsSet(k,v){ try{ localStorage.setItem(k,v); }catch(e){} }
+var LAST_COSTCO = lsGet(LAST_COSTCO_KEY) || "2026-09-21";   /* the first Costco run */
+var COSTCO_WEEKS = Math.round((MON - new Date(LAST_COSTCO+"T00:00:00")) / (7*864e5));
+var COSTCO_DUE = COSTCO_WEEKS >= 4;
+var COSTCO_SET = lsGet(COSTCO_KEY);   /* "1" / "0" = you chose for this week; null = automatic */
+var COSTCO_TRIP = COSTCO_SET==="1" ? true : COSTCO_SET==="0" ? false : (COSTCO_DUE || LAST_COSTCO===WEEK_START);
+var PICNIC_WEEK = false;   /* one-time picnic items stay in the file, hidden */
+function setCostco(on){ lsSet(COSTCO_KEY, on?"1":"0"); location.reload(); }
 
 var KEY = "grocery_" + WEEK_START;   // checkmarks: this week only, so a new week starts clean
 var AISLE_KEY = "groceryAisles_v1";  // aisle notes: shared by every week, keyed by item name
@@ -678,6 +713,7 @@ function toggle(li){
   if(on && !reduceMotion()){ li.classList.remove("justdone"); void li.offsetWidth; li.classList.add("justdone");
     setTimeout(function(){ li.classList.remove("justdone"); }, 500); }
   save(); updateCounts(true);
+  if(on && li.closest && li.closest('[data-store="Costco"]')) lsSet(LAST_COSTCO_KEY, WEEK_START);
 }
 function editAisle(btn){
   var key = btn.getAttribute("data-note");
@@ -769,7 +805,10 @@ load();
 document.getElementById("weekLabel").textContent = WEEK_LABEL;
 document.title = "Grocery \u2014 " + WEEK_LABEL;
 document.getElementById("lede").innerHTML = "Before you go: check your kitchen and tap off anything you already have. Items marked \u201conly if out\u201d are just a reminder to look. In the store, tap each one as it goes in the cart." +
-  (COSTCO_TRIP ? " <b>Costco week:</b> check your freezer space before you go." : "");
+  '<span class="costco-sw">' + (COSTCO_TRIP
+    ? '<b>Costco is on this week.</b> Check your freezer space before you go. <button type="button" onclick="setCostco(false)">Not this week</button>'
+    : (COSTCO_DUE ? '' : 'Costco next in about ' + Math.max(1,4-COSTCO_WEEKS) + ' week' + (4-COSTCO_WEEKS===1?'':'s') + '. ') +
+      '<button type="button" onclick="setCostco(true)">Add Costco this week</button>') + '</span>';
 renderSeg();
 render();
 renderFlags();
