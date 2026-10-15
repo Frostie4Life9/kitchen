@@ -484,6 +484,13 @@
   .v3-tile-nums b { font-size: 16px; color: var(--ink); font-weight: 800; }
   .v3-tile-done { position: absolute; top: 11px; right: 11px; width: 20px; height: 20px; border-radius: 50%; background: var(--green); color: #fff; font-size: 11px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
   .v3-note { font-size: 12.5px; color: var(--ink-faded); margin: 10px 4px 0; line-height: 1.45; }
+  .v3-pick-me { width: 100%; margin: 0 0 12px; display: flex; align-items: center; justify-content: center; gap: 8px; border: 0; background: var(--today-soft); color: var(--today); font: inherit; font-size: 14px; font-weight: 800; border-radius: 16px; padding: 13px; cursor: pointer; transition: transform .12s; }
+  .v3-pick-me:active { transform: scale(.98); }
+  .v3-pick-me svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; }
+  .v3-picked { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--today-soft); border-radius: 12px; padding: 7px 8px 7px 12px; margin: 0 0 10px; }
+  .v3-picked[hidden] { display: none; }
+  .v3-picked span { font-size: 12.5px; font-weight: 800; color: var(--today); }
+  .v3-picked button { border: 0; background: var(--card); color: var(--ink); font: inherit; font-size: 12.5px; font-weight: 800; border-radius: 99px; padding: 6px 12px; cursor: pointer; }
   .v3-else { width: 100%; margin-top: 10px; border: 1.5px dashed var(--rule); background: transparent; font: inherit; font-size: 14px; font-weight: 700; color: var(--ink-faded); border-radius: 16px; padding: 13px; cursor: pointer; }
   .v3-else:active { transform: scale(.98); }
 
@@ -642,6 +649,12 @@
   .v3-low-add input:focus { outline: none; border-color: var(--orange); }
   .v3-low-add button { border: 0; background: var(--orange); color: #fff; font: inherit; font-weight: 800; font-size: 14px; border-radius: 12px; padding: 0 16px; cursor: pointer; }
   .v3-fruit { background: var(--paper); border-radius: 16px; padding: 12px 12px 12px; margin: 0 0 14px; }
+  .v3-fruit-note { font-size: 13px; line-height: 1.45; color: var(--ink-soft); margin: 10px 2px 0; }
+  .v3-health { background: var(--green-soft); border-radius: 16px; padding: 12px 14px 4px; margin: 0 0 14px; }
+  .v3-health-h { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 800; color: var(--green); margin: 0 0 8px; }
+  .v3-health-h svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
+  .v3-health-row { margin: 0 0 10px; font-size: 13.5px; line-height: 1.45; color: var(--ink); }
+  .v3-health-row b { display: block; font-size: 11.5px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-soft); margin: 0 0 2px; }
   .v3-fruit-h { font-size: 14px; font-weight: 800; color: var(--ink); margin: 0 2px 8px; }
   .v3-fruit .v3-chip:not([aria-pressed="true"]) { background: var(--card); }
   .v3-fruit .v3-chip[aria-pressed="true"] small { color: inherit; opacity: .75; }
@@ -885,9 +898,11 @@
   </div>
   <div class="v3-sheet" id="v3-sheet" role="dialog" aria-modal="true" aria-labelledby="v3-sheet-title" aria-hidden="true">
     <div class="v3-grab"></div>
+    <div class="v3-picked" id="v3-picked" hidden><span>Picked for you</span><button type="button" onclick="pickForMe(true)">Pick again</button></div>
     <h2 id="v3-sheet-title"></h2>
     <div class="v3-sheet-nums" id="v3-sheet-nums"></div>
     <p class="v3-sheet-desc" id="v3-sheet-desc"></p>
+    <div id="v3-sheet-health"></div>
     <div class="v3-ings" id="v3-sheet-ings"></div>
     <ol class="v3-steps" id="v3-sheet-steps"></ol>
     <button class="v3-log-btn" id="v3-sheet-log" type="button">Log it</button>
@@ -929,6 +944,7 @@
   <section class="v3-block">
     <h2 class="v3-h">Log a meal</h2>
     <div class="v3-seg" id="v3-seg" role="tablist" aria-label="Meal"></div>
+    <button class="v3-pick-me" type="button" id="v3-pick-me" onclick="pickForMe()"></button>
     <div class="v3-tiles" id="t-rotation" role="tabpanel"></div>
     <div id="v3-sec-note"></div>
     <button class="v3-else" type="button" onclick="openMealLog()">+ Log something else</button>
@@ -1327,7 +1343,7 @@ function shopSave(st){ try{ localStorage.setItem(shopKey(), JSON.stringify(st));
    for the old weekly-plan model; grocery.html now does that job, and one
    list is easier to keep honest than three. Their code is left in place. */
 const SHOP_RHYTHM_HTML='<div class="tmeal note" style="margin-bottom:12px"><div class="nt"><b>WinCo every week.</b> Cash or debit only. Produce, ground beef, eggs, bread, tortillas, pantry.<br><br>'+
-  '<b>Costco once a month.</b> Chicken breasts to portion and freeze, chicken chunks, turkey sausage, cheese, Rao\u2019s, protein bars.<br><br>'+
+  '<b>Costco once a month.</b> Tyson rotisserie chicken strips (fully cooked, frozen), chicken chunks, turkey sausage, cheese, Rao\u2019s, protein bars.<br><br>'+
   '<b>Smith\u2019s only if you\u2019re passing by</b> \u2014 Hillshire turkey patties or a good fruit deal on the weekly ad.</div></div>';
 function renderShop(){
   const host=document.getElementById('shopBody'); if(!host) return;
@@ -4715,7 +4731,7 @@ const ROTATION=[
         "1 tsp butter, medium pan, 2–3 min a side until deep golden. Rest 1 min, cut.",
         "Dip: 1 tbsp mayo + ½ tbsp ketchup, a pinch of garlic powder, and lots of black pepper. That's the Cane's sauce."]},
     {k:"tacos", n:"Beef tacos (3)", c:690, p:37,
-     d:"Mild seasoning, cheese, lettuce. Swap chicken for ~640 cal and 50g protein.",
+     d:"Mild seasoning, cheese, lettuce. Swap the beef for heated chicken strips any night.",
      r:["Brown ¼ lb ground beef, breaking it up, 6–7 min. Drain most of the fat.",
         "Stir in 1 tbsp mild taco seasoning and a splash of water, 2 min.",
         "Warm 3 regular tortillas in a dry pan, 20 sec a side.",
@@ -4758,6 +4774,36 @@ const ROTATION=[
    e = [calories, protein, carbs, fat] per unit. Estimates come from labels
    on file where there is one (eggs, cheddar, tortillas, peanut butter,
    granola, honey) and typical labels otherwise. */
+/* v3.14 — new lunches (choosing lunch was the hard part) and chicken mac.
+   Chicken is now fully cooked frozen strips, so nothing needs Sunday prep. */
+(function(){
+  const L=ROTATION.find(function(x){ return x.sec==="Lunch"; }), D=ROTATION.find(function(x){ return x.sec==="Dinner"; });
+  L.items.push(
+    {k:"lquesa", n:"Lunch quesadilla", c:470, p:30, tag:"At home \u00b7 10 min",
+     d:"Smaller and faster than the dinner one: chicken strips and cheddar in two regular tortillas.", r:[]},
+    {k:"caesarwrap", n:"Chicken Caesar wrap", c:470, p:30, tag:"Ice pack",
+     d:"Warm chicken strips, crunchy lettuce, Caesar dressing, rolled tight.", r:[]},
+    {k:"chxsalad", n:"Chicken salad sandwich", c:540, p:38, tag:"Ice pack",
+     d:"Two chicken pouches mixed with mayo on sourdough. Make it the night before.", r:[]},
+    {k:"gcsoup", n:"Grilled cheese + tomato soup", c:540, p:22, tag:"Comfort",
+     d:"The cold-day or sick-day lunch. A glass of milk alongside adds 8 g protein.", r:[]},
+    {k:"lburger", n:"Single smash burger", c:555, p:33, tag:"At home",
+     d:"Your favorite, lunch-sized: one quarter-pound smashed patty, cheddar, toasted bun.", r:[]},
+    {k:"tendersbox", n:"Tenders + fries box", c:550, p:34, tag:"At home",
+     d:"Chicken chunks and crinkle fries in the air fryer together, Cane's-style dip.", r:[]},
+    {k:"pizzatoast", n:"Sourdough pizza toast", c:500, p:27, tag:"At home",
+     d:"Thick sourdough, Rao's and provolone, crisped in the air fryer. Pepperoni if you have it.", r:[]},
+    {k:"sub", n:"Sub-style sandwich", c:580, p:38, tag:"Ice pack",
+     d:"Turkey, provolone and lettuce on a toasted bun with oil and vinegar. Salami if you have it.", r:[]},
+    {k:"uncrust", n:"Uncrustables + protein shake", c:570, p:42, tag:"No fridge \u00b7 0 min",
+     d:"Zero cooking for rushed days. Two Uncrustables and an Orgain shake.", r:[]}
+  );
+  D.items.splice(4,0,
+    {k:"mac", n:"Chicken mac and cheese", c:780, p:53,
+     d:"Stovetop mac with real cheddar, chicken strips, and broccoli stirred in.", r:[]}
+  );
+})();
+
 const INGR={
   eggs:      {n:"Eggs",                    u:"egg",          e:[70,6,0.5,5],     q:"egg"},
   cheddar:   {n:"Shredded cheddar",        u:"1/4 cup",      e:[110,7,1,9],      q:"cheddar"},
@@ -4775,7 +4821,7 @@ const INGR={
   orange:    {n:"Oranges",                 u:"orange",       e:[62,1.2,15,0.2],  q:"orange mandarin"},
   fruit:     {n:"Any fruit",               u:"piece",        e:[90,0.8,23,0.3],  q:"apple banana orange mandarin grape"},
   grapes:    {n:"Grapes",                  u:"cup",          e:[104,1,27,0.2],   q:"grape"},
-  strawb:    {n:"Frozen strawberries",     u:"cup",          e:[50,1,12,0.2],    q:"strawberr"},
+  strawb:    {n:"Strawberries",     u:"cup",          e:[50,1,12,0.2],    q:"strawberr"},
   pineapple: {n:"Frozen pineapple",        u:"cup",          e:[80,1,21,0.2],    q:"pineapple"},
   yoplait:   {n:"Yoplait cups",            u:"cup",          e:[150,5,26,2],     q:"yoplait yogurt"},
   granola:   {n:"Crunchy granola",         u:"1/2 cup",      e:[230,4,34,9],     q:"granola"},
@@ -4787,23 +4833,39 @@ const INGR={
   provolone: {n:"Provolone",               u:"slice",        e:[70,5,0.5,5.5],   q:"provolone"},
   mayo:      {n:"Mayo",                    u:"tbsp",         e:[90,0,0,10],      q:"mayo"},
   ketchup:   {n:"Ketchup",                 u:"tbsp",         e:[20,0,5,0],       q:"ketchup"},
+  carrots:   {n:"Baby carrots",            u:"handful (3 oz)", e:[30,0.5,7,0.1],  q:"carrot"},
+  garlic:    {n:"Garlic powder",           u:"pinch",        e:[0,0,0,0],        q:"garlic"},
+  cinnamon:  {n:"Ground cinnamon",         u:"pinch",        e:[0,0,0,0],        q:"cinnamon"},
+  oregano:   {n:"Dried oregano",           u:"pinch",        e:[0,0,0,0],        q:"oregano"},
+  vinegar:   {n:"Red wine vinegar",        u:"tsp",          e:[1,0,0,0],        q:"vinegar"},
   lettuce:   {n:"Shredded lettuce",        u:"1/2 cup",      e:[4,0.3,1,0],      q:"lettuce"},
   onion:     {n:"Onion",                   u:"1/4 onion",    e:[11,0.3,2.5,0],   q:"onion"},
   beef:      {n:"85/15 ground beef",       u:"oz raw",       e:[60,5.3,0,4.3],   q:"ground beef"},
   bun:       {n:"Burger buns",             u:"bun",          e:[150,5,27,2],     q:"bun"},
-  chicken:   {n:"Chicken breast, cooked",  u:"oz",           e:[47,8.8,0,1],     q:"chicken breast"},
+  chicken:   {n:"Cooked chicken strips",   u:"oz",           e:[36.7,5.7,0.7,1.2], q:"chicken strips rotisserie grilled tyson"},
+  broccoli:  {n:"Frozen broccoli florets", u:"cup",          e:[40,3,7,0.4],     q:"broccoli"},
+  caesar:    {n:"Caesar dressing",         u:"tbsp",         e:[80,0.5,0.5,8.5], q:"caesar"},
+  soup:      {n:"Tomato soup",             u:"cup made",     e:[90,2,20,0],      q:"tomato soup campbell"},
+  fries:     {n:"Frozen fries",            u:"3 oz",         e:[120,2,19,4],     q:"fries crinkle ore-ida"},
+  pepperoni: {n:"Pepperoni",               u:"14 slices",    e:[140,5,0,13],     q:"pepperoni"},
+  salami:    {n:"Genoa salami",            u:"oz",           e:[110,6,0,9],      q:"salami genoa"},
+  oil:       {n:"Olive oil",               u:"tsp",          e:[40,0,0,4.5],     q:"olive oil"},
+  uncrust:   {n:"Uncrustables",            u:"sandwich",     e:[210,6,25,9],     q:"uncrustables smucker"},
+  shake:     {n:"Orgain 30g protein shake",u:"bottle",       e:[150,30,4,2.5],   q:"orgain protein shake"},
   taco:      {n:"Mild taco seasoning",     u:"tbsp",         e:[20,0.5,4,0],     q:"taco"},
   pasta:     {n:"Pasta",                   u:"oz dry",       e:[100,3.5,21,0.5], q:"pasta spaghetti"},
   marinara:  {n:"Rao's marinara",          u:"1/2 cup",      e:[100,2,6,7],      q:"marinara rao"},
   chunks:    {n:"Breaded chicken chunks",  u:"3 oz",         e:[160,16,8,7],     q:"chunks breaded chicken"},
   mandarin:  {n:"Mandarins",               u:"2 mandarins",  e:[94,1.4,23.6,0.6], q:"mandarin cutie halos"},
+  pear:      {n:"Pears",                   u:"pear",         e:[100,0.6,27,0.2], q:"pear"},
+  chia:      {n:"Chia seeds",              u:"tbsp",         e:[60,2,5,4],       q:"chia"},
   watermelon:{n:"Watermelon",              u:"2 cups",       e:[91,1.9,23,0.5],  q:"watermelon"}
 };
 /* v3.9 — "which fruit?" Cards with a fruit side ask which one you had, so
    the numbers are that fruit's, not an average. USDA values per portion. */
-const FRUIT_CHOICES=[["banana","Banana"],["apple","Apple"],["orange","Orange"],["mandarin","2 mandarins"],
-  ["grapes","Grapes","1 cup"],["watermelon","Watermelon","2 cups"],["pineapple","Pineapple","1 cup"],["strawb","Strawberries","1 cup"]];
-const FRUIT_WORD={banana:"banana",apple:"apple",orange:"orange",mandarin:"mandarins",grapes:"grapes",watermelon:"watermelon",pineapple:"pineapple",strawb:"strawberries"};
+const FRUIT_CHOICES=[["apple","Apple"],["pear","Pear"],["strawb","Strawberries","1 cup"],["banana","Banana"],["orange","Orange"],["mandarin","2 mandarins"],
+  ["watermelon","Watermelon","2 cups"],["pineapple","Pineapple","1 cup"],["grapes","Grapes","1 cup"]];
+const FRUIT_WORD={pear:"pear",banana:"banana",apple:"apple",orange:"orange",mandarin:"mandarins",grapes:"grapes",watermelon:"watermelon",pineapple:"pineapple",strawb:"strawberries"};
 const FRUIT_SWAP={fruit:1,banana:1,apple:1,orange:1,grapes:1};
 /* the part of a card that is a choosable fruit: "any fruit", or an optional side of fruit */
 function fruitSlot(it){
@@ -4847,6 +4909,29 @@ const CARD_PARTS={
   barfruit:   [["bar",1],["fruit",1]],
   fruit:      [["fruit",1]]
 };
+Object.assign(CARD_PARTS,{
+  lquesa:     [["smalltort",2],["cheddar",1.5],["chicken",3],["butter",1]],
+  caesarwrap: [["tortilla",1],["chicken",4],["lettuce",1],["caesar",1],["apple",1,1]],
+  chxsalad:   [["pouch",2],["mayo",1],["bread",2],["grapes",1,1]],
+  gcsoup:     [["bread",2],["cheddar",2],["butter",2],["soup",1]],
+  lburger:    [["beef",4],["cheddar",1],["bun",1],["mayo",0.5],["ketchup",0.5],["lettuce",1,1]],
+  tendersbox: [["chunks",2],["fries",1],["mayo",1],["ketchup",0.5]],
+  pizzatoast: [["bread",2],["marinara",0.5],["provolone",3],["pepperoni",1,1]],
+  sub:        [["bun",1],["turkey",3],["provolone",2],["oil",1],["vinegar",1],["lettuce",1,1],["salami",1,1],["carrots",1,1]],
+  uncrust:    [["uncrust",2],["shake",1],["fruit",1,1]],
+  mac:        [["pasta",3],["milk",0.33],["cheddar",2],["butter",1],["chicken",4],["broccoli",1,1]]
+});
+/* v3.16 — vegetables. Every dinner gets an optional broccoli side and every
+   packed lunch optional baby carrots: no recipe changes, just one more thing
+   on the plate. Optional parts never block a meal when you're out. */
+/* v3.17: he'd rather have fruit than broccoli, so the side is fruit (picker
+   on the recipe), and fiber-rich picks (apple, pear, strawberries) lead the list. */
+["burger","quesadilla","tacos","pasta","mac","lburger","tendersbox","pizzatoast","lquesa","melt","gcsoup"].forEach(function(k){
+  if(CARD_PARTS[k] && !CARD_PARTS[k].some(function(p){ return p[0]==="fruit" || (p[2] && FRUIT_SWAP[p[0]]); })) CARD_PARTS[k]=CARD_PARTS[k].concat([["fruit",1,1]]); });
+if(CARD_PARTS.smoothie && !CARD_PARTS.smoothie.some(function(p){ return p[0]==="chia"; })) CARD_PARTS.smoothie=CARD_PARTS.smoothie.concat([["chia",1,1]]);
+if(CARD_PARTS.smoothiebar && !CARD_PARTS.smoothiebar.some(function(p){ return p[0]==="chia"; })) CARD_PARTS.smoothiebar=CARD_PARTS.smoothiebar.concat([["chia",1,1]]);
+["campus","pouch","snackbox","wrap","caesarwrap","chxsalad","uncrust"].forEach(function(k){
+  if(CARD_PARTS[k] && !CARD_PARTS[k].some(function(p){ return p[0]==="carrots"; })) CARD_PARTS[k]=CARD_PARTS[k].concat([["carrots",1,1]]); });
 ROTATION.forEach(function(sec){ sec.items.forEach(function(it){ if(CARD_PARTS[it.k]) it.parts=CARD_PARTS[it.k]; }); });
 
 /* v3.6 — step timers, back from the old recipe cards. Seconds per step, in
@@ -4951,8 +5036,8 @@ const ROT_STEPS={
     ["Flip and cheese","Push the spatula edge hard under each patty to scrape up the brown crust with it, and flip. Put 2 tbsp cheddar on each right away. 1 more minute. Patties this thin are fully cooked by then.",60],
     ["Stack it","Sauce on both bun halves. Bottom bun, lettuce, both patties stacked, onion, top bun.",0]],
   quesadilla:[
-    ["Get the chicken ready","You need 5 oz cooked chicken — about one palm-sized piece. Frozen portion? Move it to the fridge the night before, or microwave it on defrost for 1–2 min. No cooked chicken at all? Air fry a raw breast at 380°F for 18 min, flipping halfway, until it reaches 165°F in the thickest part (or cut it open: no pink, juices run clear).",1080],
-    ["Chop and season","Chop it into small pieces, about ½ inch. In a bowl, toss with 1 tsp mild taco seasoning, a pinch of garlic powder, and 1 tbsp water so it coats. Microwave 45 seconds to warm it through.",45],
+    ["Heat the chicken","5 oz frozen chicken strips (about 5 strips) in the air fryer at 350°F for 8 min — no thawing, they're already cooked. In a hurry? Microwave them covered for about 2 min, until hot all the way through.",480],
+    ["Chop and season","Chop the chicken into small pieces, about ½ inch. In a bowl, toss with 1 tsp mild taco seasoning, a pinch of garlic powder, and 1 tbsp water so it coats. Microwave 45 seconds to warm it through.",45],
     ["Fill","Lay the burrito-size tortilla flat. On one half only: ¼ cup cheddar, then the chicken, then another ¼ cup cheddar on top. Cheese on both sides glues it shut. Fold the empty half over.",0],
     ["Cook side one","Nonstick pan on medium (about 5). Melt 1 tsp butter, then lay the quesadilla in. Press it flat gently with the spatula. 2½ minutes, until the bottom is deep golden — lift the edge to check.",150],
     ["Flip","Slide the spatula all the way under it, steady the top with your other hand, and flip it toward the folded side so nothing spills. 2½ more minutes.",150],
@@ -4986,6 +5071,66 @@ const ROT_STEPS={
   fruit:[
     ["Eat it","Rinse it if it has an edible skin (apples, grapes, strawberries), peel it if not, and eat it.",0]]
 };
+
+Object.assign(ROT_STEPS,{
+  lburger:[
+    ["Prep first","It cooks in 3 minutes, so get everything ready: toast the bun cut-side down in your dry skillet on medium for 1½ min and set it on your plate. Stir ½ tbsp mayo + ½ tbsp ketchup. Roll ¼ lb ground beef (a quarter of the 1-lb tube) into one loose ball — don't pack it.",90],
+    ["Get the pan very hot","Same skillet on high (9–10) for 2–3 minutes, empty. Ready when a drop of water sizzles away in a second or two. Nonstick only? Medium-high (7) instead.",150],
+    ["Smash and salt","Ball in, press straight down hard with a sturdy spatula for 10 seconds until it's about ¼ inch thick. Right away: a big pinch of salt (about ⅛ tsp) and a little pepper over the top.",10],
+    ["Sear — don't touch","2 minutes, until the edges are dark brown and crispy.",120],
+    ["Flip and cheese","Scrape under it hard to keep the crust, flip, ¼ cup cheddar on top, 1 more minute.",60],
+    ["Stack","Sauce on the bun, lettuce, patty, top. Fruit on the side if you want more.",0]],
+  tendersbox:[
+    ["Preheat","Air fryer at 400°F, empty, 3 minutes.",180],
+    ["Fries first","3 oz frozen fries (a big handful) in a single layer, 400°F for 6 minutes.",360],
+    ["Add the chicken","Add 6 oz frozen chicken chunks (about 9 pieces) next to the fries — straight from the bag. 9 more minutes at 400°F, shaking once halfway. Small basket? Do the fries, then the chunks.",540],
+    ["Dip","Cane's-style sauce: 1 tbsp mayo, ½ tbsp ketchup, a pinch of garlic powder, lots of black pepper. Stir until it's one color.",0]],
+  pizzatoast:[
+    ["Toast the bread first","2 slices of sourdough in the toaster on medium (about 2 min). Pre-toasting keeps the bottom crisp under the sauce.",0],
+    ["Top it","Spread 2 tbsp Rao's on each slice, all the way to the edges. Tear 1½ slices of provolone over each so it covers the sauce, then about 7 pepperoni slices each if you have them.",0],
+    ["Air fry","375°F for 4–5 minutes, until the cheese bubbles and the pepperoni edges curl. No air fryer: oven at 425°F for about 8 minutes.",270],
+    ["Cool a minute","The sauce is lava-hot. Give it 1 minute, then eat.",60]],
+  sub:[
+    ["Make the oil and vinegar","In a tiny lidded container: 1 tsp olive oil, 1 tsp red wine vinegar, a pinch of oregano, salt and pepper. Packing it separately keeps the bread from going soggy — pour it on right before you eat.",0],
+    ["Build","Split a burger bun (toast it cut-side down in a dry pan for 1 minute if you're eating at home). Layer 2 slices of provolone, 3 oz turkey (4–5 slices), salami if you have it, and a handful of shredded lettuce.",0],
+    ["Pack","Wrap it tight in foil, oil-and-vinegar container alongside, ice pack in your bag. Deli meat and cheese are fine for about 2 hours without one.",0]],
+  uncrust:[
+    ["Night before","Move 2 Uncrustables from the freezer to the fridge, or straight into your bag in the morning — they thaw in 30–60 minutes and are ready by lunch.",0],
+    ["Grab a shake","One Orgain protein shake. Unopened it's shelf-stable, so no ice pack needed. Shake it well before opening.",0],
+    ["Round it out","Add a piece of fruit if there's room in your bag.",0]],
+  lquesa:[
+    ["Heat the chicken","3 oz frozen chicken strips (about 3 strips) in the air fryer at 350°F for 7 min. In a hurry? Microwave them covered for about 1½ min, until hot all the way through. Chop into small pieces.",420],
+    ["Fill","Lay one regular tortilla flat, sprinkle half of ⅓ cup shredded cheddar, add the chicken, the rest of the cheese, then the second tortilla on top.",0],
+    ["Cook side one","Nonstick pan on medium (about 5) with 1 tsp butter. 2 minutes, until the bottom is golden — lift an edge to check.",120],
+    ["Flip and finish","Slide a spatula under it, flip, 2 more minutes. Rest 1 minute, then cut into 4 wedges. Salsa or the Cane's-style dip on the side if you have it.",120]],
+  caesarwrap:[
+    ["Heat the chicken","4 oz frozen chicken strips (about 4 strips) in the air fryer at 350°F for 8 min, or microwave covered about 2 min. Let them cool 5 minutes so they don't wilt the lettuce, then slice.",480],
+    ["Dress the lettuce","In a bowl, toss a big handful of shredded lettuce with 1 tbsp Caesar dressing until every piece is coated.",0],
+    ["Roll","Lay a burrito-size tortilla flat. Lettuce and chicken in a strip across the lower third. Fold the bottom up over it, fold both sides in, and roll tight. Wrap in foil.",0],
+    ["Pack","An apple on the side. Ice pack in your bag — chicken and dressing are good for about 2 hours without one.",0]],
+  chxsalad:[
+    ["Mix","Night before or morning of: empty 2 chicken pouches into a bowl. Add 1 tbsp mayo, a pinch of salt and pepper, and stir, breaking up the chunks with a fork.",0],
+    ["Build","Spread it between 2 slices of sourdough. Wrap in foil or a zip bag.",0],
+    ["Pack","Grapes on the side, ice pack in the bag. Made with mayo, it shouldn't sit out more than 2 hours.",0]],
+  gcsoup:[
+    ["Start the soup","Empty a can of condensed tomato soup into a microwave-safe bowl with 1 can of water (or milk, for creamier soup and more protein). Stir. You'll eat half and save half.",0],
+    ["Build the sandwich","Butter one side of 2 slices of bread. Put the buttered sides down on a plate, then ½ cup shredded cheddar on one slice, and close it, butter sides out.",0],
+    ["Cook it covered","Nonstick pan on medium-low (3–4). Cover the pan with a lid or foil — it melts the cheese before the bread burns. 3½ minutes until golden.",210],
+    ["Flip, and heat the soup","Flip the sandwich, cover again, 3 more minutes. While it cooks, microwave the soup 2–3 minutes, stirring halfway, until steaming.",180],
+    ["Eat","Cut the sandwich in half and dip it. Put the other half of the soup in the fridge — good for 3–4 days."  ,0]],
+  mac:[
+    ["Boil the water","About 8 cups of water and 1 tsp salt in a pot, lid on, high heat. 8–10 minutes to boil.",540],
+    ["Start the chicken","While the water heats: 4 oz frozen chicken strips (about 4) in the air fryer at 350°F for 8 min. Chop them when they're done.",480],
+    ["Cook the pasta","When the water is at a full rolling boil, add 3 oz pasta (about ¾ cup elbows or shells). Stir. Cook the box time plus 1–2 minutes for Provo's elevation. Got frozen broccoli? Toss a cup in for the last 3 minutes \u2014 optional.",660],
+    ["Drain","Scoop out a mug of the pasta water first, then drain the pasta and broccoli in a colander.",0],
+    ["Make the sauce","Same pot, now on low (2–3). Melt 1 tsp butter, add ⅓ cup milk, then ½ cup shredded cheddar a handful at a time, stirring until each handful melts. Too thick? A splash of the pasta water. Keep the heat low — high heat makes cheese grainy.",0],
+    ["Combine","Stir in the pasta, broccoli, and chicken until everything's coated. Salt, pepper, and a pinch of garlic powder.",0]]
+});
+/* the veg step rides along at the end of each recipe */
+const VEG_HOT=["Fruit on the side","Whatever you picked under \u201cWhich fruit?\u201d \u2014 slice an apple or pear, peel an orange, or a cup of strawberries. Apples and pears with the skin on carry the most fiber.",0];
+const VEG_PACK=["Add crunch (optional)","Baby carrots in a zip bag next to the fruit, if you like them. No cooking, and they survive a backpack.",0];
+["burger","quesadilla","tacos","pasta","mac","chunks","lburger","tendersbox","pizzatoast","lquesa","melt","gcsoup"].forEach(function(k){ if(ROT_STEPS[k]) ROT_STEPS[k]=ROT_STEPS[k].concat([VEG_HOT]); });
+["campus","pouch","snackbox","wrap","caesarwrap","chxsalad","uncrust","sub"].forEach(function(k){ if(ROT_STEPS[k]) ROT_STEPS[k]=ROT_STEPS[k].concat([VEG_PACK]); });
 ROTATION.forEach(function(sec){ sec.items.forEach(function(it){
   const S=ROT_STEPS[it.k]; if(!S) return;
   it.r=S.map(function(x){ return [x[0],x[1]]; });
@@ -5129,10 +5274,130 @@ function renderRotation(swapped){
   }).join('');
   if(swapped && !reduceMotion()){ host.classList.remove('swap'); void host.offsetWidth; host.classList.add('swap'); }
   const note=$("v3-sec-note"); if(note) note.innerHTML = sec.note ? '<p class="v3-note">'+esc(sec.note)+'</p>' : '';
+  const pm=$("v3-pick-me"); if(pm) pm.innerHTML='<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3.5"/><circle cx="9" cy="9" r="1.2" fill="currentColor"/><circle cx="15" cy="15" r="1.2" fill="currentColor"/><circle cx="15" cy="9" r="1.2" fill="currentColor"/><circle cx="9" cy="15" r="1.2" fill="currentColor"/></svg>Can\u2019t decide? Pick '+esc(sec.sec.toLowerCase()==="snacks"?"a snack":sec.sec.toLowerCase())+' for me';
 }
 
 /* ---- the recipe sheet ---- */
 let sheetKey=null, sheetReturn=null, sheetFruit=null;
+/* ---- v3.18 health notes: why each meal works, what pairs best, what to look for ----
+   [why it works, best pairing, good to know]. Written as things to add, never as
+   corrections. Fruit notes show under the fruit picker and follow your pick. */
+const HEALTH={
+  scramble:["Three eggs, cheese and sausage come to about 38 g of protein, enough to carry you to lunch. Egg yolks are one of the best sources of choline, which your brain uses for memory and mood.",
+    "An orange or strawberries. Eggs have no fiber or vitamin C, so the fruit adds both, and vitamin C helps you absorb the iron in the eggs.",
+    "Most of the salt comes from the turkey sausage. One salty item at breakfast is fine; just go easy on salty snacks later."],
+  bigplate:["Hash brown and toast refill the carbs your muscles burn on lift days, and you still get 41 g of protein for recovery.",
+    "A banana on the side, before or after the lift. Fast carbs plus about 420 mg of potassium, which you lose in sweat.",
+    "This is the highest-fat breakfast here, mostly from butter, cheese and the hash brown. It's built for lift days, which is how it's tagged; on other days the scramble does the same job lighter."],
+  omelet:["Deli turkey adds lean protein without much fat, and the toast gives you carbs to burn through the morning.",
+    "A pear or an apple with the skin on, the two highest-fiber fruits on your list. Nothing else on this plate has fiber.",
+    "The turkey is the salty part. Check the sodium on your label; if there's a lower-sodium version at the same price, it's an easy upgrade."],
+  frenchtoast:["The eggs and milk soak into the bread, so even the sweet breakfast carries 32 g of protein. One tablespoon of honey is far less sugar than a pour of syrup.",
+    "Sliced strawberries on top. You get sweetness without more sugar, plus fiber and a full day of vitamin C in a cup.",
+    "One tablespoon of honey has about 17 g of sugar, which is fine. Sourdough or whole-wheat bread adds a little fiber over white."],
+  pbroll:["Peanut butter is mostly unsaturated fat, the heart-healthy kind. The banana gives quick energy and potassium, and the whole thing eats while you walk.",
+    "A glass of milk (+8 g protein) or a protein shake. It has 15 g of protein on its own, so adding either one brings it in line with the other breakfasts.",
+    "The best peanut butter lists only peanuts and salt. No-stir kinds add palm oil and sugar; they're fine, just a step down."],
+  yoplait:["Yogurt gives you calcium and live cultures for your gut. Granola and fruit are steady carbs for a morning of classes.",
+    "A boiled egg or a glass of milk. At 10 g of protein it's light, and adding either one keeps you full noticeably longer.",
+    "Original Yoplait has around 18 g of sugar a cup. Granola is calorie-dense, so the serving on the bag (usually ¼ to ½ cup) is the real portion. Look for granola with 3 g of fiber or more."],
+  pbtoast:["A well-rounded plate: carbs from the toast and banana, healthy fats from the peanut butter, and 27 g of protein with the sausage.",
+    "The banana is already built in. A glass of milk tops it up if you're hungry.",
+    "Sourdough's fermentation may give a slightly gentler blood-sugar rise than plain white bread; the evidence is modest but it's a free win."],
+  smoothiebar:["Three to four servings of fruit in one drink: vitamin C, potassium and antioxidants. The bar adds the protein.",
+    "Chia seeds (the optional add-in). One tablespoon adds about 4 g of fiber and some omega-3 fat, and you can't taste it.",
+    "At about 100 g of carbs this is the highest-carb breakfast, mostly fruit sugar. It's great before a workout and less filling on a sit-all-morning day. Check the bar's label for acesulfame-K."],
+  cereal:["Most cereals are fortified with iron and B vitamins, and the milk adds protein and calcium.",
+    "A sliced banana or strawberries on top. Fiber slows down how fast the cereal's sugar hits, so it lasts longer.",
+    "Good cereals have 3 g of fiber or more and about 12 g of sugar or less per serving. The protein here depends on how much milk you pour."],
+  campus:["Shelf-stable and backpack-proof, with plenty of carbs for a long day on campus. The peanut butter brings healthy fat and the bar brings protein.",
+    "An apple plus carrots. Apples survive a backpack for days and have the most fiber of any portable fruit, and carrots add vitamin A and crunch.",
+    "At about 785 calories this is the biggest lunch, on purpose, since it has to last a long campus day. Bring a water bottle; Provo's dry air and altitude dehydrate you faster than you'd think."],
+  pouch:["Chicken pouches are lean protein that doesn't need to stay cold, which makes this the best protein option on fridge-free days.",
+    "An apple and carrots for fiber and crunch; both ride fine without an ice pack.",
+    "The pouches and Ritz are both salty. If the store has a lower-sodium pouch, grab that. Drink water with this one."],
+  snackbox:["Turkey and provolone give you real protein, and the crackers and fruit give carbs. It's a balanced plate in a box.",
+    "Grapes are the classic, but an apple or mandarins carry more fiber and vitamin C. Carrots round it out.",
+    "Deli meat, cheese and crackers all add salt. The fruit and carrots carry potassium, which helps balance it."],
+  melt:["37 g of protein in a hot, filling lunch, and the cheese adds calcium.",
+    "Apple or pear slices. A crisp, cool side next to a rich, hot sandwich, plus the fiber the bread doesn't give you.",
+    "The butter on the outside is about 100 calories of saturated fat. A thin swipe still crisps the bread just as well."],
+  wrap:["Lean turkey and provolone give you protein with no cooking, and lettuce adds crunch.",
+    "Carrots and an apple; both pack well next to the ice pack.",
+    "Large burrito tortillas can be around 300 calories and 600 mg of sodium each. Check your label, because that's where this wrap's calories hide."],
+  lquesa:["Chicken strips are lean, so most of the 35 g of protein comes without much fat.",
+    "An orange or pineapple. The bright, juicy fruit cuts through the cheese, and both are high in vitamin C.",
+    "Cheddar is most of the saturated fat here. About ¼ cup per tortilla is enough to melt and stick."],
+  caesarwrap:["Chicken and lettuce make this one of the leaner lunches, with a little bit of greens.",
+    "An apple and carrots for fiber and crunch.",
+    "Caesar dressing runs about 150 calories and 15 g of fat per 2 tbsp. Measure it rather than pouring, and the wrap stays light."],
+  chxsalad:["40 g of protein, among the highest of the packed lunches, and it's ready the night before.",
+    "Halved grapes or diced apple stirred right into the chicken salad. It's a classic combination and adds sweetness and fiber.",
+    "Mayo is the calorie lever: each tablespoon is about 90 calories. One to two tablespoons for two pouches is plenty."],
+  gcsoup:["Comfort food that still gives you something. Cooked tomato (as in soup) is one of the best sources of lycopene, an antioxidant your body absorbs better from cooked tomatoes than raw.",
+    "A glass of milk (+8 g protein) and an orange. The vitamin C is nice when you're run-down, and the milk lifts the protein, which is the lowest of the lunches.",
+    "Canned tomato soup runs roughly 500 to 700 mg of sodium per cup depending on the brand. A lower-sodium version is worth it if your store has one."],
+  lburger:["Beef is one of the best sources of iron, zinc and vitamin B12, and the single patty keeps it lunch-sized.",
+    "Pineapple or an orange, the classic cookout pairing. Lettuce on the burger counts too.",
+    "Smashing the patty renders out fat. Tilt the pan and pour it off before the cheese goes on."],
+  tendersbox:["Air-frying uses far less oil than restaurant fryers, so you get the Cane's experience with less fat.",
+    "An orange or pineapple. Fresh, juicy fruit balances the salty, crunchy plate.",
+    "Breaded chunks plus fries make this the saltiest lunch, and the dip is mayo-based. About 2 tbsp of sauce is plenty."],
+  pizzatoast:["Rao's has no added sugar and is made with olive oil, and the cooked tomato gives you lycopene.",
+    "An orange or strawberries for vitamin C and fiber.",
+    "Provolone and pepperoni make this the highest-fat lunch. Turkey pepperoni is a lighter swap if you like the taste."],
+  sub:["Oil and vinegar instead of mayo means the fat is mostly olive oil, the heart-healthy kind. Turkey keeps it lean.",
+    "Carrots and an apple; both pack well.",
+    "Deli turkey and salami are both processed meats. They're fine regularly; the chicken lunches on other days are a good counterweight."],
+  uncrust:["Zero cooking, and the shake carries most of the 44 g of protein, so even the rushed-day lunch hits your target.",
+    "A banana or an apple, plus carrots if you have them.",
+    "Uncrustables are white bread and jelly, which digest fast. Fruit and carrots add fiber that slows that down so you're not hungry an hour later."],
+  burger:["42 g of protein, plus beef's iron, zinc and B12. Lettuce and onion add a little crunch and fiber.",
+    "Watermelon while it's in season, pineapple after. Both are juicy, cool and the cookout classic.",
+    "Two patties, cheese and burger sauce make this a richer dinner. Pouring off the pan fat keeps it reasonable. A couple of times a week is a good rhythm."],
+  quesadilla:["The most protein on the list (50 g), with chicken carrying most of it.",
+    "An orange or pineapple. The acid and juice cut the cheese and butter, and both are high in vitamin C.",
+    "Butter, cheese and the mayo-based sauce add up. About a tablespoon of sauce for dipping is plenty."],
+  tacos:["Beef brings iron and zinc, the tortillas give carbs, and lettuce adds crunch.",
+    "Pineapple (it's great with taco seasoning) or an orange.",
+    "Taco seasoning is mostly salt. Start with about half of what you'd normally use; you'll barely notice the difference."],
+  pasta:["Cheap, filling carbs with protein and iron from the meat sauce, plus lycopene from the cooked tomato.",
+    "An apple or pear for fiber, since white pasta has little of its own.",
+    "Pasta cooked al dente (still a little firm) raises blood sugar more slowly than soft pasta, and it tastes better."],
+  mac:["54 g of protein with the chicken, plus calcium from real cheddar. It's a real meal, not boxed mac.",
+    "A crisp apple or pear. The cool crunch is good next to the rich mac and adds fiber.",
+    "This is the biggest dinner (about 885 calories). A slightly smaller bowl plus fruit still fills you up and leaves leftovers for tomorrow."],
+  chunks:["Zero prep with solid protein, straight from the freezer.",
+    "An orange or watermelon, plus carrots if you want crunch.",
+    "Breaded frozen chicken is salty. A label that lists white-meat chicken as the first ingredient is the better buy."],
+  smoothie:["Two or three servings of fruit in one glass. Unlike juice, blending keeps all the fiber.",
+    "A scoop of whey or a cup of Greek yogurt blended in (+20 g protein) turns it from a sweet drink into a snack that holds you.",
+    "Chia adds about 4 g of fiber per tablespoon and you won't taste it."],
+  barfruit:["An easy 22 g of protein with some carbs and fiber from the fruit.",
+    "An apple or banana; both travel well with a bar.",
+    "Check bar labels for acesulfame-K and sugar alcohols (like erythritol), which can upset some stomachs."],
+  fruit:["Fiber, vitamins and water, with almost no effort.",
+    "A spoon of peanut butter or a cheese stick. Adding protein or fat makes fruit hold you much longer.",
+    "Whole fruit beats precut and juice: it's cheaper, tastes better, and keeps its fiber and vitamin C."]
+};
+const FRUIT_NOTE={
+  apple:"About 4.4 g of fiber with the skin on, most of it soluble pectin, which helps you stay full.",
+  pear:"About 5.5 g of fiber, the most of any fruit on your list. Leave the skin on; that's where much of it is.",
+  strawb:"About 3 g of fiber and roughly 85 mg of vitamin C a cup, close to a full day's worth.",
+  banana:"About 3 g of fiber and 420 mg of potassium. Fast, easy carbs, which makes it the best pick around a workout.",
+  orange:"About 3 g of fiber and 70 mg of vitamin C, which also helps you absorb iron from eggs, bread and cereal.",
+  mandarin:"About 3 g of fiber and 50 mg of vitamin C for two, and they peel in seconds.",
+  watermelon:"About 92% water, so it's great for hydration in Provo's dry air. It's light on fiber (about 1 g), so pair it with an apple or pear elsewhere in the day.",
+  pineapple:"About 80 mg of vitamin C and 2 g of fiber a cup. Sweet enough to feel like dessert.",
+  grapes:"Easy and sweet, but only about 1.5 g of fiber a cup. An apple or pear is the higher-fiber swap.",
+  none:"No fruit this time. Fruit elsewhere in the day still counts."
+};
+function healthHTML(k){
+  const h=HEALTH[k]; if(!h) return "";
+  const L=[["Why it works",h[0]],["Best pairing",h[1]],["Good to know",h[2]]];
+  return '<div class="v3-health"><div class="v3-health-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.6a4.3 4.3 0 0 1 7.5 2.7c0 5.6-7.5 10.2-7.5 10.2z"/></svg>Health notes</div>'+
+    L.map(function(x){ return '<div class="v3-health-row"><b>'+x[0]+'</b><span>'+esc(x[1])+'</span></div>'; }).join('')+'</div>';
+}
 function openRotSheet(k){
   const f=rotItem(k); if(!f) return;
   if(sheetKey!==k) sheetFruit=defaultFruit(f.it);
@@ -5155,6 +5420,7 @@ function renderRotSheet(){
   $("v3-sheet-nums").innerHTML='<div><b>'+nu.c+'</b>calories</div><div><b>'+nu.p+' g</b>protein</div>'+
     (f.it.parts?'<div><b>'+nu.cb+' g</b>carbs</div><div><b>'+nu.f+' g</b>fat</div>':'');
   $("v3-sheet-desc").textContent=f.it.d;
+  $("v3-sheet-health").innerHTML=healthHTML(f.it.k);
   $("v3-sheet-steps").innerHTML=f.it.r.map(function(st,i){
     const t=(f.it.tm&&f.it.tm[i])||0;
     const body=Array.isArray(st)?'<b class="v3-step-t">'+esc(st[0])+'</b><span class="v3-step-x">'+esc(st[1])+'</span>':esc(st);
@@ -5170,7 +5436,7 @@ function renderRotSheet(){
       FRUIT_CHOICES.map(function(fc){ const e=INGR[fc[0]].e;
         return '<button type="button" class="v3-chip" aria-pressed="'+(sheetFruit===fc[0])+'" onclick="pickFruit(\''+fc[0]+'\')">'+esc(fc[1])+'<small>'+Math.round(e[0])+'</small></button>'; }).join('')+
       (opt?'<button type="button" class="v3-chip" aria-pressed="'+(sheetFruit==="none")+'" onclick="pickFruit(\'none\')">No fruit</button>':'')+
-      '</div></div>';
+      '</div>'+(FRUIT_NOTE[sheetFruit]?'<p class="v3-fruit-note">'+esc(FRUIT_NOTE[sheetFruit])+'</p>':'')+'</div>';
   }
   const parts=partsFor(f.it, slotI>=0?sheetFruit:undefined);
   ings.innerHTML=pick+'<div class="v3-ings-head"><b>Ingredients</b><span>'+(!nu.total?'':nu.linked===nu.total?'All from your labels':nu.linked+' of '+nu.total+' from your labels')+'</span></div>'+
@@ -5251,8 +5517,35 @@ function syncRotTimerDOM(){
     el.style.setProperty("--p",S.p.toFixed(4));
   });
 }
+/* ---- "Pick for me": choosing is the hard part, so let the app choose ----
+   Skips anything you're out of and anything you had yesterday. On campus
+   days (Wed, Fri) lunch leans to the no-fridge and ice-pack cards. */
+function pickForMe(again){
+  const sec=ROTATION.filter(function(x){ return x.sec===rotSec; })[0]; if(!sec) return;
+  const y=new Date(); y.setDate(y.getDate()-1);
+  let yLog=[]; try{ yLog=(JSON.parse(localStorage.getItem(dayKey(isoD3(y))))||{}).log||[]; }catch(e){}
+  const dow=new Date().getDay(), campus=(dow===3||dow===5);
+  const skip=again?sheetKey:null;
+  const pool=[];
+  sec.items.forEach(function(it){
+    if(it.k===skip || outParts(it).length) return;
+    let w=1;
+    if(yLog.some(function(i){ return i.rk===it.k || i.name===it.n; })) w*=0.25;
+    if(sec.slot==="lunch" && campus){ if(/No fridge|Ice pack/.test(it.tag||"")) w*=3; else if(/At home|Comfort/.test(it.tag||"")) w*=0.2; }
+    if(sec.slot==="breakfast" && it.k==="cereal") w*=0.5;
+    pool.push([it,w]);
+  });
+  if(!pool.length){ showToast("You're out of something for every option \u2014 check Running low"); return; }
+  let r=Math.random()*pool.reduce(function(t,p){ return t+p[1]; },0), pick=pool[0][0];
+  for(const p of pool){ r-=p[1]; if(r<=0){ pick=p[0]; break; } }
+  openRotSheet(pick.k);
+  const pb=$("v3-picked"); if(pb) pb.hidden=false;
+  if(again){ const sh=$("v3-sheet"); if(sh) sh.scrollTop=0; }
+}
+function isoD3(d){ return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
 function closeRotSheet(){
   sheetKey=null;
+  { const pb=$("v3-picked"); if(pb) pb.hidden=true; }
   document.body.classList.remove("v3-sheet-up");
   const sh=$("v3-sheet"); if(sh){ sh.classList.remove("open"); sh.setAttribute("aria-hidden","true"); }
   const bk=$("v3-back"); if(bk) bk.classList.remove("open");
@@ -5360,7 +5653,7 @@ const TMR_SCAN='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 
 const TMR_PLUS='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
 /* Fresh produce has no barcode and the estimates are USDA values anyway,
    so it never counts against you here. */
-const NO_LABEL={banana:1, apple:1, orange:1, fruit:1, grapes:1, lettuce:1, onion:1, mandarin:1, watermelon:1};
+const NO_LABEL={banana:1, apple:1, orange:1, fruit:1, grapes:1, lettuce:1, onion:1, mandarin:1, watermelon:1, pear:1, carrots:1, garlic:1, cinnamon:1, oregano:1, vinegar:1};
 function ingUse(){
   const use={};
   ROTATION.forEach(function(sec){ sec.items.forEach(function(it){ (it.parts||[]).forEach(function(pt){
@@ -5660,7 +5953,7 @@ function renderThursday(){
   const host=$("v3-thu"); if(!host) return;
   let dismissed=false; try{ dismissed=localStorage.getItem("thuCheck_"+todayStr)==="1"; }catch(e){}
   if(todayDate.getDay()!==4 || dismissed || todayStr!==isoToday()){ host.innerHTML=''; return; }
-  host.innerHTML='<div class="v3-thu"><b>Kitchen check tonight</b><p>Five minutes before tomorrow\u2019s shop: open the grocery list, walk the kitchen and fridge, and tap off everything you already have. What\u2019s left is the real list.</p>'+
+  host.innerHTML='<div class="v3-thu"><b>Kitchen check tonight</b><p>Five minutes before tomorrow\u2019s shop: walk the kitchen and fridge, and mark anything you\u2019re out of or almost out of in Shop \u2192 Running low. The grocery list adds those to your weekly fresh items on its own.</p>'+
     '<div class="row"><a href="'+esc(CURRENT_LIST)+'?t='+Date.now()+'">Open grocery list</a>'+
     '<button type="button" onclick="try{localStorage.setItem(\'thuCheck_\'+todayStr,\'1\')}catch(e){};renderThursday()">Done</button></div></div>';
 }
@@ -7225,7 +7518,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v3.13.1 · 2026-10-09";   // bump this each time you upload a new index.html
+const APP_VERSION="v3.18.0 · 2026-10-14";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);

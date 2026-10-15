@@ -85,8 +85,16 @@ button{font:inherit}
 .flagged h3{margin:0 0 3px;font-size:15px;font-weight:800;color:var(--ink)}
 .flagged p{margin:0 0 8px;font-size:13px;color:var(--ink-soft)}
 .flagged ul{margin:0 0 10px;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
-.flagged li{font-size:13px;font-weight:700;background:var(--card);border-radius:99px;padding:5px 11px;color:var(--orange)}
-.flagged button{border:1.5px solid var(--rule);background:transparent;color:var(--ink);font-size:13px;font-weight:700;border-radius:99px;padding:7px 13px;cursor:pointer}
+.flagged li{list-style:none}
+.flagged .xchip{font:inherit;font-size:13px;font-weight:700;background:var(--card);border:0;border-radius:99px;padding:6px 12px;color:var(--orange);cursor:pointer}
+.flagged .xchip:active{transform:scale(.96)}
+.flagged.empty{background:var(--card);box-shadow:0 1px 0 var(--rule)}
+.xadd{display:flex;gap:8px;margin:2px 0 0}
+.xadd input{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1.5px solid var(--rule);border-radius:12px;padding:10px 12px}
+.xadd input:focus{outline:none;border-color:var(--orange)}
+.xadd button{border:0 !important;background:var(--orange) !important;color:#fff !important;font-weight:800 !important;border-radius:12px !important;padding:0 16px !important}
+@media (prefers-color-scheme: dark){ .xadd button{color:#14110D !important} }
+.flagged button.legacy{border:1.5px solid var(--rule);background:transparent;color:var(--ink);font-size:13px;font-weight:700;border-radius:99px;padding:7px 13px;cursor:pointer}
 
 /* ---- stores, groups, items ---- */
 .store{margin-top:22px}
@@ -169,6 +177,14 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
     font-family:'Manrope',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:.04em; white-space:nowrap; }
   .applinks a.here { background:var(--ink); color:var(--paper); border-color:var(--ink); }
   .applinks a svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+.picks{background:var(--card);border-radius:18px;padding:14px 16px;margin:0 0 14px;box-shadow:0 1px 0 var(--rule)}
+.picks h3{margin:0 0 3px;font-size:15px;font-weight:800;color:var(--ink)}
+.picks p{margin:0 0 10px;font-size:13px;color:var(--ink-soft);line-height:1.45}
+.pick-chips{display:flex;flex-wrap:wrap;gap:6px}
+.pick-chips button{font:inherit;font-size:13px;font-weight:700;border:1.5px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:99px;padding:7px 12px;cursor:pointer}
+.pick-chips button[aria-pressed="true"]{background:var(--today);border-color:var(--today);color:#fff}
+@media (prefers-color-scheme: dark){ .pick-chips button[aria-pressed="true"]{color:#10160F} }
+.showall{font:inherit;font-size:13px;font-weight:800;border:1.5px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:99px;padding:7px 13px;cursor:pointer}
 </style>
 <script>
 /* ===================== Kitchen sync (v3.8) =====================
@@ -365,6 +381,7 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
 
   <p class="lede rise" style="--i:2" id="lede"></p>
   <div id="flagged" class="rise" style="--i:2"></div>
+  <div id="picks" class="rise" style="--i:2"></div>
   <nav class="seg rise" style="--i:3" id="seg" role="tablist" aria-label="Store"></nav>
   <div id="stores"></div>
 
@@ -425,132 +442,107 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
 var DATA = [
   {
     store:"WinCo",
-    loc:"Provo \u00b7 every week",
-    note:"Cash or debit only \u2014 no credit cards, and you bag your own. Sized for about one week.",
+    loc:"Provo · every week",
+    note:"Cash or debit only — no credit cards, and you bag your own.",
     groups:[
-      {name:"Picnic \u2014 this week only", temp:true, items:[
-        {n:"Tillamook Sharp Cheddar block", a:"1 block, 8 oz", t:"store brand", p:"check shelf",
-         w:"For slicing onto crackers and apples. The shredded Costco bag is for cooking; a block tastes better on a board. Brand pick, not taste-tested here."},
-        {n:"Sourdough or ciabatta loaf, in-store bakery", a:"1 loaf", t:"store brand", p:"check shelf",
-         w:"Buy it Thursday for a Friday picnic. Sourdough holds up better to turkey and mayo without going soggy."},
-        {n:"Guerrero Caseras Burrito Size Flour Tortillas", a:"1 extra pack of 8", t:"researched", p:"check shelf",
-         w:"For picnic wraps, on top of the pack already on your list. Same fallback: Mission burrito-size."},
-        {n:"Seedless grapes", a:"about 2 lb", t:"store brand", p:"check shelf",
-         w:"Rinse and dry them before packing so they don't sit wet in the cooler."},
-        {n:"Apples for dipping", a:"4 more, on top of your usual", t:"store brand", p:"check shelf",
-         w:"Honeycrisp is at its best right now. Slice them at the picnic, not before, or they brown."},
-        {n:"Marzetti Old Fashioned Caramel Dip", a:"1 tub", t:"store brand", p:"check shelf",
-         w:"In produce next to the apples, like you said. The standard brand there."},
-        {n:"Ghirardelli Intense Dark 72% Cacao bar", a:"1 bar, 3.5 oz", t:"researched", p:"check shelf",
-         w:"Ranked above Lindt in Tasting Table's dark chocolate test and a favorite of The Takeout's in June. Complex without being harsh."},
-        {n:"Chips and pretzels", a:"1 bag each", t:"store brand", p:"check shelf",
-         w:"Dot's Homestyle Pretzels if WinCo has them \u2014 they have a cult following. Any kettle chip for the other bag."},
-        {n:"Hidden Valley Original Ranch, bottle", a:"1 bottle", t:"store brand", p:"check shelf",
-         w:"Just in case, for her. Mayo is already on your list below."},
-        {n:"Ito En Matcha Love, bottled", a:"2\u20134 bottles", t:"researched", p:"check shelf",
-         w:"From the makers of Oi Ocha; their matcha won The Kitchn's taste test this year. Not confirmed at WinCo \u2014 check the cold tea case. If she prefers it sweet and milky, grab a bottled matcha latte instead."},
-      ]},
-      {name:"Produce", items:[
+      {name:"Fresh — produce", items:[
         {n:"Bananas", a:"2 bunches", t:"store brand", p:"check shelf",
-         w:"Smoothies, PB-banana toast, and snacks all use them. Pick ones still a little green at the stem so the last few aren't brown by midweek."},
-        {n:"Apples", a:"4\u20135, Honeycrisp or Gala", t:"store brand", p:"check shelf",
-         w:"Backpack fruit \u2014 they survive a bag for days. Honeycrisp is in its crispest season now; Gala if Honeycrisp is pricey."},
+         w:"Smoothies, PB-banana toast, snacks. Pick ones still a little green at the stem so the last few aren't brown by midweek."},
+        {n:"Apples", a:"5–6, Honeycrisp or Gala", t:"store brand", p:"check shelf",
+         w:"Your top fiber fruit with the skin on, and backpack-proof for days. Gala if Honeycrisp is pricey."},
         {n:"Mandarins or oranges", a:"a bag or 5 loose", t:"store brand", p:"check shelf",
-         w:"Your orange fix. Mandarins peel in seconds and ride in a backpack fine."},
-        {n:"Watermelon", a:"1 mini, or a pre-cut tub", t:"store brand", p:"check shelf",
-         w:"End of season. A mini is cheaper per pound; pre-cut means zero waste."},
+         w:"Peel in seconds and ride in a backpack fine."},
+        {n:"Pears", a:"3\u20134", t:"store brand", p:"check shelf",
+         w:"The highest-fiber everyday fruit, about 5\u00bd g each with the skin. Buy them firm; they ripen on the counter in 2\u20133 days."},
+        {n:"Strawberries, fresh", a:"1 lb container", t:"store brand", p:"check shelf",
+         w:"Sides and snacks. Check the bottom of the container for mushy ones before you buy. Rinse right before eating, not when you get home \u2014 wet berries mold fast."},
+        {n:"Mini watermelon or a whole pineapple", a:"1 \u2014 alternate weeks", t:"store brand", p:"check shelf",
+         w:"Buy them whole, not the pre-cut tubs. Cut it once when you get home (5 minutes) into a lidded container; it keeps 3\u20135 days in the fridge. Watermelon is near the end of its season, so pineapple is the safer bet into winter."},
         {n:"Shredded lettuce", a:"1 bag", t:"store brand", p:"check shelf",
-         w:"Burgers and tacos. Nothing to wash or chop."},
-        {n:"Yellow onions", a:"2", t:"store brand", p:"check shelf",
-         w:"Burgers and meat sauce. Skip if you still have one."}
+         w:"Burgers, tacos, wraps, subs. Nothing to wash or chop."}
       ]},
-      {name:"Deli counter", items:[
+      {name:"Fresh — deli + meat", items:[
         {n:"Oven-roasted turkey, fresh-sliced", a:"1 lb", t:"researched", p:"check shelf",
-         w:"Omelets, wraps, snack boxes, turkey melts. Fresh-sliced beats the watery pressed packages, and premium brands run about $17/lb for barely any difference. Ask for it thin."},
+         w:"Omelets, wraps, snack boxes, melts, subs. Fresh-sliced beats the watery pressed packages. Ask for it thin."},
         {n:"Provolone, sliced", a:"1/2 lb", t:"store brand", p:"check shelf",
-         w:"Wraps, snack boxes, and turkey melts."}
+         w:"Wraps, snack boxes, melts, subs, and now pizza toast too."},
+        {n:"85/15 ground beef", a:"1–2 lb — check your freezer first", t:"researched", p:"check shelf",
+         w:"Burgers, tacos, pasta. One 1-lb tube cut in thirds covers three dinners. Freeze what you won't cook in 2 days."}
       ]},
-      {name:"Meat", items:[
-        {n:"85/15 ground beef", a:"1\u20132 lb \u2014 count what's left in your freezer first", t:"researched", p:"est. $4.28\u20135.98/lb",
-         w:"1 lb covers three meals (cut it in thirds: burger, tacos, pasta). Get 2 lb if you want burgers twice. Freeze whatever you won't cook in 2 days."}
-      ]},
-      {name:"Dairy + eggs", items:[
-        {n:"Large eggs", a:"30, or skip if you still have a dozen or more", t:"store brand", p:"est. ~$5.75",
-         w:"Daily cheesy scrambles. The 30-pack is cheaper per egg and keeps for weeks."},
+      {name:"Fresh \u2014 dairy + bread", items:[
+        {n:"Large eggs", a:"30, or skip if you have a dozen+", t:"store brand", p:"check shelf",
+         w:"Scrambles, omelets, French toast. The 30-pack is cheaper per egg and keeps for weeks."},
         {n:"Milk", a:"1 gallon", t:"store brand", p:"check shelf",
-         w:"Cereal mornings and French toast. A glass alongside also adds protein to a light breakfast."},
-        {n:"Yoplait Original cups", a:"4\u20136", t:"store brand", p:"check shelf",
-         w:"The sweetened Yoplait you liked, for Yoplait-granola-fruit mornings."}
-      ]},
-      {name:"Frozen", items:[
-        {n:"Ore-Ida Golden Hash Brown Patties", a:"1 bag", t:"researched", p:"check shelf",
-         w:"Breakfast side. Crispiest in air-fryer testing, 10\u201312 min from frozen. Ore-Ida shredded if the patties aren't there."},
-        {n:"Frozen strawberries", a:"1 bag, WinCo brand", t:"store brand", p:"check shelf",
-         w:"Smoothies. Blending erases any brand difference, so buy the cheapest."},
-        {n:"Frozen pineapple chunks", a:"1 bag, WinCo brand", t:"store brand", p:"check shelf",
-         w:"Smoothies. Cheaper than fresh and never goes bad."}
-      ]},
-      {name:"Bread + tortillas", items:[
+         w:"Cereal, French toast, mac sauce, and a glass alongside any light breakfast."},
+        {n:"Yoplait Original cups", a:"4–6", t:"store brand", p:"check shelf",
+         w:"Yoplait-granola-fruit mornings."},
+        {n:"Sourdough loaf, in-store bakery", a:"1 loaf, if under about 5 slices", t:"store brand", p:"about $3.58",
+         w:"Toast, French toast, melts, pizza toast, chicken salad. Freeze half if you won't finish it in a week."},
         {n:"Guerrero Caseras Burrito Size Flour Tortillas", a:"1 pack of 8", t:"researched", p:"check shelf",
-         w:"Quesadillas need the 10-inch. Caseras won America's Test Kitchen's tortilla test, run in quesadillas. If WinCo doesn't stock them, Mission burrito-size is the fallback."},
-        {n:"Guerrero Caseras Flour Tortillas", a:"1 pack, regular size", t:"researched", p:"check shelf",
-         w:"Tacos. Same fallback: Mission regular."},
-        {n:"Hamburger buns", a:"1 pack of 8", t:"store brand", p:"check shelf",
-         w:"Brioche if you want burger night to feel special. Freeze half so they don't go stale."},
-        {n:"Sourdough loaf, in-store bakery", a:"1 loaf, only if you're under about 5 slices", t:"store brand", p:"about $3.58",
-         w:"Toast, French toast, and turkey melts. Last week's loaf is good through Oct 8 \u2014 or freeze half and toast from frozen. Already set up in your pantry at 1.6 oz a slice."}
+         w:"Quesadillas, wraps, campus pack, PB-banana roll-up. Mission burrito-size is the fallback."}
       ]},
-      {name:"Pantry", items:[
-        {n:"Garlic powder", a:"1 small jar, only if out", t:"store brand", p:"check shelf",
-         w:"Cane's-style dip for chicken chunks and quesadillas: 1 tbsp mayo + \u00bd tbsp ketchup + garlic powder + lots of black pepper."},
-        {n:"Post Honey Roasted Granola", a:"1 bag, only if out", t:"store brand", p:"check shelf",
-         w:"The crunchy granola on your Yoplait mornings. Your standing rule is to always have it on the list."},
-        {n:"Ritz crackers", a:"1 box, only if out", t:"store brand", p:"check shelf",
-         w:"Chicken-and-crackers packs and snack boxes."},
-        {n:"Shelf-stable chicken pouches", a:"4", t:"store brand", p:"check shelf",
-         w:"The no-fridge lunch protein for Wednesdays and Fridays. StarKist or store brand; any chunk white chicken pouch works. Not researched here."},
-        {n:"Cinnamon Protein Cheerios", a:"1 box", t:"researched", p:"check shelf",
-         w:"Rushed-morning breakfast. Sporked's top-rated protein cereal because it doesn't taste like protein cereal. 8 g protein, about double regular cereal. Costco sold a 30 oz box for $7.79 in August \u2014 cheaper there if they have it on this trip."},
-        {n:"Pasta", a:"1 lb, any shape", t:"store brand", p:"check shelf", w:"For the Rao's."},
-        {n:"Ketchup and mayo", a:"only if low", t:"store brand", p:"check shelf", w:"Burger sauce and the Cane's-style dip are both mayo + ketchup."},
-        {n:"Peanut butter", a:"1 jar, only if out", t:"store brand", p:"check shelf", w:"Campus-day lunch: PB-honey tortilla. 2 tbsp per lunch."},
-        {n:"Honey", a:"1 bottle, only if out", t:"store brand", p:"check shelf", w:"Campus-day lunch, 1 tbsp each."}
+      {name:"Restock — fridge + freezer", stock:true, items:[
+        {k:"carrots", n:"Baby carrots", a:"1 bag", t:"store brand", p:"check shelf", w:"Optional lunch-bag crunch, if you like them."},
+        {k:"broccoli", n:"Frozen broccoli florets", a:"1 bag", t:"store brand", p:"check shelf", w:"Optional, for chicken mac."},
+        {k:"butter", n:"Butter", a:"1 lb", t:"store brand", p:"check shelf", w:"Eggs, grilled sandwiches, quesadillas."},
+        {k:"bun", n:"Hamburger buns", a:"1 pack of 8", t:"store brand", p:"check shelf", w:"Burgers and subs. Freeze half so they don't go stale."},
+        {k:"smalltort", n:"Guerrero Caseras Flour Tortillas, regular", a:"1 pack", t:"researched", p:"check shelf", w:"Tacos and the lunch quesadilla."},
+        {k:"onion", n:"Yellow onion", a:"1–2", t:"store brand", p:"check shelf", w:"Burgers and meat sauce. Lasts weeks on the counter."},
+        {k:"grapes", n:"Seedless grapes", a:"about 1 lb", t:"store brand", p:"check shelf", w:"Snack boxes and chicken salad sides."},
+        {k:"hashbrown", n:"Ore-Ida Golden Hash Brown Patties", a:"1 bag", t:"researched", p:"check shelf", w:"Big breakfast plate. Crispiest in air-fryer testing."},
+        {k:"strawb", n:"Frozen strawberries", a:"1 bag, WinCo brand", t:"store brand", p:"check shelf", w:"Smoothies."},
+        {k:"pineapple", n:"Frozen pineapple chunks", a:"1 bag, WinCo brand", t:"store brand", p:"check shelf", w:"Smoothies."},
+        {k:"fries", n:"Crinkle-cut fries", a:"1 bag", t:"store brand", p:"check shelf", w:"Tenders + fries box. Ore-Ida or store brand."},
+        {k:"uncrust", n:"Smucker's Uncrustables, PB + strawberry", a:"1 box of 10", t:"store brand", p:"check shelf", w:"Emergency lunch, 2 at a time. Lasts months frozen."},
+        {k:"pepperoni", n:"Hormel Original Pepperoni", a:"1 pack", t:"store brand", p:"check shelf", w:"Pizza toast. Keeps for weeks unopened."}
       ]},
-      {name:"Bulk bins", items:[
-        {n:"Mild taco seasoning", a:"about 1/4 cup", t:"store brand", p:"cents per use",
-         w:"Taco nights. Make sure the bin says mild."},
-        {n:"Ground cinnamon", a:"a small scoop, only if out", t:"store brand", p:"cents per use",
-         w:"French toast."}
+      {name:"Restock — pantry", stock:true, items:[
+        {k:"granola", n:"Post Honey Roasted Granola", a:"1 bag", t:"store brand", p:"check shelf", w:"Yoplait mornings."},
+        {k:"cereal", n:"Cinnamon Protein Cheerios", a:"1 box", t:"researched", p:"check shelf", w:"Rushed mornings. 8 g protein, about double regular cereal."},
+        {k:"pb", n:"Peanut butter", a:"1 jar", t:"store brand", p:"check shelf", w:"Campus pack, PB-banana roll-up and toast."},
+        {k:"honey", n:"Honey", a:"1 bottle", t:"store brand", p:"check shelf", w:"Campus pack, French toast."},
+        {k:"pouch", n:"Shelf-stable chicken pouches", a:"4–6", t:"store brand", p:"check shelf", w:"Chicken-and-crackers packs and chicken salad."},
+        {k:"ritz", n:"Ritz crackers", a:"1 box", t:"store brand", p:"check shelf", w:"Crackers packs and snack boxes."},
+        {k:"pasta", n:"Pasta, elbows or shells", a:"1 lb", t:"store brand", p:"check shelf", w:"Meat-sauce pasta and chicken mac."},
+        {k:"ketchup", n:"Ketchup", a:"1 bottle", t:"store brand", p:"check shelf", w:"Burger sauce and Cane's-style dip."},
+        {k:"mayo", n:"Mayo", a:"1 jar", t:"store brand", p:"check shelf", w:"Burger sauce, dip, wraps, chicken salad."},
+        {k:"caesar", n:"Caesar dressing", a:"1 bottle", t:"store brand", p:"check shelf", w:"Caesar wraps."},
+        {k:"soup", n:"Campbell's Condensed Tomato Soup", a:"2 cans", t:"store brand", p:"check shelf", w:"Grilled cheese lunches. Each can is two."},
+        {k:"oil", n:"Olive oil", a:"1 bottle", t:"store brand", p:"check shelf", w:"Broccoli sides and subs."},
+        {k:"vinegar", n:"Red wine vinegar", a:"1 bottle", t:"store brand", p:"check shelf", w:"Subs. Lasts months."}
+      ]},
+      {name:"Restock — bulk bins", stock:true, items:[
+        {k:"taco", n:"Mild taco seasoning", a:"about 1/4 cup", t:"store brand", p:"cents per use", w:"Taco nights and quesadillas. Make sure the bin says mild."},
+        {k:"garlic", n:"Garlic powder", a:"a small scoop", t:"store brand", p:"cents per use", w:"Broccoli sides, quesadillas, dips."},
+        {k:"cinnamon", n:"Ground cinnamon", a:"a small scoop", t:"store brand", p:"cents per use", w:"French toast."},
+        {k:"oregano", n:"Dried oregano", a:"a small scoop", t:"store brand", p:"cents per use", w:"Subs."},
+        {k:"chia", n:"Chia seeds", a:"a small scoop (about 1/2 cup)", t:"store brand", p:"cents per use", w:"1 tbsp in a smoothie adds about 4 g fiber, like your original recipe."}
       ]}
     ]
   },
   {
     store:"Costco",
-    loc:"Orem \u00b7 once a month",
+    loc:"Orem · once a month",
     monthly:true,
-    note:"Everything here keeps for weeks. Buy it once, freeze what needs freezing, and skip Orem until next month.",
+    note:"Everything here keeps for weeks. On Costco weeks the whole list shows. Between trips, only what you've marked low shows up here \u2014 WinCo has a store-brand version of everything except the Tyson strips, so grab it there instead of driving to Orem.",
     groups:[
-      {name:"Meat \u2014 freeze on arrival", items:[
-        {n:"Kirkland Signature Fresh Boneless Skinless Chicken Breasts", a:"1 pack, about 6 lb", t:"researched", p:"est. ~$2.99/lb",
-         w:"Quesadillas and tacos for the month. Fresh, not the frozen bag \u2014 the frozen Kirkland breasts have added salt water. Portion into freezer bags the day you buy them; pull one the night before."}
-      ]},
       {name:"Freezer", items:[
-        {n:"Kirkland Signature Lightly Breaded Chicken Breast Chunks", a:"1 \u00d7 4 lb bag", t:"researched", p:"est. $14\u201318",
-         w:"Item 1736931. Air-fryer chicken nights. Same ingredients as Just Bare, cheaper, won a side-by-side taste test. About 6 oz is a meal."},
-        {n:"Jimmy Dean Turkey Sausage Links", a:"1 box of 48", t:"researched", p:"check shelf",
-         w:"Breakfast protein for the month, 12g protein per serving, in 8 sealed packs \u2014 freeze the box and pull one pack at a time. Grab Jimmy Dean's turkey patties instead if Orem has them. Reviews are mixed, so treat the first box as a trial."}
+        {k:"chicken", n:"Tyson Rotisserie Chicken Strips", a:"1 × 3 lb bag", t:"researched", p:"usually ~$16–17",
+         w:"Item 1448891. Fully cooked: air fry from frozen at 350°F for 7–9 min. Quesadillas, Caesar wraps, mac, chicken tacos."},
+        {k:"chunks", n:"Kirkland Signature Lightly Breaded Chicken Breast Chunks", a:"1 × 4 lb bag", t:"researched", p:"est. $14–18",
+         w:"Item 1736931. Chunks night and the tenders + fries box."},
+        {k:"sausage", n:"Jimmy Dean Turkey Sausage Links", a:"1 box of 48", t:"researched", p:"check shelf",
+         w:"Breakfast protein for the month in 8 sealed packs. Freeze the box and pull one pack at a time."}
       ]},
-      {name:"Dairy", items:[
-        {n:"Kirkland Signature Shredded Sharp Cheddar", a:"1 twin pack, 2.5 lb each", t:"researched", p:"est. ~$16.99",
-         w:"Scrambles, quesadillas, tacos, burgers. Freeze the second bag unopened."}
-      ]},
-      {name:"Pantry", items:[
-        {n:"Rao's Homemade Marinara", a:"1 two-pack", t:"researched", p:"est. under $11",
-         w:"Pasta nights. Won America's Test Kitchen and a 24-jar blind test, no added sugar."}
-      ]},
-      {name:"Backpack shelf", items:[
-        {n:"Kirkland Signature Protein Bar Variety Pack", a:"1 box of 20", t:"researched", p:"est. $20\u201324",
-         w:"Permanent backpack slot so a missed lunch isn't a missed meal. Pull a box from the bottom of the pallet; older boxes go hard."}
+      {name:"Dairy + pantry", items:[
+        {k:"cheddar", n:"Kirkland Signature Shredded Sharp Cheddar", a:"1 twin pack", t:"researched", p:"est. ~$16.99",
+         w:"Scrambles, quesadillas, tacos, burgers, mac. Freeze the second bag unopened."},
+        {k:"marinara", n:"Rao's Homemade Marinara", a:"1 two-pack", t:"researched", p:"est. under $11",
+         w:"Pasta nights and pizza toast. No added sugar."},
+        {k:"bar", n:"Kirkland Signature Protein Bar Variety Pack", a:"1 box of 20", t:"researched", p:"est. $20–24",
+         w:"Permanent backpack slot so a missed lunch isn't a missed meal."},
+        {k:"shake", n:"Orgain 30g Protein Milk Shakes", a:"1 × 18-pack", t:"researched", p:"usually ~$30",
+         w:"For the Uncrustables lunch. Stevia and monk fruit, no acesulfame-K. Treat the first pack as a trial."}
       ]}
     ]
   }
@@ -579,7 +571,7 @@ var COSTCO_TRIP = COSTCO_SET==="1" ? true : COSTCO_SET==="0" ? false : (COSTCO_D
 var PICNIC_WEEK = false;   /* one-time picnic items stay in the file, hidden */
 function setCostco(on){ lsSet(COSTCO_KEY, on?"1":"0"); location.reload(); }
 
-var KEY = "grocery_" + WEEK_START;   // checkmarks: this week only, so a new week starts clean
+var KEY = "grocery_v5_" + WEEK_START;   // checkmarks: this week only, so a new week starts clean
 var AISLE_KEY = "groceryAisles_v1";  // aisle notes: shared by every week, keyed by item name
 var LOW_KEY = "runningLow_v1";       // running-low flags, written by the kitchen app
 var state = {}, aisles = {}, filter = "all";
@@ -589,7 +581,7 @@ var C = 326.73;
    the counts, and "Copy what's left" can never disagree. Item IDs are
    assigned after filtering, exactly as before the redesign, so existing
    checkmarks line up. */
-if(!COSTCO_TRIP) DATA = DATA.filter(function(st){ return !st.monthly; });
+/* v5: Costco stays in DATA; wanted() decides what shows (Costco week, or flagged). */
 if(!PICNIC_WEEK){
   DATA.forEach(function(st){ st.groups = st.groups.filter(function(g){ return !g.temp; }); });
   Array.prototype.forEach.call(document.querySelectorAll(".picnic-only"), function(el){ el.style.display = "none"; });
@@ -605,18 +597,44 @@ function load(){
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
 function saveAisles(){ try{ localStorage.setItem(AISLE_KEY, JSON.stringify(aisles)); }catch(e){} }
 function idOf(si, gi, ii){ return si + "-" + gi + "-" + ii; }
+/* v5 — the list follows your inventory.
+   "Fresh" groups (things that spoil) show every week. "Restock" groups and
+   Costco show only what you've marked Running low in the app (or typed into
+   Extras). Buying one clears its flag, so the app knows it's back in stock.
+   "Show everything" reveals the full restock list for a quick kitchen walk. */
+var SHOW_ALL=false, BOUGHT={};
+function slugN(n){ return "x_"+String(n||"").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,""); }
+function flagged(it){ var f=loadFlags(); return !!(it.k && f[it.k]) || !!f[slugN(it.n)]; }
+function isStock(st,g){ return !!(g.stock || st.monthly); }
+function wanted(it, st, g){
+  if(!st || !g) return true;
+  if(!isStock(st,g)) return true;
+  if(st.monthly) return SHOW_ALL || COSTCO_TRIP || flagged(it) || !!BOUGHT[it.n];
+  return SHOW_ALL || flagged(it) || !!BOUGHT[it.n];
+}
+function lowCount(){ var n=0, tot=0; DATA.forEach(function(st){ st.groups.forEach(function(g){ if(!isStock(st,g)) return; g.items.forEach(function(it){ tot++; if(flagged(it)) n++; }); }); }); return [n,tot]; }
+function renderStockBar(){
+  var host=document.getElementById("picks"); if(!host) return;
+  var c=lowCount();
+  host.innerHTML='<div class="picks"><h3>'+(c[0]?c[0]+' restock item'+(c[0]===1?'':'s')+' added':'Nothing marked low')+'</h3>'+
+    '<p>Fresh food is on the list every week. Everything that lasts — pantry, freezer, spices, Costco — only shows up when you mark it <b>Running low</b> in the app (Shop tab) or add it under Extras. Buying it clears the flag.</p>'+
+    '<button type="button" class="showall" onclick="SHOW_ALL=!SHOW_ALL;renderStockBar();render();renderSeg()">'+(SHOW_ALL?'Hide what you’re not low on':'Show all '+c[1]+' restock items')+'</button></div>';
+}
 var TAG = {"researched":"Researched", "store brand":"Store brand", "deal":"Deal"};
 
 function render(){
   var html = "";
   DATA.forEach(function(st, si){
-    html += '<section class="store rise" style="--i:' + (4 + si) + '" data-store="' + esc(st.store) + '">' +
+    var anyS = st.groups.some(function(g){ return g.items.some(function(it){ return wanted(it,st,g); }); });
+    html += '<section class="store rise" style="--i:' + (4 + si) + '" data-store="' + esc(st.store) + '"' + (anyS ? '' : ' hidden') + '>' +
       '<div class="store-head"><div><h2>' + esc(st.store) + '</h2><p class="store-loc">' + esc(st.loc) + '</p></div>' +
       '<span class="store-count" id="sc-' + si + '"></span></div>' +
       (st.note ? '<p class="store-note">' + esc(st.note) + '</p>' : '');
     st.groups.forEach(function(g, gi){
-      html += '<div class="group"><div class="group-head"><span>' + esc(g.name) + '</span><span id="gl-' + si + '-' + gi + '"></span></div><ul class="card">';
+      var anyW = g.items.some(function(it){ return wanted(it,st,g); });
+      html += '<div class="group"' + (anyW ? '' : ' hidden') + '><div class="group-head"><span>' + esc(g.name) + '</span><span id="gl-' + si + '-' + gi + '"></span></div><ul class="card">';
       g.items.forEach(function(it, ii){
+        if(!wanted(it,st,g)) return;
         var id = idOf(si, gi, ii), done = !!state[id], key = noteKey(it.n), note = aisles[key] || "";
         html += '<li class="item' + (done ? " done" : "") + '" data-id="' + id + '" role="checkbox" tabindex="0" aria-checked="' + done + '">' +
           '<span class="check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 12.5l4 4 8-9"/></svg></span>' +
@@ -646,7 +664,7 @@ function tally(){
     var s = {total:0, left:0, groups:[]};
     st.groups.forEach(function(g, gi){
       var gl = 0;
-      g.items.forEach(function(it, ii){ s.total++; if(!state[idOf(si,gi,ii)]){ s.left++; gl++; } });
+      g.items.forEach(function(it, ii){ if(!wanted(it,st,g)) return; s.total++; if(!state[idOf(si,gi,ii)]){ s.left++; gl++; } });
       s.groups.push(gl);
     });
     t.total += s.total; t.left += s.left; t.stores.push(s);
@@ -671,7 +689,8 @@ function updateCounts(fromTap){
   shownLeft = t.left;
   document.getElementById("sideTop").textContent = t.left === 0 ? "Everything's in the cart." : done + " of " + t.total + " in the cart";
   document.getElementById("bars").innerHTML = DATA.map(function(st, si){
-    var s = t.stores[si], pct = s.total ? (s.total - s.left) / s.total * 100 : 0;
+    var s = t.stores[si]; if(!s.total) return "";
+    var pct = s.total ? (s.total - s.left) / s.total * 100 : 0;
     return '<div class="bar-row"><b>' + esc(st.store) + '</b><div class="track"><span style="width:' + pct + '%"></span></div><span>' + (s.total - s.left) + '/' + s.total + '</span></div>';
   }).join("");
   DATA.forEach(function(st, si){
@@ -688,8 +707,10 @@ function updateCounts(fromTap){
 /* ---- store filter ---- */
 function renderSeg(){
   var seg = document.getElementById("seg");
-  if(DATA.length < 2){ seg.style.display = "none"; return; }
-  var opts = [["all","All"]].concat(DATA.map(function(st){ return [st.store, st.store]; }));
+  var tt = tally(), vis = DATA.filter(function(st, si){ return tt.stores[si].total > 0; });
+  if(vis.length < 2){ seg.style.display = "none"; if(filter !== "all"){ filter = "all"; } return; }
+  seg.style.display = "";
+  var opts = [["all","All"]].concat(vis.map(function(st){ return [st.store, st.store]; }));
   seg.innerHTML = opts.map(function(o){
     return '<button type="button" role="tab" aria-selected="' + (filter === o[0]) + '" data-f="' + esc(o[0]) + '">' + esc(o[1]) + '</button>'; }).join("");
 }
@@ -713,7 +734,14 @@ function toggle(li){
   if(on && !reduceMotion()){ li.classList.remove("justdone"); void li.offsetWidth; li.classList.add("justdone");
     setTimeout(function(){ li.classList.remove("justdone"); }, 500); }
   save(); updateCounts(true);
-  if(on && li.closest && li.closest('[data-store="Costco"]')) lsSet(LAST_COSTCO_KEY, WEEK_START);
+  if(on && COSTCO_TRIP && li.closest && li.closest('[data-store="Costco"]')) lsSet(LAST_COSTCO_KEY, WEEK_START);
+  /* inventory: buying a restock item clears its Running low flag; un-checking puts it back */
+  var p = id.split("-"), it = DATA[+p[0]] && DATA[+p[0]].groups[+p[1]] && DATA[+p[0]].groups[+p[1]].items[+p[2]];
+  if(it){
+    var f = loadFlags(), keys = [it.k, slugN(it.n)].filter(Boolean);
+    if(on){ var had = false; keys.forEach(function(k){ if(f[k]){ delete f[k]; had = true; } }); if(had){ BOUGHT[it.n] = 1; saveFlags(f); renderStockBar(); } }
+    else if(BOUGHT[it.n]){ f[it.k || slugN(it.n)] = {n: it.n, at: Date.now()}; saveFlags(f); renderStockBar(); }
+  }
 }
 function editAisle(btn){
   var key = btn.getAttribute("data-note");
@@ -749,16 +777,33 @@ document.getElementById("stores").addEventListener("keydown", function(e){
 
 /* ---- running-low flags from the kitchen app ---- */
 function loadFlags(){ try{ var o = JSON.parse(localStorage.getItem(LOW_KEY)); return (o && typeof o === "object") ? o : {}; }catch(e){ return {}; } }
+/* Extras: anything not on the regular list. Shares runningLow_v1 with the
+   kitchen app, so "Running low" items from the app and one-off things typed
+   here (isopropyl alcohol, paper towels) live in one place. Tap one to check
+   it off; it's gone from both apps. */
+function saveFlags(o){ try{ localStorage.setItem(LOW_KEY, JSON.stringify(o)); }catch(e){} }
 function renderFlags(){
-  var host = document.getElementById("flagged"), f = loadFlags(), keys = Object.keys(f);
-  if(!keys.length){ host.innerHTML = ""; return; }
-  host.innerHTML = '<div class="flagged"><h3>Running low, from the app</h3>' +
-    '<p>You added these in the app. Grab them even if they\'re not below.</p><ul>' +
-    keys.map(function(k){ return "<li>" + esc(f[k].n || k) + "</li>"; }).join("") +
-    '</ul><button type="button" id="clearFlags">I bought these \u2014 clear</button></div>';
-  document.getElementById("clearFlags").addEventListener("click", function(){
-    try{ localStorage.removeItem(LOW_KEY); }catch(e){}
-    renderFlags(); toast("Flags cleared");
+  var host = document.getElementById("flagged"), f = loadFlags(), known = {};
+  DATA.forEach(function(st){ st.groups.forEach(function(g){ g.items.forEach(function(it){ if(it.k) known[it.k] = 1; known[slugN(it.n)] = 1; }); }); });
+  var keys = Object.keys(f).filter(function(k){ return !known[k]; });
+  keys.sort(function(a,b){ return (f[a].at||0)-(f[b].at||0); });
+  host.innerHTML = '<div class="flagged' + (keys.length ? '' : ' empty') + '"><h3>Extras' + (keys.length ? ' · ' + keys.length : '') + '</h3>' +
+    '<p>' + (keys.length ? 'Tap one when it’s in the cart.' : 'Anything not on the list below — a one-time thing, or something you ran out of.') + '</p>' +
+    (keys.length ? '<ul>' + keys.map(function(k){ return '<li><button type="button" class="xchip" data-k="' + esc(k) + '">' + esc(f[k].n || k) + '</button></li>'; }).join("") + '</ul>' : '') +
+    '<form class="xadd" id="xadd"><input id="xaddName" type="text" placeholder="Add an item, e.g. isopropyl alcohol" autocomplete="off" enterkeyhint="done"><button type="submit">Add</button></form>' +
+    '</div>';
+  Array.prototype.forEach.call(host.querySelectorAll(".xchip"), function(b){
+    b.addEventListener("click", function(){
+      var o = loadFlags(), k = b.getAttribute("data-k"), item = o[k]; delete o[k]; saveFlags(o); renderFlags(); render(); renderStockBar(); renderSeg();
+      toast("Got it: " + ((item && item.n) || k));
+    });
+  });
+  document.getElementById("xadd").addEventListener("submit", function(e){
+    e.preventDefault();
+    var el = document.getElementById("xaddName"), name = (el.value || "").trim(); if(!name) return;
+    var o = loadFlags(), key = "x_" + name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+    o[key] = {n: name, at: Date.now()}; saveFlags(o); renderFlags(); render(); renderStockBar(); renderSeg();
+    var i = document.getElementById("xaddName"); if(i) i.focus();
   });
 }
 
@@ -766,11 +811,11 @@ function renderFlags(){
 function buildText(){
   var out = ["Here's what I still need to buy for " + WEEK_LABEL + ":", ""];
   var fl = loadFlags(), fk = Object.keys(fl);
-  if(fk.length){ out.push("FLAGGED AS RUNNING LOW"); fk.forEach(function(k){ out.push("  - " + (fl[k].n || k)); }); out.push(""); }
+  if(fk.length){ out.push("EXTRAS"); fk.forEach(function(k){ out.push("  - " + (fl[k].n || k)); }); out.push(""); }
   DATA.forEach(function(st, si){
     var lines = [];
     st.groups.forEach(function(g, gi){ g.items.forEach(function(it, ii){
-      if(!state[idOf(si,gi,ii)]){ var note = aisles[noteKey(it.n)];
+      if(wanted(it,st,g) && !state[idOf(si,gi,ii)]){ var note = aisles[noteKey(it.n)];
         lines.push("  - " + it.n + " (" + it.a + ")" + (note ? " [" + note + "]" : "")); }
     }); });
     if(lines.length){ out.push(st.store.toUpperCase() + " \u2014 " + st.loc); out = out.concat(lines); out.push(""); }
@@ -812,6 +857,7 @@ document.getElementById("lede").innerHTML = "Before you go: check your kitchen a
 renderSeg();
 render();
 renderFlags();
+renderStockBar();
 </script>
 </body>
 </html>
