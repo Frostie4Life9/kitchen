@@ -521,6 +521,22 @@ var DATA = [
         {k:"cinnamon", n:"Ground cinnamon", a:"a small scoop", t:"store brand", p:"cents per use", w:"French toast."},
         {k:"oregano", n:"Dried oregano", a:"a small scoop", t:"store brand", p:"cents per use", w:"Subs."},
         {k:"chia", n:"Chia seeds", a:"a small scoop (about 1/2 cup)", t:"store brand", p:"cents per use", w:"1 tbsp in a smoothie adds about 4 g fiber, like your original recipe."}
+      ]},
+      /* Ran out of a Costco item between trips: buy the WinCo version, sized to
+         last until Costco. Only shows when it's flagged AND it isn't a Costco week. */
+      {name:"Costco items \u2014 WinCo stand-ins", standin:true, items:[
+        {k:"chunks", n:"Frozen breaded chicken chunks (stand-in)", a:"1 bag, smallest size", t:"store brand", p:"check shelf",
+         w:"Out of the Kirkland chunks before Costco. Look for white-meat chicken as the first ingredient."},
+        {k:"sausage", n:"Turkey sausage links (stand-in)", a:"1 small box", t:"store brand", p:"check shelf",
+         w:"Out of the Jimmy Dean box before Costco. Store-brand turkey links or patties both work."},
+        {k:"cheddar", n:"Shredded cheddar (stand-in)", a:"1 bag, 8 oz", t:"store brand", p:"check shelf",
+         w:"Out of the Kirkland cheddar before Costco. Sharp or mild, whichever is cheaper."},
+        {k:"marinara", n:"Marinara (stand-in)", a:"1 jar", t:"store brand", p:"check shelf",
+         w:"Out of Rao's before Costco. Any jar works; pick one without much added sugar."},
+        {k:"bar", n:"Protein bars (stand-in)", a:"a few singles", t:"store brand", p:"check shelf",
+         w:"Just enough to reach Costco. Skip any with acesulfame-K on the label."},
+        {k:"shake", n:"Protein shakes (stand-in)", a:"a 4-pack", t:"store brand", p:"check shelf",
+         w:"Just enough to reach Costco. Check for acesulfame-K."}
       ]}
     ]
   },
@@ -528,7 +544,7 @@ var DATA = [
     store:"Costco",
     loc:"Orem · once a month",
     monthly:true,
-    note:"Everything here keeps for weeks. On Costco weeks the whole list shows. Between trips, only what you've marked low shows up here \u2014 WinCo has a store-brand version of everything except the Tyson strips, so grab it there instead of driving to Orem.",
+    note:"Everything here keeps for weeks. On Costco weeks the whole list shows. Between trips, anything you mark low goes on the WinCo list as a store-brand stand-in instead. The Tyson strips are the exception: WinCo has no match, so they wait here for the next trip, and the pouch or beef meals cover you until then.",
     groups:[
       {name:"Freezer", items:[
         {k:"chicken", n:"Tyson Rotisserie Chicken Strips", a:"1 × 3 lb bag", t:"researched", p:"usually ~$16–17",
@@ -619,13 +635,15 @@ DATA.forEach(function(st){ st.groups.forEach(function(g){ g.items.forEach(functi
 function itemKeys(it){ return [it.k].concat(it.ks||[]).concat([slugN(it.n)]).filter(Boolean); }
 function flagged(it){ var f=loadFlags(); return itemKeys(it).some(function(k){ return !!f[k]; }); }
 function isStock(st,g){ return !!(g.stock || st.monthly); }
+var STANDIN={}; DATA.forEach(function(st){ st.groups.forEach(function(g){ if(g.standin) g.items.forEach(function(it){ STANDIN[it.k]=1; }); }); });
 function wanted(it, st, g){
   if(!st || !g) return true;
+  if(g.standin) return !COSTCO_TRIP && (flagged(it) || !!BOUGHT[it.n]);
   if(!isStock(st,g)) return true;
-  if(st.monthly) return SHOW_ALL || COSTCO_TRIP || flagged(it) || !!BOUGHT[it.n];
+  if(st.monthly) return SHOW_ALL || COSTCO_TRIP || (flagged(it) && !STANDIN[it.k]) || !!BOUGHT[it.n];
   return SHOW_ALL || flagged(it) || !!BOUGHT[it.n];
 }
-function lowCount(){ var n=0, tot=0; DATA.forEach(function(st){ st.groups.forEach(function(g){ if(!isStock(st,g)) return; g.items.forEach(function(it){ tot++; if(flagged(it)) n++; }); }); }); return [n,tot]; }
+function lowCount(){ var n=0, tot=0; DATA.forEach(function(st){ st.groups.forEach(function(g){ if(g.standin || !isStock(st,g)) return; g.items.forEach(function(it){ tot++; if(flagged(it)) n++; }); }); }); return [n,tot]; }
 function renderStockBar(){
   var host=document.getElementById("picks"); if(!host) return;
   var c=lowCount();
