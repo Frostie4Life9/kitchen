@@ -4794,9 +4794,7 @@ const ROTATION=[
     {k:"pizzatoast", n:"Sourdough pizza toast", c:500, p:27, tag:"At home",
      d:"Thick sourdough, Rao's and provolone, crisped in the air fryer. Pepperoni if you have it.", r:[]},
     {k:"sub", n:"Sub-style sandwich", c:580, p:38, tag:"Ice pack",
-     d:"Turkey, provolone and lettuce on a toasted bun with oil and vinegar. Salami if you have it.", r:[]},
-    {k:"uncrust", n:"Uncrustables + protein shake", c:570, p:42, tag:"No fridge \u00b7 0 min",
-     d:"Zero cooking for rushed days. Two Uncrustables and an Orgain shake.", r:[]}
+     d:"Turkey, provolone and lettuce on a toasted bun with oil and vinegar. Salami if you have it.", r:[]}
   );
   D.items.splice(4,0,
     {k:"mac", n:"Chicken mac and cheese", c:780, p:53,
@@ -7518,7 +7516,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v3.18.1 · 2026-10-16";   // bump this each time you upload a new index.html
+const APP_VERSION="v3.18.2 · 2026-10-16";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
