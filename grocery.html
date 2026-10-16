@@ -88,6 +88,9 @@ button{font:inherit}
 .flagged li{list-style:none}
 .flagged .xchip{font:inherit;font-size:13px;font-weight:700;background:var(--card);border:0;border-radius:99px;padding:6px 12px;color:var(--orange);cursor:pointer}
 .flagged .xchip:active{transform:scale(.96)}
+.flagged ul.xlist{display:block;margin:4px 0 12px;gap:0}
+.flagged ul.xlist li.item{display:flex}
+.flagged li.xitem .meta{margin-top:6px}
 .flagged.empty{background:var(--card);box-shadow:0 1px 0 var(--rule)}
 .xadd{display:flex;gap:8px;margin:2px 0 0}
 .xadd input{flex:1;min-width:0;font:inherit;font-size:16px;color:var(--ink);background:var(--paper);border:1.5px solid var(--rule);border-radius:12px;padding:10px 12px}
@@ -494,7 +497,8 @@ var DATA = [
         {k:"pineapple", n:"Frozen pineapple chunks", a:"1 bag, WinCo brand", t:"store brand", p:"check shelf", w:"Smoothies."},
         {k:"fries", n:"Crinkle-cut fries", a:"1 bag", t:"store brand", p:"check shelf", w:"Tenders + fries box. Ore-Ida or store brand."},
         {k:"uncrust", n:"Smucker's Uncrustables, PB + strawberry", a:"1 box of 10", t:"store brand", p:"check shelf", w:"Emergency lunch, 2 at a time. Lasts months frozen."},
-        {k:"pepperoni", n:"Hormel Original Pepperoni", a:"1 pack", t:"store brand", p:"check shelf", w:"Pizza toast. Keeps for weeks unopened."}
+        {k:"pepperoni", n:"Hormel Original Pepperoni", a:"1 pack", t:"store brand", p:"check shelf", w:"Pizza toast. Keeps for weeks unopened."},
+        {k:"salami", n:"Genoa salami, pre-sliced", a:"1 small pack", t:"store brand", p:"check shelf", w:"Optional, for the sub. Unopened it keeps for weeks; once open, use it within about 5 days."}
       ]},
       {name:"Restock — pantry", stock:true, items:[
         {k:"granola", n:"Post Honey Roasted Granola", a:"1 bag", t:"store brand", p:"check shelf", w:"Yoplait mornings."},
@@ -604,7 +608,16 @@ function idOf(si, gi, ii){ return si + "-" + gi + "-" + ii; }
    "Show everything" reveals the full restock list for a quick kitchen walk. */
 var SHOW_ALL=false, BOUGHT={};
 function slugN(n){ return "x_"+String(n||"").toLowerCase().replace(/[^a-z0-9]+/g,"_").replace(/^_|_$/g,""); }
-function flagged(it){ var f=loadFlags(); return !!(it.k && f[it.k]) || !!f[slugN(it.n)]; }
+/* Fresh items are matched to the app's recipe ingredients by name, so "Low?" on
+   eggs in a recipe lands on "Large eggs" here instead of a duplicate in Extras,
+   and checking it off clears the flag. ks = extra keys an item answers to. */
+var FRESH_KEYS={"Bananas":["banana"],"Apples":["apple"],"Mandarins or oranges":["mandarin","orange"],"Pears":["pear"],
+  "Strawberries, fresh":["strawb"],"Mini watermelon or a whole pineapple":["watermelon","pineapple"],"Shredded lettuce":["lettuce"],
+  "Oven-roasted turkey, fresh-sliced":["turkey"],"Provolone, sliced":["provolone"],"85/15 ground beef":["beef"],"Large eggs":["eggs"],
+  "Milk":["milk"],"Yoplait Original cups":["yoplait"],"Sourdough loaf, in-store bakery":["bread"],"Guerrero Caseras Burrito Size Flour Tortillas":["tortilla"]};
+DATA.forEach(function(st){ st.groups.forEach(function(g){ g.items.forEach(function(it){ var m=FRESH_KEYS[it.n]; if(m && !it.k){ it.k=m[0]; it.ks=m.slice(1); } }); }); });
+function itemKeys(it){ return [it.k].concat(it.ks||[]).concat([slugN(it.n)]).filter(Boolean); }
+function flagged(it){ var f=loadFlags(); return itemKeys(it).some(function(k){ return !!f[k]; }); }
 function isStock(st,g){ return !!(g.stock || st.monthly); }
 function wanted(it, st, g){
   if(!st || !g) return true;
@@ -738,7 +751,7 @@ function toggle(li){
   /* inventory: buying a restock item clears its Running low flag; un-checking puts it back */
   var p = id.split("-"), it = DATA[+p[0]] && DATA[+p[0]].groups[+p[1]] && DATA[+p[0]].groups[+p[1]].items[+p[2]];
   if(it){
-    var f = loadFlags(), keys = [it.k, slugN(it.n)].filter(Boolean);
+    var f = loadFlags(), keys = itemKeys(it);
     if(on){ var had = false; keys.forEach(function(k){ if(f[k]){ delete f[k]; had = true; } }); if(had){ BOUGHT[it.n] = 1; saveFlags(f); renderStockBar(); } }
     else if(BOUGHT[it.n]){ f[it.k || slugN(it.n)] = {n: it.n, at: Date.now()}; saveFlags(f); renderStockBar(); }
   }
@@ -782,36 +795,91 @@ function loadFlags(){ try{ var o = JSON.parse(localStorage.getItem(LOW_KEY)); re
    here (isopropyl alcohol, paper towels) live in one place. Tap one to check
    it off; it's gone from both apps. */
 function saveFlags(o){ try{ localStorage.setItem(LOW_KEY, JSON.stringify(o)); }catch(e){} }
+/* Extras get the same checklist rows as the regular list. Checking one keeps it
+   on screen (struck through) so a mis-tap can be undone; the flag clears right
+   away, so the kitchen app knows it's stocked. Brand: your own note on the flag
+   (b), else the brand of the matching pantry item. */
+var XDONE = {};
+function pantryBrand(k, name){
+  var items = []; try{ items = JSON.parse(localStorage.getItem("pantryItems_v2")) || []; }catch(e){}
+  if(!Array.isArray(items) || !items.length) return "";
+  var links = {}; try{ links = JSON.parse(localStorage.getItem("ingLinks_v1")) || {}; }catch(e){}
+  var hit = null;
+  if(links[k] && links[k].id != null) hit = items.find(function(i){ return i && i.id === links[k].id; });
+  if(!hit && name){ var q = name.toLowerCase().trim();
+    hit = items.find(function(i){ return i && (i.name||"").toLowerCase().trim() === q; }) ||
+          items.find(function(i){ var n = (i && i.name || "").toLowerCase(); return n && (n.indexOf(q) >= 0 || q.indexOf(n) >= 0); }); }
+  return hit && hit.brand ? hit.brand : "";
+}
 function renderFlags(){
   var host = document.getElementById("flagged"), f = loadFlags(), known = {};
-  DATA.forEach(function(st){ st.groups.forEach(function(g){ g.items.forEach(function(it){ if(it.k) known[it.k] = 1; known[slugN(it.n)] = 1; }); }); });
-  var keys = Object.keys(f).filter(function(k){ return !known[k]; });
-  keys.sort(function(a,b){ return (f[a].at||0)-(f[b].at||0); });
-  host.innerHTML = '<div class="flagged' + (keys.length ? '' : ' empty') + '"><h3>Extras' + (keys.length ? ' · ' + keys.length : '') + '</h3>' +
-    '<p>' + (keys.length ? 'Tap one when it’s in the cart.' : 'Anything not on the list below — a one-time thing, or something you ran out of.') + '</p>' +
-    (keys.length ? '<ul>' + keys.map(function(k){ return '<li><button type="button" class="xchip" data-k="' + esc(k) + '">' + esc(f[k].n || k) + '</button></li>'; }).join("") + '</ul>' : '') +
+  DATA.forEach(function(st){ st.groups.forEach(function(g){ g.items.forEach(function(it){ itemKeys(it).forEach(function(k){ known[k] = 1; }); }); }); });
+  var rows = Object.keys(f).filter(function(k){ return !known[k]; }).map(function(k){ return {k:k, o:f[k], done:false}; });
+  Object.keys(XDONE).forEach(function(k){ if(!f[k] && !known[k]) rows.push({k:k, o:XDONE[k], done:true}); });
+  rows.sort(function(a,b){ return (a.o.at||0)-(b.o.at||0); });
+  var left = rows.filter(function(r){ return !r.done; }).length;
+  host.innerHTML = '<div class="flagged' + (rows.length ? '' : ' empty') + '"><h3>Extras' + (left ? ' · ' + left : '') + '</h3>' +
+    '<p>' + (rows.length ? 'Check each one off as it goes in the cart.' : 'Anything not on the list below — a one-time thing, or something you ran out of.') + '</p>' +
+    (rows.length ? '<ul class="card xlist">' + rows.map(function(r){
+      var own = r.o.b || "", fromP = own ? "" : pantryBrand(r.k, r.o.n);
+      return '<li class="item xitem' + (r.done ? ' done' : '') + '" data-k="' + esc(r.k) + '" role="checkbox" tabindex="0" aria-checked="' + r.done + '">' +
+        '<span class="check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 12.5l4 4 8-9"/></svg></span>' +
+        '<span class="body"><span class="name">' + esc(r.o.n || r.k) + '</span>' +
+        '<span class="meta">' + (fromP ? '<span class="tag researched">Your usual: ' + esc(fromP) + '</span>' : '') +
+        '<button type="button" class="aisle xbrand' + (own ? '' : ' empty') + '" data-k="' + esc(r.k) + '">' + esc(own || (fromP ? 'Different brand?' : 'Add brand')) + '</button>' +
+        '</span></span></li>'; }).join("") + '</ul>' : '') +
     '<form class="xadd" id="xadd"><input id="xaddName" type="text" placeholder="Add an item, e.g. isopropyl alcohol" autocomplete="off" enterkeyhint="done"><button type="submit">Add</button></form>' +
     '</div>';
-  Array.prototype.forEach.call(host.querySelectorAll(".xchip"), function(b){
-    b.addEventListener("click", function(){
-      var o = loadFlags(), k = b.getAttribute("data-k"), item = o[k]; delete o[k]; saveFlags(o); renderFlags(); render(); renderStockBar(); renderSeg();
-      toast("Got it: " + ((item && item.n) || k));
-    });
-  });
   document.getElementById("xadd").addEventListener("submit", function(e){
     e.preventDefault();
     var el = document.getElementById("xaddName"), name = (el.value || "").trim(); if(!name) return;
     var o = loadFlags(), key = "x_" + name.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
-    o[key] = {n: name, at: Date.now()}; saveFlags(o); renderFlags(); render(); renderStockBar(); renderSeg();
+    o[key] = {n: name, at: Date.now()}; delete XDONE[key]; saveFlags(o); renderFlags(); render(); renderStockBar(); renderSeg();
     var i = document.getElementById("xaddName"); if(i) i.focus();
   });
 }
+function toggleExtra(li){
+  var k = li.getAttribute("data-k"), f = loadFlags(), on = !XDONE[k];
+  if(on){ var item = f[k] || {n:k, at:Date.now()}; XDONE[k] = item; delete f[k]; saveFlags(f); }
+  else { f[k] = XDONE[k]; delete XDONE[k]; saveFlags(f); }
+  li.classList.toggle("done", on); li.setAttribute("aria-checked", String(on));
+  if(on && !reduceMotion()){ li.classList.remove("justdone"); void li.offsetWidth; li.classList.add("justdone"); }
+  setTimeout(function(){ renderFlags(); renderStockBar(); renderSeg(); }, on ? 450 : 0);
+}
+function editBrand(btn){
+  var k = btn.getAttribute("data-k"), f = loadFlags(), cur = (f[k] && f[k].b) || (XDONE[k] && XDONE[k].b) || "";
+  var input = document.createElement("input");
+  input.type = "text"; input.className = "aisle-input"; input.value = cur;
+  input.placeholder = "e.g. Great Value, 91%"; input.setAttribute("aria-label", "Brand");
+  btn.replaceWith(input); input.focus(); input.select();
+  var closed = false;
+  function commit(){
+    if(closed) return; closed = true;
+    var v = input.value.trim(), o = loadFlags(), tgt = o[k] || XDONE[k];
+    if(tgt){ if(v) tgt.b = v; else delete tgt.b; }
+    if(o[k]) saveFlags(o);
+    renderFlags();
+  }
+  input.addEventListener("blur", commit);
+  input.addEventListener("keydown", function(ev){
+    if(ev.key === "Enter"){ ev.preventDefault(); commit(); }
+    if(ev.key === "Escape"){ input.value = cur; commit(); }
+  });
+  input.addEventListener("click", function(ev){ ev.stopPropagation(); });
+}
+document.getElementById("flagged").addEventListener("click", function(e){
+  var b = e.target.closest(".xbrand"); if(b){ e.stopPropagation(); editBrand(b); return; }
+  var li = e.target.closest("li.xitem"); if(li) toggleExtra(li);
+});
+document.getElementById("flagged").addEventListener("keydown", function(e){
+  if(e.target.matches && e.target.matches("li.xitem") && (e.key === " " || e.key === "Enter")){ e.preventDefault(); toggleExtra(e.target); }
+});
 
 /* ---- copy, reset, toast ---- */
 function buildText(){
   var out = ["Here's what I still need to buy for " + WEEK_LABEL + ":", ""];
   var fl = loadFlags(), fk = Object.keys(fl);
-  if(fk.length){ out.push("EXTRAS"); fk.forEach(function(k){ out.push("  - " + (fl[k].n || k)); }); out.push(""); }
+  if(fk.length){ out.push("EXTRAS"); fk.forEach(function(k){ var br = fl[k].b || pantryBrand(k, fl[k].n); out.push("  - " + (fl[k].n || k) + (br ? " (" + br + ")" : "")); }); out.push(""); }
   DATA.forEach(function(st, si){
     var lines = [];
     st.groups.forEach(function(g, gi){ g.items.forEach(function(it, ii){
