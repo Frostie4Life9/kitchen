@@ -7676,7 +7676,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.10.17-e";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.10.17-f";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
@@ -7878,7 +7878,13 @@ const APP_VERSION="2026.10.17-e";   // date + letter, like Daily Protocol: next 
      in a sheet ourselves without that slide; fit() and keepVisible() above
      keep the field in view inside the sheet instead. A second tap on a field
      that's already active behaves normally, so you can still place the cursor. */
+  /* only a real tap counts: a drag that happens to start on a field is a scroll */
+  let tap=null;
+  document.addEventListener("touchstart",function(e){ const t=e.touches[0]; tap=(e.touches.length===1)?{x:t.clientX,y:t.clientY,t:Date.now(),moved:false}:null; },{passive:true});
+  document.addEventListener("touchmove",function(e){ if(!tap) return; const t=e.touches[0]; if(Math.abs(t.clientX-tap.x)>8 || Math.abs(t.clientY-tap.y)>8) tap.moved=true; },{passive:true});
   document.addEventListener("touchend",function(e){
+    const wasTap=tap && !tap.moved && Date.now()-tap.t<600; tap=null;
+    if(!wasTap) return;
     const el=e.target && e.target.closest ? e.target.closest(".sheet input, .sheet textarea, .v3-sheet input, .v3-sheet textarea") : null;
     if(!el || el===document.activeElement || el.disabled || el.readOnly) return;
     if(/^(checkbox|radio|file|range|color|button|submit)$/i.test(el.type||"")) return;
