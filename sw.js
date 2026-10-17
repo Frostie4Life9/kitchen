@@ -6,7 +6,7 @@
    Fonts and icons: saved copy first (they never change), refreshed quietly.
    The new-version check (?_=…) and anything that isn't a GET always go
    straight to the network, so updates and sync behave exactly as before. */
-const CACHE = "kitchen-2026.10.17-c";
+const CACHE = "kitchen-2026.10.17-d";
 const PAGES = ["./", "index.html", "grocery.html", "workout.html", "dishlog.html"];
 const ASSETS = ["kitchen", "grocery", "lift", "dishlog"].flatMap(a => [
   "icons/" + a + "-32.png", "icons/" + a + "-180.png", "icons/" + a + "-192.png", a + ".webmanifest"]);
@@ -35,10 +35,18 @@ self.addEventListener("fetch", e => {
   if (isPage) {
     e.respondWith((async () => {
       const cache = await caches.open(CACHE);
-      const net = fetch(req).then(res => {
+      /* no-cache: always ask GitHub whether the page changed, so the browser's
+         own cache can't hand back an older copy */
+      const net = fetch(url.href, {cache: "no-cache", credentials: "same-origin"}).then(res => {
         if (res.ok) cache.put(url.pathname, res.clone());
         return res;
       });
+      /* tapping Reload on the update bar (?v=…): wait for the fresh page,
+         only fall back to the saved copy if there's no connection at all */
+      if (url.searchParams.has("v")) {
+        try { return await net; }
+        catch (err) { return (await cache.match(url.pathname, {ignoreSearch: true})) || Response.error(); }
+      }
       try { return await Promise.race([net, timeout(2500)]); }
       catch (err) {
         const saved = await cache.match(url.pathname, {ignoreSearch: true}) || await cache.match(req, {ignoreSearch: true});

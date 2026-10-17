@@ -3327,8 +3327,24 @@ function openScan(){
   $("scanOverlay").classList.add("show"); $("scanStatus").textContent="Starting camera…";
   if(typeof Html5Qrcode==="undefined"){ $("scanStatus").textContent="Scanner needs an internet connection to load. You can still add items by hand."; return; }
   scanner=new Html5Qrcode("reader");
-  scanner.start({facingMode:"environment"},{fps:10,qrbox:{width:250,height:140}}, onScan, ()=>{})
-    .then(()=>{ $("scanStatus").textContent="Point at a barcode…"; })
+  /* Newer iPhones open on the main lens, which can't focus closer than about
+     8 inches, then jump to the macro lens: the blurry-then-sharp moment.
+     Ask for a sharp, continuously focusing feed and zoom in 2x, so the barcode
+     fills the box from a distance the main lens can focus at. */
+  scanner.start({facingMode:"environment"},
+      {fps:12, qrbox:{width:260,height:150}, aspectRatio:1.7778,
+       videoConstraints:{facingMode:{ideal:"environment"}, width:{ideal:1920}, height:{ideal:1080}, advanced:[{focusMode:"continuous"}]}},
+      onScan, ()=>{})
+    .then(()=>{
+      $("scanStatus").textContent="Hold about 8 inches away — it focuses better a little farther back.";
+      try{
+        const caps=scanner.getRunningTrackCapabilities?scanner.getRunningTrackCapabilities():{};
+        const adv=[];
+        if(caps.focusMode && caps.focusMode.indexOf("continuous")>=0) adv.push({focusMode:"continuous"});
+        if(caps.zoom){ const z=Math.min(caps.zoom.max||1, Math.max(caps.zoom.min||1, 2)); if(z>1) adv.push({zoom:z}); }
+        if(adv.length) scanner.applyVideoConstraints({advanced:adv}).catch(function(){});
+      }catch(e){}
+    })
     .catch(e=>{ $("scanStatus").textContent="Couldn't open the camera. Add by hand instead."; });
 }
 function onScan(code){ stopScanner(); closeScan(); openAdd(); $("mBarcode").value=code; showToast("Scanned "+code); barcodeLookup(); }
@@ -7660,7 +7676,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.10.17-c";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.10.17-d";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
@@ -7794,7 +7810,13 @@ const APP_VERSION="2026.10.17-c";   // date + letter, like Daily Protocol: next 
   document.addEventListener("touchstart",function(e){
     const sh=sheetFrom(e.target); if(!sh || e.touches.length!==1){ d=null; return; }
     if(e.target.closest("input, textarea, select")){ d=null; return; }
-    d={sh:sh, y0:e.touches[0].clientY, x0:e.touches[0].clientX, t0:Date.now(), dy:0, on:false, top:sh.scrollTop<=0};
+    /* typing: never close on a swipe while the keyboard is up */
+    const ae=document.activeElement; if(ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)){ d=null; return; }
+    /* forms (anything with fields) only close from the grab bar at the top, so
+       scrolling back up past the top of a half-filled form can't throw it away */
+    const y=e.touches[0].clientY, r=sh.getBoundingClientRect();
+    if(sh.querySelector("input, textarea, select") && y-r.top>56){ d=null; return; }
+    d={sh:sh, y0:y, x0:e.touches[0].clientX, t0:Date.now(), dy:0, on:false, top:sh.scrollTop<=0};
   },{passive:true});
   document.addEventListener("touchmove",function(e){
     if(!d) return;
@@ -7825,6 +7847,38 @@ const APP_VERSION="2026.10.17-c";   // date + letter, like Daily Protocol: next 
   }
   document.addEventListener("touchend",end,{passive:true});
   document.addEventListener("touchcancel",end,{passive:true});
+
+  /* The keyboard covers the bottom of the screen but iPhone doesn't shrink
+     fixed sheets, so the fields you were typing in sat behind it. Fit open
+     sheets to the visible area above the keyboard and keep the field you're in
+     on screen. */
+  const vv=window.visualViewport;
+  function fit(){
+    if(!vv) return;
+    const kb=Math.max(0, window.innerHeight-vv.height-vv.offsetTop);
+    const up=kb>80;
+    document.querySelectorAll(".overlay.show").forEach(function(ov){
+      ov.style.top=up?vv.offsetTop+"px":""; ov.style.bottom=up?kb+"px":""; ov.style.height=up?vv.height+"px":"";
+      const sh=ov.querySelector(".sheet"); if(sh) sh.style.maxHeight=up?(vv.height-12)+"px":"";
+    });
+    document.querySelectorAll(".v3-sheet.open").forEach(function(sh){
+      sh.style.bottom=up?kb+"px":""; sh.style.maxHeight=up?(vv.height-12)+"px":"";
+    });
+  }
+  function keepVisible(){
+    const el=document.activeElement; if(!el || !/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
+    const sh=el.closest(".sheet, .v3-sheet"); if(!sh) return;
+    const r=el.getBoundingClientRect(), s=sh.getBoundingClientRect();
+    const top=s.top+12, bottom=Math.min(s.bottom, vv?vv.height+vv.offsetTop:window.innerHeight)-16;
+    if(r.top<top || r.bottom>bottom) sh.scrollTop+= (r.top+r.height/2)-((top+bottom)/2);
+  }
+  if(vv){ vv.addEventListener("resize",function(){ fit(); setTimeout(keepVisible,60); }); vv.addEventListener("scroll",fit); }
+  document.addEventListener("focusin",function(e){
+    if(!e.target.closest || !e.target.closest(".sheet, .v3-sheet")) return;
+    setTimeout(function(){ fit(); keepVisible(); },320);   /* after the keyboard finishes sliding up */
+  });
+  document.addEventListener("focusout",function(){ setTimeout(function(){
+    const ae=document.activeElement; if(!ae || !/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)) fit(); },120); });
 })();
 </script>
 <style>
@@ -7866,20 +7920,21 @@ const APP_VERSION="2026.10.17-c";   // date + letter, like Daily Protocol: next 
 </style>
 <script>
 (function(){
-  function printOf(src){ var h=5381; for(var i=0;i<src.length;i++) h=(((h*33)>>>0)^src.charCodeAt(i))>>>0; return ('000000'+h.toString(36)).slice(-6); }
-  function scriptsOf(root){ var s=''; root.querySelectorAll('script').forEach(function(t){ s+=t.textContent; }); return s; }
-  var MINE=printOf(scriptsOf(document));
+  /* Compares build numbers (2026.10.17-c vs -d). An earlier version compared a
+     fingerprint of the page's scripts, but browsers like Brave add their own
+     scripts to the page, so the copy on your phone never matched and the bar
+     kept coming back after every reload. */
   var U={last:0, dismissed:null, shown:null};
+  function mine(){ return (typeof APP_VERSION==="string") ? APP_VERSION : (typeof BUILD==="string" ? BUILD : null); }
   function check(force){
-    if(!/^https?:$/.test(location.protocol) || !window.fetch || !window.DOMParser) return;
+    if(!/^https?:$/.test(location.protocol) || !window.fetch) return;
     if(!force && Date.now()-U.last<5*60e3) return;
     U.last=Date.now();
     fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){ return r.ok?r.text():null; }).then(function(html){
       if(!html) return;
-      var doc=new DOMParser().parseFromString(html,'text/html'), fp=printOf(scriptsOf(doc));
-      if(fp===MINE || fp===U.dismissed) return;
-      var m=html.match(/(?:APP_VERSION|BUILD)="(\d{4}\.\d\d\.\d\d-[a-z]+)"/), cur=(typeof APP_VERSION==="string")?APP_VERSION:(typeof BUILD==="string"?BUILD:null);
-      show(fp, m && m[1]!==cur ? m[1] : null);
+      var m=html.match(/(?:APP_VERSION|BUILD)\s*=\s*"(\d{4}\.\d\d\.\d\d-[a-z]+)"/), cur=mine();
+      if(!m || !cur || m[1]===cur || m[1]===U.dismissed) return;
+      show(m[1], m[1]);
     }).catch(function(){});
   }
   function show(fp,ver){

@@ -1102,7 +1102,7 @@ document.getElementById("resetBtn").addEventListener("click", function(){
 });
 
 /* ---- start ---- */
-var BUILD="2026.10.17-c";   /* date + letter, like Daily Protocol */
+var BUILD="2026.10.17-d";   /* date + letter, like Daily Protocol */
 load();
 document.getElementById("weekLabel").textContent = WEEK_LABEL;
 document.title = "Grocery \u2014 " + WEEK_LABEL;
@@ -1149,20 +1149,21 @@ renderStockBar();
 </style>
 <script>
 (function(){
-  function printOf(src){ var h=5381; for(var i=0;i<src.length;i++) h=(((h*33)>>>0)^src.charCodeAt(i))>>>0; return ('000000'+h.toString(36)).slice(-6); }
-  function scriptsOf(root){ var s=''; root.querySelectorAll('script').forEach(function(t){ s+=t.textContent; }); return s; }
-  var MINE=printOf(scriptsOf(document));
+  /* Compares build numbers (2026.10.17-c vs -d). An earlier version compared a
+     fingerprint of the page's scripts, but browsers like Brave add their own
+     scripts to the page, so the copy on your phone never matched and the bar
+     kept coming back after every reload. */
   var U={last:0, dismissed:null, shown:null};
+  function mine(){ return (typeof APP_VERSION==="string") ? APP_VERSION : (typeof BUILD==="string" ? BUILD : null); }
   function check(force){
-    if(!/^https?:$/.test(location.protocol) || !window.fetch || !window.DOMParser) return;
+    if(!/^https?:$/.test(location.protocol) || !window.fetch) return;
     if(!force && Date.now()-U.last<5*60e3) return;
     U.last=Date.now();
     fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){ return r.ok?r.text():null; }).then(function(html){
       if(!html) return;
-      var doc=new DOMParser().parseFromString(html,'text/html'), fp=printOf(scriptsOf(doc));
-      if(fp===MINE || fp===U.dismissed) return;
-      var m=html.match(/(?:APP_VERSION|BUILD)="(\d{4}\.\d\d\.\d\d-[a-z]+)"/), cur=(typeof APP_VERSION==="string")?APP_VERSION:(typeof BUILD==="string"?BUILD:null);
-      show(fp, m && m[1]!==cur ? m[1] : null);
+      var m=html.match(/(?:APP_VERSION|BUILD)\s*=\s*"(\d{4}\.\d\d\.\d\d-[a-z]+)"/), cur=mine();
+      if(!m || !cur || m[1]===cur || m[1]===U.dismissed) return;
+      show(m[1], m[1]);
     }).catch(function(){});
   }
   function show(fp,ver){
