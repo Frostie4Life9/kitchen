@@ -73,6 +73,7 @@ button{font:inherit}
 .track span{display:block;height:100%;width:0;border-radius:99px;background:var(--green);transition:width .9s var(--ease)}
 .lede{font-size:13.5px;color:var(--ink-faded);margin:0 2px 16px;line-height:1.5}
 .lede b{color:var(--ink)}
+.buildtag{margin-top:10px;font-size:12px;color:var(--ink-faded);opacity:.8}
 
 /* ---- store filter: same segmented control as the app's meal tabs ---- */
 .seg{display:flex;background:var(--paper);border:1px solid var(--rule);border-radius:14px;padding:4px;gap:2px;margin:0 0 6px;position:sticky;top:calc(env(safe-area-inset-top,0) + 8px);z-index:5;
@@ -930,6 +931,7 @@ document.getElementById("resetBtn").addEventListener("click", function(){
 });
 
 /* ---- start ---- */
+var BUILD="2026.10.17-a";   /* date + letter, like Daily Protocol */
 load();
 document.getElementById("weekLabel").textContent = WEEK_LABEL;
 document.title = "Grocery \u2014 " + WEEK_LABEL;
@@ -942,6 +944,7 @@ renderSeg();
 render();
 renderFlags();
 renderStockBar();
+(function(){ var f=document.querySelector("footer"); if(f){ var v=document.createElement("div"); v.className="buildtag"; v.textContent="Grocery "+BUILD; f.appendChild(v); } })();
 </script>
 <!-- ===== New-version banner (same idea as Daily Protocol) =====
      At load the page fingerprints its own code. Every few minutes (and when
@@ -949,12 +952,16 @@ renderStockBar();
      the cache; if that copy's fingerprint differs, a bar slides down. Reload
      loads the fresh file with a never-seen query string so no cache serves
      the old one, then tidies the address. -->
+<div class="sbar-shade" aria-hidden="true"></div>
 <div class="updbar" id="updbar" hidden role="status">
   <div class="updin"><span class="upddot" aria-hidden="true"></span><span class="updtxt" id="updtxt">New version ready</span>
     <button class="updgo" id="updgo" type="button">Reload</button>
     <button class="updx" id="updx" type="button" aria-label="Not now"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
 </div>
 <style>
+  /* solid strip behind the phone's status bar, so content scrolling up under it
+     is hidden instead of showing through the translucent bar */
+  .sbar-shade{position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0);background:var(--paper);z-index:150;pointer-events:none}
   .updbar{position:fixed;left:0;right:0;top:0;z-index:200;padding:calc(10px + env(safe-area-inset-top)) 16px 0;pointer-events:none}
   .updbar[hidden]{display:none}
   .updin{max-width:520px;margin:0 auto;display:flex;align-items:center;gap:10px;height:50px;padding:0 6px 0 16px;box-sizing:border-box;
@@ -983,13 +990,13 @@ renderStockBar();
       if(!html) return;
       var doc=new DOMParser().parseFromString(html,'text/html'), fp=printOf(scriptsOf(doc));
       if(fp===MINE || fp===U.dismissed) return;
-      var m=html.match(/APP_VERSION="(v[\d.]+)/), cur=(typeof APP_VERSION==="string")?APP_VERSION.split(" ")[0]:null;
+      var m=html.match(/(?:APP_VERSION|BUILD)="(\d{4}\.\d\d\.\d\d-[a-z]+)"/), cur=(typeof APP_VERSION==="string")?APP_VERSION:(typeof BUILD==="string"?BUILD:null);
       show(fp, m && m[1]!==cur ? m[1] : null);
     }).catch(function(){});
   }
   function show(fp,ver){
     U.shown=fp;
-    document.getElementById('updtxt').textContent=ver?ver+' is ready':'New version ready';
+    document.getElementById('updtxt').textContent=ver?ver+' ready':'New version ready';
     var b=document.getElementById('updbar'); b.hidden=false;
     requestAnimationFrame(function(){ requestAnimationFrame(function(){ b.classList.add('up'); }); });
   }
