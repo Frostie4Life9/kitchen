@@ -8,6 +8,10 @@
 <meta name="theme-color" content="#FAF6F0" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#17140F" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/grocery-32.png">
+<link rel="apple-touch-icon" href="icons/grocery-180.png">
+<link rel="manifest" href="grocery.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Grocery">
 <title>Grocery list</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -931,7 +935,7 @@ document.getElementById("resetBtn").addEventListener("click", function(){
 });
 
 /* ---- start ---- */
-var BUILD="2026.10.17-a";   /* date + letter, like Daily Protocol */
+var BUILD="2026.10.17-b";   /* date + letter, like Daily Protocol */
 load();
 document.getElementById("weekLabel").textContent = WEEK_LABEL;
 document.title = "Grocery \u2014 " + WEEK_LABEL;

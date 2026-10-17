@@ -1,0 +1,27 @@
+{
+  "name": "Grocery",
+  "short_name": "Grocery",
+  "start_url": "./grocery.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FAF6F0",
+  "theme_color": "#2D5840",
+  "icons": [
+    {
+      "src": "icons/grocery-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/grocery-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icons/grocery-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

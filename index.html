@@ -8,14 +8,14 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Kitchen">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/kitchen-32.png">
+<link rel="apple-touch-icon" href="icons/kitchen-180.png">
+<link rel="manifest" href="kitchen.webmanifest">
 <title>Kitchen</title>
 <!-- Kitchen icons. The first line alone is enough to stop the Daily Protocol
      checkmark leaking in from the origin root: once a page declares any icon,
      the browser never falls back to /favicon.ico. It is self-contained, so it
      works even if the PNGs below are missing. -->
-<link rel="icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIiB3aWR0aD0iNTEyIiBoZWlnaHQ9IjUxMiI+PHJlY3Qgcng9IjExMiIgcnk9IjExMiIgd2lkdGg9IjUxMiIgaGVpZ2h0PSI1MTIiIGZpbGw9IiMyQTFEMTYiLz48ZyBmaWxsPSIjRTlBOTREIj48cmVjdCB4PSIxMjAiIHk9IjE5NiIgd2lkdGg9IjI3MiIgaGVpZ2h0PSI0MiIgcng9IjIxIi8+PHJlY3QgeD0iMjM4IiB5PSIxNTAiIHdpZHRoPSIzNiIgaGVpZ2h0PSI0NiIgcng9IjE4Ii8+PHBhdGggZD0iTTE1OCAyNTRoMTk2bC0yMiAxMjJhMzQgMzQgMCAwIDEtMzMgMjhoLTg2YTM0IDM0IDAgMCAxLTMzLTI4eiIvPjwvZz48L3N2Zz4=">
-<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -7520,7 +7520,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.10.17-a";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.10.17-b";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
