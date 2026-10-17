@@ -943,5 +943,65 @@ render();
 renderFlags();
 renderStockBar();
 </script>
+<!-- ===== New-version banner (same idea as Daily Protocol) =====
+     At load the page fingerprints its own code. Every few minutes (and when
+     you come back to the tab) it fetches the live copy from GitHub, skipping
+     the cache; if that copy's fingerprint differs, a bar slides down. Reload
+     loads the fresh file with a never-seen query string so no cache serves
+     the old one, then tidies the address. -->
+<div class="updbar" id="updbar" hidden role="status">
+  <div class="updin"><span class="upddot" aria-hidden="true"></span><span class="updtxt" id="updtxt">New version ready</span>
+    <button class="updgo" id="updgo" type="button">Reload</button>
+    <button class="updx" id="updx" type="button" aria-label="Not now"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+</div>
+<style>
+  .updbar{position:fixed;left:0;right:0;top:0;z-index:200;padding:calc(10px + env(safe-area-inset-top)) 16px 0;pointer-events:none}
+  .updbar[hidden]{display:none}
+  .updin{max-width:520px;margin:0 auto;display:flex;align-items:center;gap:10px;height:50px;padding:0 6px 0 16px;box-sizing:border-box;
+    border-radius:25px;background:var(--card);border:1px solid var(--rule);box-shadow:0 10px 30px rgba(0,0,0,.18);pointer-events:auto;
+    transform:translateY(calc(-100% - 40px));transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+  .updbar.up .updin{transform:none}
+  .upddot{width:8px;height:8px;border-radius:4px;background:var(--today);flex:0 0 auto;box-shadow:0 0 0 4px var(--today-soft)}
+  .updtxt{flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .updgo{height:38px;padding:0 18px;border:0;border-radius:19px;background:var(--today);color:var(--card);font:inherit;font-size:14px;font-weight:800;cursor:pointer}
+  .updgo:active{transform:scale(.96)}
+  .updx{width:38px;height:38px;border:0;border-radius:19px;background:transparent;color:var(--ink-faded);display:grid;place-items:center;cursor:pointer}
+  .updx svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.4;fill:none;stroke-linecap:round}
+  @media (prefers-reduced-motion: reduce){ .updin{transition:none} }
+</style>
+<script>
+(function(){
+  function printOf(src){ var h=5381; for(var i=0;i<src.length;i++) h=(((h*33)>>>0)^src.charCodeAt(i))>>>0; return ('000000'+h.toString(36)).slice(-6); }
+  function scriptsOf(root){ var s=''; root.querySelectorAll('script').forEach(function(t){ s+=t.textContent; }); return s; }
+  var MINE=printOf(scriptsOf(document));
+  var U={last:0, dismissed:null, shown:null};
+  function check(force){
+    if(!/^https?:$/.test(location.protocol) || !window.fetch || !window.DOMParser) return;
+    if(!force && Date.now()-U.last<5*60e3) return;
+    U.last=Date.now();
+    fetch(location.pathname+'?_='+Date.now(),{cache:'no-store'}).then(function(r){ return r.ok?r.text():null; }).then(function(html){
+      if(!html) return;
+      var doc=new DOMParser().parseFromString(html,'text/html'), fp=printOf(scriptsOf(doc));
+      if(fp===MINE || fp===U.dismissed) return;
+      var m=html.match(/APP_VERSION="(v[\d.]+)/), cur=(typeof APP_VERSION==="string")?APP_VERSION.split(" ")[0]:null;
+      show(fp, m && m[1]!==cur ? m[1] : null);
+    }).catch(function(){});
+  }
+  function show(fp,ver){
+    U.shown=fp;
+    document.getElementById('updtxt').textContent=ver?ver+' is ready':'New version ready';
+    var b=document.getElementById('updbar'); b.hidden=false;
+    requestAnimationFrame(function(){ requestAnimationFrame(function(){ b.classList.add('up'); }); });
+  }
+  document.getElementById('updgo').addEventListener('click',function(){ location.replace(location.pathname+'?v='+Date.now()+location.hash); });
+  document.getElementById('updx').addEventListener('click',function(){
+    U.dismissed=U.shown; var b=document.getElementById('updbar'); b.classList.remove('up'); setTimeout(function(){ b.hidden=true; },420);
+  });
+  if(/[?&]v=\d+/.test(location.search)) try{ history.replaceState(null,'',location.pathname+location.hash); }catch(e){}
+  setTimeout(function(){ check(true); },2500);
+  document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') check(false); });
+  setInterval(function(){ if(document.visibilityState==='visible') check(false); }, 10*60e3);
+})();
+</script>
 </body>
 </html>
