@@ -4081,5 +4081,11 @@ const _dlRH2=renderHome;
 renderHome=function(){let r=_dlRH2.apply(this,arguments);let q=document.getElementById('dl-q');if(q&&q.value.trim())dlSearch();dlPaintBackup();return r;};
 dlPaintBackup();
 </script>
+<script>
+/* offline support: lets the kitchen apps open with no signal (see sw.js) */
+if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+}
+</script>
 </body>
 </html>

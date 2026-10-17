@@ -639,6 +639,24 @@
   .v3-pick[aria-pressed="true"] { border-color: var(--today); box-shadow: inset 0 0 0 1px var(--today); }
   .v3-empty { font-size: 14px; color: var(--ink-faded); line-height: 1.5; margin: 6px 2px 16px; }
   .v3-ghost { width: 100%; border: 1.5px solid var(--rule); background: transparent; font: inherit; font-size: 14px; font-weight: 700; color: var(--ink-faded); border-radius: 14px; padding: 12px; margin-top: 10px; cursor: pointer; }
+  .v3-inv { color: var(--today) !important; }
+  .v3-inv.low { color: var(--orange) !important; }
+  .v3-stock { padding: 10px 0; border-top: 1px solid var(--rule-soft); }
+  .v3-stock:first-of-type { border-top: 0; }
+  .v3-stock-top { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; color: var(--ink); }
+  .v3-stock-top span { color: var(--ink-faded); font-variant-numeric: tabular-nums; }
+  .v3-stock-bar { height: 7px; border-radius: 99px; background: var(--paper); overflow: hidden; margin: 6px 0 8px; }
+  .v3-stock-bar i { display: block; height: 100%; border-radius: 99px; background: var(--today); transition: width .4s ease; }
+  .v3-stock.low .v3-stock-bar i { background: var(--orange); }
+  .v3-stock-btns { display: flex; flex-wrap: wrap; gap: 6px; }
+  .v3-stock-btns button { font: inherit; font-size: 12px; font-weight: 700; border: 1.5px solid var(--rule); background: transparent; color: var(--ink-soft); border-radius: 99px; padding: 5px 10px; cursor: pointer; }
+  .v3-fresh { background: var(--green-soft); border-radius: 18px; padding: 12px 14px; margin: 0 0 16px; }
+  .v3-fresh-h { display: flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 800; color: var(--green); margin: 0 0 6px; }
+  .v3-fresh-h svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linejoin: round; }
+  .v3-fresh-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; font-size: 14px; color: var(--ink); line-height: 1.4; }
+  .v3-fresh-row button { flex: 0 0 auto; font: inherit; font-size: 12px; font-weight: 800; border: 1.5px solid var(--green); background: transparent; color: var(--green); border-radius: 99px; padding: 5px 12px; cursor: pointer; }
+  .v3-fresh-note { margin: 4px 0 0; font-size: 12px; color: var(--ink-soft); }
+  .v3-tile-tag.soon { background: var(--green-soft); color: var(--green); }
   .v3-low-panel { background: var(--card); border-radius: 20px; padding: 16px; margin: 0 0 14px; box-shadow: 0 1px 0 var(--rule); }
   .v3-low-panel h3 { font-size: 17px; font-weight: 800; margin: 0 0 4px; color: var(--ink); }
   .v3-low-panel p { font-size: 13px; color: var(--ink-faded); margin: 0 0 12px; line-height: 1.45; }
@@ -700,7 +718,7 @@
 (function(){
   var CFG="kitchenSync_v1", META="kitchenSyncMeta_v1", ACK="kitchenSyncAck_v1", UNDO="kitchenSyncUndo_v1";
   var EXACT=["mealRatings_v1","pantryItems_v2","pantryPrefs_v1","myMeals_v1","weightGoal_v1","stock_v1",
-             "ingLinks_v1","runningLow_v1","recentMeals_v1","ingAliases_v1","groceryAisles_v1"];
+             "ingLinks_v1","runningLow_v1","recentMeals_v1","ingAliases_v1","groceryAisles_v1","inv_v1"];
   var PREFIX=["day_v1_","prepdone-","kitchen-shop-","thuCheck_","grocery_"];
   function synced(k){ if(typeof k!=="string") return false; if(EXACT.indexOf(k)>=0) return true;
     for(var i=0;i<PREFIX.length;i++){ if(k.indexOf(PREFIX[i])===0) return true; } return false; }
@@ -941,6 +959,7 @@
     </div>
   </section>
 
+  <div id="t-fresh"></div>
   <section class="v3-block">
     <h2 class="v3-h">Log a meal</h2>
     <div class="v3-seg" id="v3-seg" role="tablist" aria-label="Meal"></div>
@@ -1348,7 +1367,7 @@ const SHOP_RHYTHM_HTML='<div class="tmeal note" style="margin-bottom:12px"><div 
 function renderShop(){
   const host=document.getElementById('shopBody'); if(!host) return;
   shopView='week';
-  if(shopView==='week'){ renderWeekLists(host); host.insertAdjacentHTML('afterbegin', SHOP_RHYTHM_HTML); host.insertAdjacentHTML('afterbegin', lowPanelHTML()); return; }
+  if(shopView==='week'){ renderWeekLists(host); host.insertAdjacentHTML('afterbegin', SHOP_RHYTHM_HTML); host.insertAdjacentHTML('afterbegin', stockPanelHTML()); host.insertAdjacentHTML('afterbegin', lowPanelHTML()); return; }
   const DATA = shopView==='kit' ? STARTER_KIT : STORE_GUIDE;
   const st=shopState();
   const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -3870,6 +3889,7 @@ function renderToday(){
   renderDayChip();
   renderThursday();
   renderCheck();
+  if(typeof renderFresh==="function") renderFresh();
   renderRotation();
   setTimeout(renderRing, 0);   /* after the budget text below is written */
 
@@ -5180,7 +5200,10 @@ function toggleRunLow(key){
 function outParts(it){
   if(!it.parts) return [];
   const low=loadLow();
-  return it.parts.filter(function(pt){ return !pt[2] && low[pt[0]]; }).map(function(pt){ return INGR[pt[0]].n; });
+  const inv=(typeof loadInv==="function" && INV_UNIT)?loadInv():{};
+  /* an automatic "about one meal left" flag isn't "out": the meal stays available while there's enough */
+  return it.parts.filter(function(pt){ const f=low[pt[0]]; if(pt[2] || !f) return false;
+    if(f.auto && inv[pt[0]] && inv[pt[0]].left>=pt[1]) return false; return true; }).map(function(pt){ return INGR[pt[0]].n; });
 }
 function ingAmtText(key, amt){
   const u=INGR[key].u, a=Math.round(amt*100)/100;
@@ -5217,7 +5240,8 @@ function logRotation(k){
     else if(fruitSlot(f.it)>=0) name=name+" + "+w;
     try{ localStorage.setItem("lastFruit_v1",used); }catch(e){}
   }
-  dayState.log.push({id:uid(), slot:slot, name:name, rk:k, cal:nu.c, pro:nu.p, carb:nu.cb, fat:nu.f});
+  const took=invConsume(partsFor(f.it, ch));
+  dayState.log.push({id:uid(), slot:slot, name:name, rk:k, cal:nu.c, pro:nu.p, carb:nu.cb, fat:nu.f, inv:took});
   saveDay(todayStr,dayState);
   rotOpen=null; v3LastSlot=slot;
   closeRotSheet();
@@ -5268,7 +5292,8 @@ function renderRotation(swapped){
     const n=timesLoggedToday(it), nu=cardNut(it), out=outParts(it);
     const allLab=nu.total>0 && nu.linked===nu.total;
     const tag = out.length ? '<span class="v3-tile-tag out">Out of '+esc(out[0].toLowerCase())+(out.length>1?' +'+(out.length-1):'')+'</span>'
-              : (it.tag ? '<span class="v3-tile-tag">'+esc(it.tag)+'</span>' : '');
+              : (usesSoon(it) ? '<span class="v3-tile-tag soon">Uses up '+esc((FRESH[usesSoon(it)]||{}).n||'').toLowerCase()+'</span>'
+              : (it.tag ? '<span class="v3-tile-tag">'+esc(it.tag)+'</span>' : ''));
     return '<button type="button" class="v3-tile" style="--i:'+idx+'" onclick="openRotSheet(\''+it.k+'\')" aria-label="'+esc(it.n)+', '+nu.c+' calories, '+nu.p+' grams protein'+(out.length?', out of '+esc(out.join(' and ')):'')+(n?', logged today':'')+'">'+
       (n?'<span class="v3-tile-done" aria-hidden="true">'+(n>1?n:'\u2713')+'</span>':'')+
       '<span class="v3-tile-name">'+esc(it.n)+'</span>'+tag+
@@ -5450,7 +5475,7 @@ function renderRotSheet(){
       }
       return '<div class="v3-ing"><button type="button" class="v3-ing-main" onclick="openLinker(\''+key+'\')">'+
         '<b>'+esc(g.n)+(pt[2]?' <span style="font-weight:400;color:var(--ink-faded)">(optional)</span>':'')+'</b>'+
-        '<small>'+esc(ingAmtText(key,pt[1]))+'</small>'+
+        '<small>'+esc(ingAmtText(key,pt[1]))+'</small>'+invNote(key)+
         (L?'<small class="lab">\u2713 '+esc(fullName(L.item))+'</small>':'<small>Estimate \u00b7 tap to use your label</small>')+
         '</button><button type="button" class="v3-ing-low" aria-pressed="'+on+'" onclick="toggleRunLow(\''+key+'\');renderRotSheet();renderRotation()">'+(on?'Running low':'Low?')+'</button></div>';
     }).join('');
@@ -5519,6 +5544,120 @@ function syncRotTimerDOM(){
     el.style.setProperty("--p",S.p.toFixed(4));
   });
 }
+
+/* ===== v3.20 stock levels + freshness =====
+   The grocery list records what you buy (grocery_bought_v1: key -> {at, n, s, z}).
+   Here that one record does two jobs:
+   - STOCK: each tracked staple keeps a count in the same units the recipes use.
+     Buying refills it, logging a meal counts it down, and when it gets close to
+     empty it goes on Running low by itself (marked auto).
+   - FRESHNESS: perishables get a use-by date from the day you bought them, and
+     a Use soon card nudges you before they turn. Pick for me leans toward meals
+     that use them. */
+var INV_KEY="inv_v1", GBOUGHT_KEY="grocery_bought_v1";
+var INV_UNIT={eggs:"eggs",bread:"slices",turkey:"oz",provolone:"slices",beef:"oz",milk:"cups",yoplait:"cups",tortilla:"big tortillas",
+  smalltort:"tortillas",bun:"buns",hashbrown:"patties",fries:"servings",pb:"servings",pouch:"pouches",pasta:"oz",soup:"cups",cereal:"bowls",
+  chicken:"oz",chunks:"servings",sausage:"links",bar:"bars",marinara:"servings",cheddar:"servings"};
+var INV_PACK={eggs:12,bread:15,turkey:16,provolone:10,beef:16,milk:16,yoplait:5,tortilla:8,smalltort:10,bun:8,hashbrown:10,fries:10,pb:14,
+  pouch:5,pasta:16,soup:4,cereal:10,chicken:48,chunks:21,sausage:48,bar:20,marinara:6,cheddar:32};
+function rjx(k,d){ try{ const v=JSON.parse(localStorage.getItem(k)); return v==null?d:v; }catch(e){ return d; } }
+function wjx(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function loadInv(){ const o=rjx(INV_KEY,{}); return (o&&typeof o==="object")?o:{}; }
+function saveInv(o){ wjx(INV_KEY,o); }
+/* the most any one meal uses, so "low" means "about one meal left" */
+function invMeal(k){ let m=0; Object.keys(CARD_PARTS).forEach(function(c){ CARD_PARTS[c].forEach(function(p){ if(!p[2] && p[0]===k) m=Math.max(m,p[1]); }); }); return m||1; }
+function invLowLine(k,full){ return Math.max(invMeal(k), (full||INV_PACK[k]||0)*0.2); }
+function invFmt(n){ const r=Math.round(n*10)/10; return (r%1===0)?String(r):r.toFixed(1); }
+function reconcileInv(){
+  const b=rjx(GBOUGHT_KEY,{}), inv=loadInv(); let ch=false;
+  Object.keys(b).forEach(function(k){
+    if(!INV_UNIT[k]) return; const e=b[k]; if(!e||!e.at) return;
+    const cur=inv[k]; if(cur && cur.at>=e.at) return;
+    const size=e.z||INV_PACK[k], left=(cur&&cur.left>0?cur.left:0)+size;
+    inv[k]={left:left, full:Math.max(size,left), at:e.at}; ch=true;
+  });
+  if(ch) saveInv(inv);
+}
+function invAutoFlag(keys){
+  const inv=loadInv(), low=loadLow(); let added=[];
+  keys.forEach(function(k){ const e=inv[k]; if(!e || low[k]) return;
+    if(e.left<invLowLine(k,e.full)){ low[k]={n:INGR[k]?INGR[k].n:k, at:Date.now(), auto:true}; added.push(k); } });
+  if(added.length){ saveLow(low);
+    const k=added[0], e=inv[k];
+    showToast((INGR[k]?INGR[k].n:k)+": about "+invFmt(Math.max(0,e.left))+" "+INV_UNIT[k]+" left — added to your grocery list"); }
+}
+/* count a meal's ingredients down; returns what it took so a removed log can put it back */
+function invConsume(parts){
+  const inv=loadInv(), took=[];
+  (parts||[]).forEach(function(p){ if(p[2]) return; const e=inv[p[0]]; if(!e) return;
+    e.left=Math.max(0, Math.round((e.left-p[1])*100)/100); took.push([p[0],p[1]]); });
+  if(took.length){ saveInv(inv); invAutoFlag(took.map(function(t){ return t[0]; })); }
+  return took;
+}
+function invRestore(took){
+  if(!took||!took.length) return; const inv=loadInv();
+  took.forEach(function(t){ const e=inv[t[0]]; if(e) e.left=Math.round((e.left+t[1])*100)/100; });
+  saveInv(inv);
+}
+function invSet(k,mode){
+  const inv=loadInv(), low=loadLow(), full=(inv[k]&&inv[k].full)||INV_PACK[k];
+  if(mode==="full"){ inv[k]={left:full, full:full, at:Date.now()}; if(low[k]&&low[k].auto){ delete low[k]; saveLow(low); } }
+  else if(mode==="out"){ inv[k]={left:0, full:full, at:Date.now()}; low[k]={n:INGR[k].n, at:Date.now()}; saveLow(low); }
+  else if(mode==="stop"){ delete inv[k]; }
+  saveInv(inv);
+  if(typeof renderShop==="function") renderShop();
+  renderRotation();
+}
+function invNote(k){
+  if(!INV_UNIT) return "";
+  const e=loadInv()[k]; if(!e) return "";
+  const lowish=e.left<invLowLine(k,e.full);
+  return '<small class="v3-inv'+(lowish?' low':'')+'">About '+invFmt(e.left)+' '+INV_UNIT[k]+' left</small>';
+}
+function stockPanelHTML(){
+  const inv=loadInv();
+  const keys=Object.keys(INV_UNIT).sort(function(a,b){ return INGR[a].n.localeCompare(INGR[b].n); });
+  const on=keys.filter(function(k){ return inv[k]; }), off=keys.filter(function(k){ return !inv[k]; });
+  return '<div class="v3-low-panel"><h3>Stock levels</h3>'+
+    '<p>Checking an item off on the grocery list fills it up. Logging a meal counts it down, and when about one meal is left it goes on Running low for you.</p>'+
+    (on.length ? on.map(function(k){ const e=inv[k], pct=Math.max(0,Math.min(100,e.full?e.left/e.full*100:0)), lowish=e.left<invLowLine(k,e.full);
+      return '<div class="v3-stock'+(lowish?' low':'')+'"><div class="v3-stock-top"><b>'+esc(INGR[k].n)+'</b><span>'+invFmt(e.left)+' '+esc(INV_UNIT[k])+'</span></div>'+
+        '<div class="v3-stock-bar"><i style="width:'+pct+'%"></i></div>'+
+        '<div class="v3-stock-btns"><button type="button" onclick="invSet(\''+k+'\',\'full\')">Refill</button><button type="button" onclick="invSet(\''+k+'\',\'out\')">I’m out</button><button type="button" onclick="invSet(\''+k+'\',\'stop\')">Stop tracking</button></div></div>';
+    }).join('') : '<p style="margin:0 0 10px">Nothing tracked yet. It starts on its own the next time you check these off at the store, or tap one below if you have a full pack now.</p>')+
+    (off.length ? '<div class="v3-label" style="margin:12px 2px 7px">Start tracking (tap if you have a full pack)</div><div class="v3-chips" style="margin:0">'+
+      off.map(function(k){ return '<button type="button" class="v3-chip" onclick="invSet(\''+k+'\',\'full\')">'+esc(INGR[k].n)+' <small>'+INV_PACK[k]+'</small></button>'; }).join('')+'</div>' : '')+
+    '</div>';
+}
+
+var FRESH={beef:{d:2,n:"Ground beef",verb:"cook or freeze"},turkey:{d:5,n:"Deli turkey"},provolone:{d:7,n:"Provolone"},
+  lettuce:{d:5,n:"Shredded lettuce"},strawb:{d:4,n:"Strawberries",fresh:true},bread:{d:5,n:"Sourdough",tip:"or freeze half the loaf"},
+  banana:{d:6,n:"Bananas"},watermelon:{d:5,n:"Watermelon",fresh:true},pineapple:{d:5,n:"Pineapple",fresh:true}};
+function useSoon(){
+  const b=rjx(GBOUGHT_KEY,{}), out=[], now=Date.now();
+  Object.keys(FRESH).forEach(function(k){ const e=b[k], F=FRESH[k];
+    if(!e||!e.at||e.done) return; if(F.fresh && /frozen/i.test(e.n||"")) return;
+    const by=e.at+F.d*864e5, days=Math.ceil((by-now)/864e5);
+    if(days<=2 && days>=-2) out.push({k:k, n:F.n, by:by, days:days, verb:F.verb, tip:F.tip}); });
+  return out.sort(function(a,c){ return a.by-c.by; });
+}
+function soonKeys(){ if(!FRESH) return []; return useSoon().map(function(x){ return x.k; }); }
+function usesSoon(it){ const s=soonKeys(); if(!s.length || !it.parts) return null;
+  const hit=it.parts.find(function(p){ return !p[2] && s.indexOf(p[0])>=0; }); return hit?hit[0]:null; }
+function freshDone(k){ const b=rjx(GBOUGHT_KEY,{}); if(b[k]){ b[k].done=true; wjx(GBOUGHT_KEY,b); } renderFresh(); renderRotation(); }
+function renderFresh(){
+  const host=$("t-fresh"); if(!host || !FRESH) return;
+  const list=useSoon(); if(!list.length){ host.innerHTML=''; return; }
+  const dn=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  host.innerHTML='<div class="v3-fresh"><div class="v3-fresh-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c4 4 6 7 6 10a6 6 0 0 1-12 0c0-3 2-6 6-10z"/></svg>Use soon</div>'+
+    list.map(function(x){ const when=x.days<0?"past its best — give it a sniff":x.days===0?"by today":"by "+dn[new Date(x.by).getDay()];
+      return '<div class="v3-fresh-row"><span><b>'+esc(x.n)+'</b> — '+(x.verb?x.verb+' ':'use ')+when+(x.tip?', '+esc(x.tip):'')+'</span>'+
+        '<button type="button" onclick="freshDone(\''+x.k+'\')" aria-label="Done with '+esc(x.n)+'">Done</button></div>'; }).join('')+
+    '<p class="v3-fresh-note">Pick for me favors meals that use these up.</p></div>';
+}
+reconcileInv();
+document.addEventListener("visibilitychange", function(){ if(document.visibilityState==="visible"){ reconcileInv(); renderFresh(); } });
+
 /* ---- "Pick for me": choosing is the hard part, so let the app choose ----
    Skips anything you're out of and anything you had yesterday. On campus
    days (Wed, Fri) lunch leans to the no-fridge and ice-pack cards. */
@@ -5535,6 +5674,7 @@ function pickForMe(again){
     if(yLog.some(function(i){ return i.rk===it.k || i.name===it.n; })) w*=0.25;
     if(sec.slot==="lunch" && campus){ if(/No fridge|Ice pack/.test(it.tag||"")) w*=3; else if(/At home|Comfort/.test(it.tag||"")) w*=0.2; }
     if(sec.slot==="breakfast" && it.k==="cereal") w*=0.5;
+    if(usesSoon(it)) w*=3;
     pool.push([it,w]);
   });
   if(!pool.length){ showToast("You're out of something for every option \u2014 check Running low"); return; }
@@ -7403,7 +7543,7 @@ function saveLogAdd(){
   saveDay(todayStr,dayState); $("logAddOverlay").classList.remove("show"); renderToday(); renderCalendar();
   showToast("Logged");
 }
-function deleteLogItem(idx){ dayState.log.splice(idx,1); saveDay(todayStr,dayState); renderToday(); renderCalendar(); showToast("Removed from log"); }
+function deleteLogItem(idx){ const gone=dayState.log[idx]; if(gone && gone.inv) invRestore(gone.inv); dayState.log.splice(idx,1); saveDay(todayStr,dayState); renderToday(); renderCalendar(); showToast("Removed from log"); }
 
 /* ----- log a pantry item with a portion + meal section ----- */
 let portionItem=null, portionSlot="breakfast";
@@ -7520,7 +7660,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.10.17-b";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.10.17-c";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
@@ -7757,6 +7897,12 @@ const APP_VERSION="2026.10.17-b";   // date + letter, like Daily Protocol: next 
   document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') check(false); });
   setInterval(function(){ if(document.visibilityState==='visible') check(false); }, 10*60e3);
 })();
+</script>
+<script>
+/* offline support: lets the kitchen apps open with no signal (see sw.js) */
+if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+}
 </script>
 </body>
 </html>

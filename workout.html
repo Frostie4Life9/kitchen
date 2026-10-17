@@ -496,5 +496,11 @@ $("#rst").onclick=()=>{ if(tick){ stopTimer(false); } startTimer(); };
 renderChips(); render();
 
 </script>
+<script>
+/* offline support: lets the kitchen apps open with no signal (see sw.js) */
+if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+}
+</script>
 </body>
 </html>

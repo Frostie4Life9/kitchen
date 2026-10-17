@@ -141,6 +141,33 @@ li.done .why,li.done .meta{opacity:.45}
 .tag.researched{background:var(--today-soft);color:var(--today)}
 .tag.deal{background:var(--amber-soft);color:var(--amber)}
 .price{font-size:12px;color:var(--ink-faded)}
+.pchip{font-size:12px;font-weight:700;border:1.5px dashed var(--rule);background:transparent;color:var(--ink-faded);border-radius:99px;padding:3px 10px;cursor:pointer;font-variant-numeric:tabular-nums}
+.pchip.set{border-style:solid;border-color:var(--today);color:var(--today)}
+.missbtn{font:inherit;font-size:12px;font-weight:700;border:0;background:transparent;color:var(--ink-faded);padding:3px 2px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+li.missed .name{color:var(--amber)}
+li.missed .check{border-style:dashed;border-color:var(--amber)}
+li.missed .why{opacity:.45}
+.tag.missedtag{background:var(--amber-soft);color:var(--amber)}
+.store-tools{display:flex;align-items:center;gap:8px}
+.sortbtn{font:inherit;font-size:12px;font-weight:800;border:1.5px solid var(--rule);background:transparent;color:var(--ink-soft);border-radius:99px;padding:5px 11px;cursor:pointer;white-space:nowrap}
+.sortbtn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--paper)}
+.money{margin-top:12px;font-size:13px;color:var(--ink-soft);line-height:1.45}
+.money b{color:var(--ink);font-variant-numeric:tabular-nums}
+.money small{display:block;font-size:12px;color:var(--ink-faded)}
+.spend{background:var(--card);border-radius:18px;padding:14px 16px;margin:18px 0 0;box-shadow:0 1px 0 var(--rule)}
+.spend h3{margin:0 0 2px;font-size:15px;font-weight:800;color:var(--ink)}
+.spend .sp-big{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink);margin:2px 0}
+.spend .sp-sub{font-size:13px;color:var(--ink-soft);margin:0 0 10px;line-height:1.45}
+.spend .sp-track{height:8px;border-radius:99px;background:var(--paper);overflow:hidden;margin:4px 0 10px}
+.spend .sp-track span{display:block;height:100%;border-radius:99px;background:var(--today);transition:width .5s var(--ease)}
+.spend .sp-track.over span{background:var(--amber)}
+.spend .sp-hist{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;align-items:end;height:64px;margin:8px 0 4px}
+.spend .sp-hist div{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px}
+.spend .sp-hist i{display:block;width:100%;max-width:28px;border-radius:6px 6px 2px 2px;background:var(--rule)}
+.spend .sp-hist div.now i{background:var(--today)}
+.spend .sp-hist small{font-size:10.5px;color:var(--ink-faded);font-variant-numeric:tabular-nums}
+.spend .sp-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.spend .sp-row button{font:inherit;font-size:12.5px;font-weight:800;border:1.5px solid var(--rule);background:transparent;color:var(--ink);border-radius:99px;padding:5px 12px;cursor:pointer}
 .aisle{font-size:12px;font-weight:700;border:1.5px dashed var(--rule);background:transparent;color:var(--ink);border-radius:99px;padding:3px 10px;cursor:pointer}
 .aisle.empty{color:var(--ink-faded)}
 .aisle-input{font:inherit;font-size:14px;border:1.5px solid var(--today);border-radius:10px;padding:5px 9px;width:100%;max-width:260px;background:var(--paper);color:var(--ink)}
@@ -211,7 +238,7 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
 (function(){
   var CFG="kitchenSync_v1", META="kitchenSyncMeta_v1", ACK="kitchenSyncAck_v1", UNDO="kitchenSyncUndo_v1";
   var EXACT=["mealRatings_v1","pantryItems_v2","pantryPrefs_v1","myMeals_v1","weightGoal_v1","stock_v1",
-             "ingLinks_v1","runningLow_v1","recentMeals_v1","ingAliases_v1","groceryAisles_v1"];
+             "ingLinks_v1","runningLow_v1","recentMeals_v1","ingAliases_v1","groceryAisles_v1","inv_v1"];
   var PREFIX=["day_v1_","prepdone-","kitchen-shop-","thuCheck_","grocery_"];
   function synced(k){ if(typeof k!=="string") return false; if(EXACT.indexOf(k)>=0) return true;
     for(var i=0;i<PREFIX.length;i++){ if(k.indexOf(PREFIX[i])===0) return true; } return false; }
@@ -384,6 +411,7 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
     <div class="side">
       <div class="side-top" id="sideTop"></div>
       <div class="bars" id="bars"></div>
+      <div class="money" id="money"></div>
     </div>
   </section>
 
@@ -392,39 +420,7 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
   <div id="picks" class="rise" style="--i:2"></div>
   <nav class="seg rise" style="--i:3" id="seg" role="tablist" aria-label="Store"></nav>
   <div id="stores"></div>
-
-  <h2 class="notes-h">Notes</h2>
-  <div class="gear picnic-only">
-    <h3>Choco Boy &mdash; not at WinCo or Costco</h3>
-    <p>Orion Choco Boy is a Korean snack, so neither store carries it. Your options: an Asian grocery in Provo or Orem (call ahead to check), or order online now from Weee! or Walmart.com &mdash; the Walmart listing is a third-party seller, and neither is guaranteed by Friday. If you can't find it, <strong>Pocky</strong> is the easy stand-in: same chocolate-dipped biscuit idea, and far more widely stocked.</p>
-  </div>
-
-  <div class="gear picnic-only">
-    <h3>Picnic food safety</h3>
-    <p>Turkey, cheese, and anything with mayo or ranch go in a cooler with ice packs. Out of the cooler, the usual rule is about two hours before they should go back in or get tossed.</p>
-  </div>
-
-  <div class="gear">
-    <h3>Smith's &mdash; only if you're passing by</h3>
-    <p>No longer a regular stop. Worth it for two things: <strong>Hillshire Farm Turkey Sausage Patties</strong> if the Jimmy Dean links from Costco don't work for you (130 cal, 13g protein per 2), and weekly-ad fruit deals &mdash; last week had Honeycrisp apples at $2/lb and a 5-lb bag of mandarins for $5. The ad resets every Wednesday.</p>
-  </div>
-
-  <div class="gear">
-    <h3>One-time gear</h3>
-    <p><strong>PackIt Freezable Lunch Bag</strong> — the whole bag freezes, so there's no separate ice pack to forget. Street price runs about $20–24: <a href="https://www.walmart.com/ip/44130645">Walmart ~$19.99</a> (verify the seller is Walmart, not a marketplace reseller) or Amazon around $23.99. Not stocked at Costco, WinCo or Smith's — order it so it lands before a Wednesday.</p>
-  </div>
-
-  <div class="gear picnic-only picnic-gear">
-    <h3>Picnic gear &mdash; reference only</h3>
-    <p class="gear-note">Not on the checklist and not counted above. Just a starting pick for each, to compare against your own research.</p>
-    <p><strong>Thermos:</strong> Thermos Stainless King beverage bottle, 24 oz. GearJunkie named it the best coffee thermos in the Thermos line at under $40, and it keeps drinks hot all day. 24 oz is plenty for two. <a href="https://www.walmart.com/ip/356678177">Walmart</a> (sold by Thermos directly, not Walmart).</p>
-    <p><strong>Soft cooler:</strong> Arctic Zone Titan Deep Freeze, a small size. OutdoorGearLab's pick under $100 for a day out. Pack Hacker found it weak over 24 hours, which doesn't matter for a picnic. Sold in stores, so you can get it this week. If you want something lighter that folds flat, REI Co-op Campwell 18L was Switchback's budget day-trip pick.</p>
-    <p><strong>Blanket:</strong> anything with a water-resistant backing so damp grass doesn't soak through, and machine washable. Not researched here.</p>
-    <p><strong>4 reusable water bottles:</strong> a store multipack is the budget move; nothing here needs to be insulated for an afternoon. Not researched here.</p>
-    <p><strong>Foil or plastic wrap:</strong> store brand, and WinCo has it &mdash; grab it on the regular run.</p>
-    <p><strong>Lidded snack-box container:</strong> any leak-resistant container with a snap lid; a divided one keeps the crackers away from the grapes. Not researched here.</p>
-    <p><strong>Small knife and napkins:</strong> a paring knife with a blade cover for the apples and cheese, and store-brand napkins. Not researched here.</p>
-  </div>
+  <section class="spend" id="spend" aria-label="Spending"></section>
 
   <footer>WinCo every week, sized for about 7 home meals. Costco once a month for what keeps (chicken, chunks, sausage, cheese, Rao's, protein bars); it appears here on its own when it's due. Out of one of those before then? Add it to Running low in the app and it shows at the top here. Prices marked "est." come from older or out-of-area reports; the shelf tag wins.</footer>
 </main>
@@ -633,6 +629,49 @@ var FRESH_KEYS={"Bananas":["banana"],"Apples":["apple"],"Mandarins or oranges":[
   "Milk":["milk"],"Yoplait Original cups":["yoplait"],"Sourdough loaf, in-store bakery":["bread"],"Guerrero Caseras Burrito Size Flour Tortillas":["tortilla"]};
 DATA.forEach(function(st){ st.groups.forEach(function(g){ g.items.forEach(function(it){ var m=FRESH_KEYS[it.n]; if(m && !it.k){ it.k=m[0]; it.ks=m.slice(1); } }); }); });
 function itemKeys(it){ return [it.k].concat(it.ks||[]).concat([slugN(it.n)]).filter(Boolean); }
+
+/* ===== v6: prices, spending, "not there", aisle order, purchase log =====
+   All keys start with grocery_, so they sync across devices like the rest. */
+var PRICE_KEY="grocery_prices_v1", SPEND_KEY="grocery_spend_v1", BUDGET_KEY="grocery_budget_v1",
+    MISS_KEY="grocery_miss_"+WEEK_START, LASTMISS_KEY="grocery_lastmiss_v1", XSPEND_KEY="grocery_xspend_"+WEEK_START,
+    SORT_KEY="grocery_sortaisle_v1", BOUGHTLOG_KEY="grocery_bought_v1";
+function rjs(k,d){ try{ var v=JSON.parse(localStorage.getItem(k)); return v==null?d:v; }catch(e){ return d; } }
+function wjs(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+var prices=rjs(PRICE_KEY,{}), missed=rjs(MISS_KEY,{}), lastMiss=rjs(LASTMISS_KEY,{}), xspend=rjs(XSPEND_KEY,{});
+var SORT_AISLE = lsGet(SORT_KEY)==="1";
+function itemAt(id){ var p=String(id).split("-"), st=DATA[+p[0]], g=st&&st.groups[+p[1]], it=g&&g.items[+p[2]]; return it?{st:st,g:g,it:it}:null; }
+function priceKey(st,it){ return st.store+":"+(it.k||slugN(it.n)); }
+function money(n){ return "$"+(Math.round(n*100)/100).toFixed(2); }
+function parsePrice(v){ var x=parseFloat(String(v||"").replace(/[^0-9.]/g,"")); return (isFinite(x) && x>0 && x<1000) ? Math.round(x*100)/100 : null; }
+function setPrice(pk,v){
+  var cur=prices[pk];
+  if(v==null){ delete prices[pk]; }
+  else { var h=(cur && cur.h) ? cur.h.slice() : []; if(!cur || cur.p!==v){ h.push([isoD(new Date()), v]); if(h.length>8) h=h.slice(-8); } prices[pk]={p:v, h:h}; }
+  wjs(PRICE_KEY,prices);
+}
+function priceTrend(pk){ var c=prices[pk]; if(!c || !c.h || c.h.length<2) return ""; var a=c.h[c.h.length-2][1], b=c.h[c.h.length-1][1]; return b>a?" \u2191":(b<a?" \u2193":""); }
+function priceChip(pk,hint){
+  var c=prices[pk];
+  return '<button type="button" class="pchip'+(c?' set':'')+'" data-pk="'+esc(pk)+'" aria-label="'+(c?'Price '+money(c.p)+', tap to change':'Add price')+'">'+(c?esc(money(c.p)+priceTrend(pk)):'Add price')+'</button>'+
+    (!c && hint ? '<span class="price">'+esc(hint)+'</span>' : '');
+}
+/* how many of the kitchen app's units come in what you buy, so stock levels
+   refill when you check something off (store:key -> count) */
+var PACK={"WinCo:eggs":30,"WinCo:bread":15,"WinCo:turkey":16,"WinCo:provolone":10,"WinCo:beef":16,"WinCo:milk":16,"WinCo:yoplait":5,
+  "WinCo:tortilla":8,"WinCo:smalltort":10,"WinCo:bun":8,"WinCo:hashbrown":10,"WinCo:fries":10,"WinCo:pb":14,"WinCo:pouch":5,"WinCo:pasta":16,
+  "WinCo:soup":4,"WinCo:cereal":10,"WinCo:chunks":8,"WinCo:sausage":10,"WinCo:cheddar":8,"WinCo:marinara":6,"WinCo:bar":4,
+  "Costco:chicken":48,"Costco:chunks":21,"Costco:sausage":48,"Costco:cheddar":64,"Costco:marinara":12,"Costco:bar":20};
+var BOUGHT_NOW={};
+function logPurchase(id,on){
+  var f=itemAt(id); if(!f) return;
+  var log=rjs(BOUGHTLOG_KEY,{}), keys=[f.it.k].concat(f.it.ks||[]).filter(Boolean);
+  if(!keys.length) return;
+  if(on){ var now=Date.now(); BOUGHT_NOW[id]=now;
+    keys.forEach(function(k){ log[k]={at:now, n:f.it.n, s:f.st.store, z:PACK[f.st.store+":"+k]||null}; }); }
+  else if(BOUGHT_NOW[id]){ keys.forEach(function(k){ if(log[k] && log[k].at===BOUGHT_NOW[id]) delete log[k]; }); delete BOUGHT_NOW[id]; }
+  wjs(BOUGHTLOG_KEY,log);
+}
+function aisleNum(note){ var m=/(\d+)/.exec(note||""); return m ? +m[1] : null; }
 function flagged(it){ var f=loadFlags(); return itemKeys(it).some(function(k){ return !!f[k]; }); }
 function isStock(st,g){ return !!(g.stock || st.monthly); }
 var STANDIN={}; DATA.forEach(function(st){ st.groups.forEach(function(g){ if(g.standin) g.items.forEach(function(it){ STANDIN[it.k]=1; }); }); });
@@ -653,36 +692,61 @@ function renderStockBar(){
 }
 var TAG = {"researched":"Researched", "store brand":"Store brand", "deal":"Deal"};
 
+var RENDERED = false;
+function itemHTML(st, si, gi, ii, it){
+  var id = idOf(si, gi, ii), done = !!state[id], miss = !!missed[id], key = noteKey(it.n), note = aisles[key] || "", pk = priceKey(st, it);
+  var wasMissed = lastMiss[pk] && lastMiss[pk] < WEEK_START;
+  return '<li class="item' + (done ? " done" : "") + (miss ? " missed" : "") + '" data-id="' + id + '" role="checkbox" tabindex="0" aria-checked="' + done + '">' +
+    '<span class="check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 12.5l4 4 8-9"/></svg></span>' +
+    '<span class="body"><span class="name">' + esc(it.n) + '</span>' +
+    '<span class="amt">' + (miss ? 'Not there this trip — it stays on for next time' : esc(it.a)) + '</span>' +
+    (it.w && !miss ? '<span class="why">' + esc(it.w) + '</span>' : '') +
+    '<span class="meta">' +
+      (wasMissed && !done ? '<span class="tag missedtag">Missed last trip</span>' : '') +
+      (it.t ? '<span class="tag ' + it.t.replace(/[^a-z]+/g, "") .replace("storebrand","") + '">' + esc(TAG[it.t] || it.t) + '</span>' : '') +
+      priceChip(pk, it.p) +
+      '<button type="button" class="aisle' + (note ? "" : " empty") + '" data-note="' + esc(key) + '">' + esc(note || "Add aisle") + '</button>' +
+      (done ? '' : '<button type="button" class="missbtn" data-miss="' + id + '">' + (miss ? 'Back on list' : 'Not there') + '</button>') +
+    '</span></span></li>';
+}
 function render(){
   var html = "";
   DATA.forEach(function(st, si){
     var anyS = st.groups.some(function(g){ return g.items.some(function(it){ return wanted(it,st,g); }); });
-    html += '<section class="store rise" style="--i:' + (4 + si) + '" data-store="' + esc(st.store) + '"' + (anyS ? '' : ' hidden') + '>' +
+    var hasNums = st.groups.some(function(g){ return g.items.some(function(it){ return wanted(it,st,g) && aisleNum(aisles[noteKey(it.n)]) != null; }); });
+    var sorted = SORT_AISLE && hasNums;
+    html += '<section class="store' + (RENDERED ? '' : ' rise') + '" style="--i:' + (4 + si) + '" data-store="' + esc(st.store) + '"' + (anyS ? '' : ' hidden') + '>' +
       '<div class="store-head"><div><h2>' + esc(st.store) + '</h2><p class="store-loc">' + esc(st.loc) + '</p></div>' +
-      '<span class="store-count" id="sc-' + si + '"></span></div>' +
+      '<div class="store-tools">' + (hasNums ? '<button type="button" class="sortbtn" aria-pressed="' + sorted + '">Aisle order</button>' : '') +
+      '<span class="store-count" id="sc-' + si + '"></span></div></div>' +
       (st.note ? '<p class="store-note">' + esc(st.note) + '</p>' : '');
-    st.groups.forEach(function(g, gi){
-      var anyW = g.items.some(function(it){ return wanted(it,st,g); });
-      html += '<div class="group"' + (anyW ? '' : ' hidden') + '><div class="group-head"><span>' + esc(g.name) + '</span><span id="gl-' + si + '-' + gi + '"></span></div><ul class="card">';
-      g.items.forEach(function(it, ii){
-        if(!wanted(it,st,g)) return;
-        var id = idOf(si, gi, ii), done = !!state[id], key = noteKey(it.n), note = aisles[key] || "";
-        html += '<li class="item' + (done ? " done" : "") + '" data-id="' + id + '" role="checkbox" tabindex="0" aria-checked="' + done + '">' +
-          '<span class="check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 12.5l4 4 8-9"/></svg></span>' +
-          '<span class="body"><span class="name">' + esc(it.n) + '</span>' +
-          '<span class="amt">' + esc(it.a) + '</span>' +
-          (it.w ? '<span class="why">' + esc(it.w) + '</span>' : '') +
-          '<span class="meta">' +
-            (it.t ? '<span class="tag ' + it.t.replace(/[^a-z]+/g, "") .replace("storebrand","") + '">' + esc(TAG[it.t] || it.t) + '</span>' : '') +
-            (it.p ? '<span class="price">' + esc(it.p) + '</span>' : '') +
-            '<button type="button" class="aisle' + (note ? "" : " empty") + '" data-note="' + esc(key) + '">' + esc(note || "Add aisle") + '</button>' +
-          '</span></span></li>';
+    if(sorted){
+      /* one walking path through the store: numbered aisles in order, then
+         spots you described in words, then items with no aisle yet */
+      var rows = [], n = 0;
+      st.groups.forEach(function(g, gi){ g.items.forEach(function(it, ii){ if(!wanted(it,st,g)) return;
+        var note = aisles[noteKey(it.n)] || "", a = aisleNum(note);
+        rows.push({gi:gi, ii:ii, it:it, a:a, label: a != null ? "Aisle " + a : (note ? "Other spots" : "No aisle yet"), rank: a != null ? a : (note ? 1e6 : 2e6), o:n++}); }); });
+      rows.sort(function(x, y){ return x.rank - y.rank || x.o - y.o; });
+      var cur = null;
+      rows.forEach(function(r){
+        if(r.label !== cur){ if(cur !== null) html += '</ul></div>'; cur = r.label;
+          html += '<div class="group"><div class="group-head"><span>' + esc(cur) + '</span><span></span></div><ul class="card">'; }
+        html += itemHTML(st, si, r.gi, r.ii, r.it);
       });
-      html += '</ul></div>';
-    });
+      if(cur !== null) html += '</ul></div>';
+    } else {
+      st.groups.forEach(function(g, gi){
+        var anyW = g.items.some(function(it){ return wanted(it,st,g); });
+        html += '<div class="group"' + (anyW ? '' : ' hidden') + '><div class="group-head"><span>' + esc(g.name) + '</span><span id="gl-' + si + '-' + gi + '"></span></div><ul class="card">';
+        g.items.forEach(function(it, ii){ if(wanted(it,st,g)) html += itemHTML(st, si, gi, ii, it); });
+        html += '</ul></div>';
+      });
+    }
     html += '</section>';
   });
   document.getElementById("stores").innerHTML = html;
+  RENDERED = true;   /* the slide-in plays once, not on every redraw */
   applyFilter(false);
   updateCounts(false);
 }
@@ -695,7 +759,7 @@ function tally(){
     var s = {total:0, left:0, groups:[]};
     st.groups.forEach(function(g, gi){
       var gl = 0;
-      g.items.forEach(function(it, ii){ if(!wanted(it,st,g)) return; s.total++; if(!state[idOf(si,gi,ii)]){ s.left++; gl++; } });
+      g.items.forEach(function(it, ii){ if(!wanted(it,st,g) || missed[idOf(si,gi,ii)]) return; s.total++; if(!state[idOf(si,gi,ii)]){ s.left++; gl++; } });
       s.groups.push(gl);
     });
     t.total += s.total; t.left += s.left; t.stores.push(s);
@@ -733,6 +797,101 @@ function updateCounts(fromTap){
     storeWasDone[si] = isDone;
     s.groups.forEach(function(gl, gi){ var g = document.getElementById("gl-" + si + "-" + gi); if(g) g.textContent = gl ? gl + " left" : "\u2713"; });
   });
+  updateMoney();
+}
+
+/* ---- money: estimate, in-cart total, and the week's spending ---- */
+function extrasForMoney(){
+  var f = loadFlags(), known = {}, out = [];
+  DATA.forEach(function(st){ st.groups.forEach(function(g){ g.items.forEach(function(it){ itemKeys(it).forEach(function(k){ known[k] = 1; }); }); }); });
+  Object.keys(f).forEach(function(k){ if(!known[k]) out.push(k); });
+  return out;
+}
+function moneyTally(){
+  var est = 0, cart = 0, unpriced = 0, priced = 0;
+  DATA.forEach(function(st, si){ st.groups.forEach(function(g, gi){ g.items.forEach(function(it, ii){
+    var id = idOf(si, gi, ii); if(!wanted(it,st,g) || missed[id]) return;
+    var c = prices[priceKey(st, it)];
+    if(c){ priced++; est += c.p; if(state[id]) cart += c.p; } else unpriced++;
+  }); }); });
+  extrasForMoney().forEach(function(k){ var c = prices["Extras:" + k]; if(c){ priced++; est += c.p; } else unpriced++; });
+  Object.keys(xspend).forEach(function(k){ cart += xspend[k]; est += xspend[k]; });
+  return {est:est, cart:cart, unpriced:unpriced, priced:priced};
+}
+function updateMoney(){
+  var m = moneyTally(), el = document.getElementById("money"); if(!el) return;
+  if(!m.priced && !m.cart){ el.innerHTML = '<small>Tap <b>Add price</b> on items as you shop — trip totals show up here.</small>'; }
+  else el.innerHTML = 'Est. <b>' + money(m.est) + '</b> · <b>' + money(m.cart) + '</b> in cart' +
+    (m.unpriced ? '<small>' + m.unpriced + ' item' + (m.unpriced === 1 ? '' : 's') + ' without a price yet</small>' : '');
+  var sp = rjs(SPEND_KEY, {}), r = Math.round(m.cart * 100) / 100;
+  if(r > 0 || sp[WEEK_START] != null){ if(sp[WEEK_START] !== r){ sp[WEEK_START] = r; wjs(SPEND_KEY, sp); } }
+  renderSpend(m);
+}
+function renderSpend(m){
+  var host = document.getElementById("spend"); if(!host) return;
+  m = m || moneyTally();
+  var sp = rjs(SPEND_KEY, {}), budget = parseFloat(lsGet(BUDGET_KEY)) || 0;
+  var weeks = []; for(var i = 5; i >= 0; i--){ var d = new Date(MON); d.setDate(d.getDate() - 7 * i); weeks.push(isoD(d)); }
+  var vals = weeks.map(function(w){ return w === WEEK_START ? m.cart : (sp[w] || 0); });
+  var max = Math.max.apply(null, vals.concat([budget, 1]));
+  var past = weeks.slice(0, 5).map(function(w){ return sp[w] || 0; }).filter(function(v){ return v > 0; });
+  var avg = past.length ? past.reduce(function(a, b){ return a + b; }, 0) / past.length : 0;
+  var over = budget && m.cart > budget;
+  host.innerHTML = '<h3>Spending</h3>' +
+    '<div class="sp-big">' + money(m.cart) + '</div>' +
+    '<p class="sp-sub">' + (budget ? (over ? money(m.cart - budget) + ' over your ' + money(budget) + ' budget this week'
+                                           : money(budget - m.cart) + ' left of your ' + money(budget) + ' budget' + (m.est > budget ? ' — the full list would run about ' + money(m.est - budget) + ' over' : ''))
+                                 : 'in the cart this week' + (m.est ? ', about ' + money(m.est) + ' for the whole list' : '')) + '</p>' +
+    (budget ? '<div class="sp-track' + (over ? ' over' : '') + '"><span style="width:' + Math.min(100, m.cart / budget * 100) + '%"></span></div>' : '') +
+    '<div class="sp-hist" aria-label="Last six weeks">' + weeks.map(function(w, i){
+      var v = vals[i], h = Math.max(3, Math.round(v / max * 46)), d = new Date(w + "T00:00:00");
+      return '<div class="' + (w === WEEK_START ? 'now' : '') + '"><small>' + (v ? '$' + Math.round(v) : '–') + '</small><i style="height:' + h + 'px"></i><small>' + d.toLocaleDateString("en-US", {month:"short", day:"numeric"}) + '</small></div>';
+    }).join("") + '</div>' +
+    '<p class="sp-sub" style="margin:6px 0 0">' + (avg ? 'Your average over recent weeks: <b>' + money(avg) + '</b>.' : 'Weeks fill in as you shop with prices on.') + '</p>' +
+    '<div class="sp-row"><button type="button" id="budgetBtn">' + (budget ? 'Change budget' : 'Set a weekly budget') + '</button></div>';
+  document.getElementById("budgetBtn").addEventListener("click", function(){ editBudget(this); });
+}
+function editBudget(btn){
+  var input = document.createElement("input");
+  input.type = "text"; input.inputMode = "decimal"; input.className = "aisle-input"; input.placeholder = "e.g. 60"; input.setAttribute("aria-label", "Weekly budget in dollars");
+  input.value = lsGet(BUDGET_KEY) || "";
+  btn.replaceWith(input); input.focus();
+  var closed = false;
+  function commit(){ if(closed) return; closed = true; var v = parsePrice(input.value);
+    try{ if(v) localStorage.setItem(BUDGET_KEY, String(v)); else localStorage.removeItem(BUDGET_KEY); }catch(e){}
+    renderSpend(); }
+  input.addEventListener("blur", commit);
+  input.addEventListener("keydown", function(ev){ if(ev.key === "Enter"){ ev.preventDefault(); commit(); } if(ev.key === "Escape"){ closed = true; renderSpend(); } });
+}
+function editPrice(btn){
+  var pk = btn.getAttribute("data-pk"), cur = prices[pk];
+  var input = document.createElement("input");
+  input.type = "text"; input.inputMode = "decimal"; input.className = "aisle-input"; input.style.maxWidth = "120px";
+  input.placeholder = "e.g. 3.48"; input.setAttribute("aria-label", "Price paid"); input.value = cur ? cur.p.toFixed(2) : "";
+  var hint = btn.nextElementSibling && btn.nextElementSibling.classList.contains("price") ? btn.nextElementSibling : null;
+  btn.replaceWith(input); input.focus(); input.select();
+  var closed = false;
+  function commit(){
+    if(closed) return; closed = true;
+    var raw = input.value.trim(), v = parsePrice(raw);
+    if(raw === "") setPrice(pk, null); else if(v != null) setPrice(pk, v);
+    var wrap = document.createElement("span"); wrap.innerHTML = priceChip(pk, hint ? hint.textContent : "");
+    if(hint) hint.remove();
+    var nodes = Array.prototype.slice.call(wrap.childNodes); input.replaceWith.apply(input, nodes);
+    if(pk.indexOf("Extras:") === 0 && xspend[pk.slice(7)] != null && prices[pk]){ xspend[pk.slice(7)] = prices[pk].p; wjs(XSPEND_KEY, xspend); }
+    updateMoney();
+  }
+  input.addEventListener("blur", commit);
+  input.addEventListener("keydown", function(ev){ if(ev.key === "Enter"){ ev.preventDefault(); commit(); } if(ev.key === "Escape"){ input.value = cur ? String(cur.p) : ""; commit(); } });
+  input.addEventListener("click", function(ev){ ev.stopPropagation(); });
+}
+function toggleMiss(id){
+  var f = itemAt(id); if(!f) return;
+  var pk = priceKey(f.st, f.it);
+  if(missed[id]){ delete missed[id]; if(lastMiss[pk] === WEEK_START) delete lastMiss[pk]; }
+  else { missed[id] = 1; lastMiss[pk] = WEEK_START; if(state[id]){ delete state[id]; save(); logPurchase(id, false); } toast("Kept for next trip: " + f.it.n); }
+  wjs(MISS_KEY, missed); wjs(LASTMISS_KEY, lastMiss);
+  render(); renderSeg();
 }
 
 /* ---- store filter ---- */
@@ -764,7 +923,10 @@ function toggle(li){
   li.classList.toggle("done", on); li.setAttribute("aria-checked", String(on));
   if(on && !reduceMotion()){ li.classList.remove("justdone"); void li.offsetWidth; li.classList.add("justdone");
     setTimeout(function(){ li.classList.remove("justdone"); }, 500); }
-  save(); updateCounts(true);
+  save(); logPurchase(id, on);
+  if(on){ var fm = itemAt(id); if(fm){ var pkm = priceKey(fm.st, fm.it); if(lastMiss[pkm] && lastMiss[pkm] < WEEK_START){ delete lastMiss[pkm]; wjs(LASTMISS_KEY, lastMiss); } } }
+  var mb = li.querySelector(".missbtn"); if(mb) mb.hidden = on;
+  updateCounts(true);
   if(on && COSTCO_TRIP && li.closest && li.closest('[data-store="Costco"]')) lsSet(LAST_COSTCO_KEY, WEEK_START);
   /* inventory: buying a restock item clears its Running low flag; un-checking puts it back */
   var p = id.split("-"), it = DATA[+p[0]] && DATA[+p[0]].groups[+p[1]] && DATA[+p[0]].groups[+p[1]].items[+p[2]];
@@ -786,6 +948,7 @@ function editAisle(btn){
     var v = input.value.trim();
     if(v) aisles[key] = v; else delete aisles[key];
     saveAisles();
+    setTimeout(render, 0);   /* re-sort, and show the Aisle order button once a number exists */
     var nb = document.createElement("button");
     nb.type = "button"; nb.className = "aisle" + (v ? "" : " empty"); nb.setAttribute("data-note", key); nb.textContent = v || "Add aisle";
     input.replaceWith(nb);
@@ -798,6 +961,9 @@ function editAisle(btn){
   input.addEventListener("click", function(ev){ ev.stopPropagation(); });
 }
 document.getElementById("stores").addEventListener("click", function(e){
+  var pc = e.target.closest(".pchip"); if(pc){ e.stopPropagation(); editPrice(pc); return; }
+  var mb = e.target.closest(".missbtn"); if(mb){ e.stopPropagation(); toggleMiss(mb.getAttribute("data-miss")); return; }
+  var sb = e.target.closest(".sortbtn"); if(sb){ e.stopPropagation(); SORT_AISLE = !SORT_AISLE; lsSet(SORT_KEY, SORT_AISLE ? "1" : "0"); render(); return; }
   var chip = e.target.closest(".aisle");
   if(chip){ e.stopPropagation(); editAisle(chip); return; }
   var li = e.target.closest("li.item"); if(li) toggle(li);
@@ -846,7 +1012,7 @@ function renderFlags(){
       return '<li class="item xitem' + (r.done ? ' done' : '') + '" data-k="' + esc(r.k) + '" role="checkbox" tabindex="0" aria-checked="' + r.done + '">' +
         '<span class="check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 12.5l4 4 8-9"/></svg></span>' +
         '<span class="body"><span class="name">' + esc(r.o.n || r.k) + '</span>' +
-        '<span class="meta">' + (fromP ? '<span class="tag researched">Your usual: ' + esc(fromP) + '</span>' : '') +
+        '<span class="meta">' + (fromP ? '<span class="tag researched">Your usual: ' + esc(fromP) + '</span>' : '') + priceChip("Extras:" + r.k, "") +
         '<button type="button" class="aisle xbrand' + (own ? '' : ' empty') + '" data-k="' + esc(r.k) + '">' + esc(own || (fromP ? 'Different brand?' : 'Add brand')) + '</button>' +
         '</span></span></li>'; }).join("") + '</ul>' : '') +
     '<form class="xadd" id="xadd"><input id="xaddName" type="text" placeholder="Add an item, e.g. isopropyl alcohol" autocomplete="off" enterkeyhint="done"><button type="submit">Add</button></form>' +
@@ -861,11 +1027,11 @@ function renderFlags(){
 }
 function toggleExtra(li){
   var k = li.getAttribute("data-k"), f = loadFlags(), on = !XDONE[k];
-  if(on){ var item = f[k] || {n:k, at:Date.now()}; XDONE[k] = item; delete f[k]; saveFlags(f); }
-  else { f[k] = XDONE[k]; delete XDONE[k]; saveFlags(f); }
+  if(on){ var item = f[k] || {n:k, at:Date.now()}; XDONE[k] = item; delete f[k]; saveFlags(f); if(prices["Extras:" + k]){ xspend[k] = prices["Extras:" + k].p; wjs(XSPEND_KEY, xspend); } }
+  else { f[k] = XDONE[k]; delete XDONE[k]; saveFlags(f); if(xspend[k] != null){ delete xspend[k]; wjs(XSPEND_KEY, xspend); } }
   li.classList.toggle("done", on); li.setAttribute("aria-checked", String(on));
   if(on && !reduceMotion()){ li.classList.remove("justdone"); void li.offsetWidth; li.classList.add("justdone"); }
-  setTimeout(function(){ renderFlags(); renderStockBar(); renderSeg(); }, on ? 450 : 0);
+  setTimeout(function(){ renderFlags(); renderStockBar(); renderSeg(); updateMoney(); }, on ? 450 : 0);
 }
 function editBrand(btn){
   var k = btn.getAttribute("data-k"), f = loadFlags(), cur = (f[k] && f[k].b) || (XDONE[k] && XDONE[k].b) || "";
@@ -890,6 +1056,7 @@ function editBrand(btn){
 }
 document.getElementById("flagged").addEventListener("click", function(e){
   var b = e.target.closest(".xbrand"); if(b){ e.stopPropagation(); editBrand(b); return; }
+  var pc = e.target.closest(".pchip"); if(pc){ e.stopPropagation(); editPrice(pc); return; }
   var li = e.target.closest("li.xitem"); if(li) toggleExtra(li);
 });
 document.getElementById("flagged").addEventListener("keydown", function(e){
@@ -935,11 +1102,11 @@ document.getElementById("resetBtn").addEventListener("click", function(){
 });
 
 /* ---- start ---- */
-var BUILD="2026.10.17-b";   /* date + letter, like Daily Protocol */
+var BUILD="2026.10.17-c";   /* date + letter, like Daily Protocol */
 load();
 document.getElementById("weekLabel").textContent = WEEK_LABEL;
 document.title = "Grocery \u2014 " + WEEK_LABEL;
-document.getElementById("lede").innerHTML = "Before you go: check your kitchen and tap off anything you already have. Items marked \u201conly if out\u201d are just a reminder to look. In the store, tap each one as it goes in the cart." +
+document.getElementById("lede").innerHTML = "Before you go: tap off anything you already have. In the store, tap each item as it goes in the cart, and tap <b>Add price</b> once \u2014 it remembers. Out of stock? <b>Not there</b> keeps it for next trip." +
   '<span class="costco-sw">' + (COSTCO_TRIP
     ? '<b>Costco is on this week.</b> Check your freezer space before you go. <button type="button" onclick="setCostco(false)">Not this week</button>'
     : (COSTCO_DUE ? '' : 'Costco next in about ' + Math.max(1,4-COSTCO_WEEKS) + ' week' + (4-COSTCO_WEEKS===1?'':'s') + '. ') +
@@ -1013,6 +1180,12 @@ renderStockBar();
   document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='visible') check(false); });
   setInterval(function(){ if(document.visibilityState==='visible') check(false); }, 10*60e3);
 })();
+</script>
+<script>
+/* offline support: lets the kitchen apps open with no signal (see sw.js) */
+if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
+  window.addEventListener("load", function(){ navigator.serviceWorker.register("sw.js").catch(function(){}); });
+}
 </script>
 </body>
 </html>
