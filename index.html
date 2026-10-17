@@ -7676,7 +7676,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.10.17-d";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.10.17-e";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
@@ -7869,10 +7869,24 @@ const APP_VERSION="2026.10.17-d";   // date + letter, like Daily Protocol: next 
     const el=document.activeElement; if(!el || !/^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName)) return;
     const sh=el.closest(".sheet, .v3-sheet"); if(!sh) return;
     const r=el.getBoundingClientRect(), s=sh.getBoundingClientRect();
-    const top=s.top+12, bottom=Math.min(s.bottom, vv?vv.height+vv.offsetTop:window.innerHeight)-16;
+    const top=Math.max(s.top, vv?vv.offsetTop:0)+12, bottom=Math.min(s.bottom, vv?vv.height+vv.offsetTop:window.innerHeight)-16;
     if(r.top<top || r.bottom>bottom) sh.scrollTop+= (r.top+r.height/2)-((top+bottom)/2);
   }
   if(vv){ vv.addEventListener("resize",function(){ fit(); setTimeout(keepVisible,60); }); vv.addEventListener("scroll",fit); }
+  /* Tapping a field makes iPhone Safari slide the whole screen up to "help",
+     which shoved the top of the form (the Name box) off screen. Focus fields
+     in a sheet ourselves without that slide; fit() and keepVisible() above
+     keep the field in view inside the sheet instead. A second tap on a field
+     that's already active behaves normally, so you can still place the cursor. */
+  document.addEventListener("touchend",function(e){
+    const el=e.target && e.target.closest ? e.target.closest(".sheet input, .sheet textarea, .v3-sheet input, .v3-sheet textarea") : null;
+    if(!el || el===document.activeElement || el.disabled || el.readOnly) return;
+    if(/^(checkbox|radio|file|range|color|button|submit)$/i.test(el.type||"")) return;
+    e.preventDefault();
+    try{ el.focus({preventScroll:true}); }catch(err){ el.focus(); }
+    try{ if(el.type!=="number" && el.type!=="email" && el.setSelectionRange){ const n=el.value.length; el.setSelectionRange(n,n); } }catch(err){}
+    setTimeout(function(){ if(window.scrollY) window.scrollTo(0,0); fit(); keepVisible(); },50);
+  },{passive:false});
   document.addEventListener("focusin",function(e){
     if(!e.target.closest || !e.target.closest(".sheet, .v3-sheet")) return;
     setTimeout(function(){ fit(); keepVisible(); },320);   /* after the keyboard finishes sliding up */
