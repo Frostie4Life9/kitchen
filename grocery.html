@@ -808,6 +808,9 @@ function loadFlags(){ try{ var o = JSON.parse(localStorage.getItem(LOW_KEY)); re
    here (isopropyl alcohol, paper towels) live in one place. Tap one to check
    it off; it's gone from both apps. */
 function saveFlags(o){ try{ localStorage.setItem(LOW_KEY, JSON.stringify(o)); }catch(e){} }
+/* Retired meal ingredients (same list as the kitchen app): clear old flags. */
+(function(){ var R=["uncrust","shake","x_uncrustables","x_protein_shakes","x_orgain_shakes","x_orgain"], f=loadFlags(), ch=false;
+  R.forEach(function(k){ if(f[k]){ delete f[k]; ch=true; } }); if(ch) saveFlags(f); })();
 /* Extras get the same checklist rows as the regular list. Checking one keeps it
    on screen (struck through) so a mis-tap can be undone; the flag clears right
    away, so the kitchen app knows it's stocked. Brand: your own note on the flag

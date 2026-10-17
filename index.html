@@ -5168,6 +5168,10 @@ const LOW_KEY="runningLow_v1";
 function loadLow(){ try{ const o=JSON.parse(localStorage.getItem(LOW_KEY)); return o&&typeof o==="object"?o:{}; }catch(e){ return {}; } }
 function saveLow(o){ try{ localStorage.setItem(LOW_KEY, JSON.stringify(o)); }catch(e){} }
 function isLow(key){ return !!loadLow()[key]; }
+/* Ingredients of retired meals: drop any old Running low flags so they don't
+   linger in Extras, and keep them off the Shop chips. Same list in grocery.html. */
+const RETIRED_ING=["uncrust","shake","x_uncrustables","x_protein_shakes","x_orgain_shakes","x_orgain"];
+(function(){ const o=loadLow(); let ch=false; RETIRED_ING.forEach(function(k){ if(o[k]){ delete o[k]; ch=true; } }); if(ch) saveLow(o); })();
 function toggleRunLow(key){
   const o=loadLow();
   if(o[key]) delete o[key]; else o[key]={n:INGR[key]?INGR[key].n:key, at:Date.now()};
@@ -5922,7 +5926,7 @@ window.addEventListener("kitchensync", function(){ const o=$("settingsOverlay");
 function lowPanelHTML(){
   const low=loadLow(), n=Object.keys(low).length;
   const flagged=Object.keys(low).sort(function(a,b){ return (low[a].n||a).localeCompare(low[b].n||b); });
-  const keys=Object.keys(INGR).filter(function(k){ return !low[k] && k!=="fruit"; }).sort(function(a,b){ return INGR[a].n.localeCompare(INGR[b].n); });
+  const keys=Object.keys(INGR).filter(function(k){ return !low[k] && k!=="fruit" && RETIRED_ING.indexOf(k)<0; }).sort(function(a,b){ return INGR[a].n.localeCompare(INGR[b].n); });
   return '<div class="v3-low-panel"><h3>Running low'+(n?' · '+n:'')+'</h3>'+
     '<p>Out of something, or about to be? Add it here and it goes to the top of your grocery list. Meals that need it will say so.</p>'+
     '<form class="v3-low-add" onsubmit="addLowItem();return false"><input id="lowAddName" type="text" placeholder="Type anything — eggs, ketchup, paper towels" autocomplete="off" enterkeyhint="done" oninput="filterLowChips()"><button type="submit">Add</button></form>'+
@@ -7516,7 +7520,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="v3.18.2 · 2026-10-16";   // bump this each time you upload a new index.html
+const APP_VERSION="v3.18.3 · 2026-10-16";   // bump this each time you upload a new index.html
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
