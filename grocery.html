@@ -458,13 +458,13 @@ var DATA = [
     note:"Cash or debit only — no credit cards, and you bag your own.",
     groups:[
       {name:"Fresh — produce", items:[
-        {n:"Bananas", a:"2 bunches", u:"lb", q:3, t:"store brand", p:"check shelf",
+        {n:"Bananas", a:"2 bunches", u:"pc", q:8, pw:0.4, un:["banana","bananas"], t:"store brand", p:"check shelf",
          w:"Smoothies, PB-banana toast, snacks. Pick ones still a little green at the stem so the last few aren't brown by midweek."},
-        {n:"Apples", a:"5–6, Honeycrisp or Gala", u:"lb", q:2.5, t:"store brand", p:"check shelf",
+        {n:"Apples", a:"5–6, Honeycrisp or Gala", u:"pc", q:5, pw:0.45, un:["apple","apples"], t:"store brand", p:"check shelf",
          w:"Your top fiber fruit with the skin on, and backpack-proof for days. Gala if Honeycrisp is pricey."},
-        {n:"Mandarins or oranges", a:"a bag or 5 loose", u:"lb", q:2, t:"store brand", p:"check shelf",
+        {n:"Mandarins or oranges", a:"a bag or 5 loose", u:"pc", q:5, pw:0.45, un:["orange","oranges"], t:"store brand", p:"check shelf",
          w:"Peel in seconds and ride in a backpack fine."},
-        {n:"Pears", a:"3\u20134", u:"lb", q:1.5, t:"store brand", p:"check shelf",
+        {n:"Pears", a:"3\u20134", u:"pc", q:3, pw:0.45, un:["pear","pears"], t:"store brand", p:"check shelf",
          w:"The highest-fiber everyday fruit, about 5\u00bd g each with the skin. Buy them firm; they ripen on the counter in 2\u20133 days."},
         {n:"Strawberries, fresh", a:"1 lb container", t:"store brand", p:"check shelf",
          w:"Sides and snacks. Check the bottom of the container for mushy ones before you buy. Rinse right before eating, not when you get home \u2014 wet berries mold fast."},
@@ -486,7 +486,7 @@ var DATA = [
          w:"Scrambles, omelets, French toast. Eggs keep for weeks in the fridge."},
         {n:"Milk", a:"1 gallon", t:"store brand", p:"check shelf",
          w:"Cereal, French toast, mac sauce, and a glass alongside any light breakfast."},
-        {n:"Yoplait Original cups", a:"4–6", q:5, un:["cup","cups"], t:"store brand", p:"check shelf",
+        {n:"Yoplait Original cups", a:"1 pack of 8", un:["pack","packs"], t:"store brand", p:"check shelf",
          w:"Yoplait-granola-fruit mornings."},
         {n:"Sourdough loaf, in-store bakery", a:"1 loaf, if under about 5 slices", un:["loaf","loaves"], t:"store brand", p:"about $3.58",
          w:"Toast, French toast, melts, pizza toast, chicken salad. Freeze half if you won't finish it in a week."},
@@ -499,7 +499,7 @@ var DATA = [
         {k:"butter", n:"Butter", a:"1 lb", t:"store brand", p:"check shelf", w:"Eggs, grilled sandwiches, quesadillas."},
         {k:"bun", n:"Hamburger buns", a:"1 pack of 8", t:"store brand", p:"check shelf", w:"Burgers and subs. Freeze half so they don't go stale."},
         {k:"smalltort", n:"Guerrero Caseras Flour Tortillas, regular", a:"1 pack", t:"researched", p:"check shelf", w:"Tacos and the lunch quesadilla."},
-        {k:"onion", n:"Yellow onion", a:"1–2", u:"lb", q:1, t:"store brand", p:"check shelf", w:"Burgers and meat sauce. Lasts weeks on the counter."},
+        {k:"onion", n:"Yellow onion", a:"1–2", u:"pc", q:1, pw:0.4, un:["onion","onions"], t:"store brand", p:"check shelf", w:"Burgers and meat sauce. Lasts weeks on the counter."},
         {k:"grapes", n:"Seedless grapes", a:"about 1 lb", u:"lb", q:1, t:"store brand", p:"check shelf", w:"Snack boxes and chicken salad sides."},
         {k:"hashbrown", n:"Ore-Ida Golden Hash Brown Patties", a:"1 bag", t:"researched", p:"check shelf", w:"Big breakfast plate. Crispiest in air-fryer testing."},
         {k:"strawb", n:"Frozen strawberries", a:"1 bag, WinCo brand", t:"store brand", p:"check shelf", w:"Smoothies."},
@@ -668,28 +668,31 @@ var QTY_KEY="grocery_qty_"+WEEK_START, UNIT_KEY="grocery_units_v1";
 var qtys=rjs(QTY_KEY,{}), units=rjs(UNIT_KEY,{});
 function r2(n){ return Math.round(n*100)/100; }
 function unitOf(pk,it){ return units[pk] || (it && it.u) || "ea"; }
-function isLb(pk,it){ return unitOf(pk,it)==="lb"; }
+function isLb(pk,it){ return unitOf(pk,it)==="lb"; }          /* priced per lb AND you enter the weight */
+function perLb(pk,it){ var u=unitOf(pk,it); return u==="lb" || u==="pc"; }   /* price is per lb either way */
+function pcWt(it){ return (it && it.pw) || 0.4; }                 /* estimated lb per piece */
 function stepOf(pk,it){ return isLb(pk,it) ? ((it && it.s) || 0.25) : 1; }
 function defQty(pk,it){ return (it && it.q!=null && unitOf(pk,it)===(it.u||"ea")) ? it.q : 1; }
 function qtyOf(pk,it){ var v=qtys[pk]; return (typeof v==="number" && isFinite(v) && v>=0) ? v : defQty(pk,it); }
 function qtyLabel(pk,it){
   var q=qtyOf(pk,it), t=String(r2(q));
   if(isLb(pk,it)) return t+" lb";
+  if(unitOf(pk,it)==="pc" && !(it && it.un)) return t+" pcs";
   var un=it && it.un; return un ? t+" "+(q===1?un[0]:un[1]) : "\u00d7 "+t;
 }
-function lineTotal(pk,it){ var c=prices[pk]; return c ? r2(c.p*qtyOf(pk,it)) : null; }
+function lineTotal(pk,it){ var c=prices[pk]; if(!c) return null; var q=qtyOf(pk,it); return r2(c.p*q*(unitOf(pk,it)==="pc"?pcWt(it):1)); }
 function priceChip(pk,hint,it){
-  var c=prices[pk], lb=isLb(pk,it);
+  var c=prices[pk], lb=perLb(pk,it);
   return '<button type="button" class="pchip'+(c?' set':'')+'" data-pk="'+esc(pk)+'" aria-label="'+(c?'Price '+money(c.p)+(lb?' per pound':'')+', tap to change':'Add price')+'">'+(c?esc(money(c.p)+(lb?'/lb':'')+priceTrend(pk)):(lb?'Add $/lb':'Add price'))+'</button>'+
     (!c && hint ? '<span class="price">'+esc(hint)+'</span>' : '');
 }
 function qtyHTML(pk,it){
-  var q=qtyOf(pk,it), ch=qtys[pk]!=null, tot=lineTotal(pk,it), show=tot!=null && (q!==1 || isLb(pk,it));
+  var q=qtyOf(pk,it), ch=qtys[pk]!=null, tot=lineTotal(pk,it), show=tot!=null && (q!==1 || perLb(pk,it)), pc=unitOf(pk,it)==="pc";
   return '<span class="qty'+(ch?' changed':'')+'" data-pk="'+esc(pk)+'">'+
     '<button type="button" class="qb" data-d="-1" aria-label="Less"'+(q<=0?' disabled':'')+'>\u2212</button>'+
     '<button type="button" class="qv" aria-label="Amount '+esc(qtyLabel(pk,it))+', tap to type">'+esc(qtyLabel(pk,it))+'</button>'+
     '<button type="button" class="qb" data-d="1" aria-label="More">+</button></span>'+
-    (show ? '<span class="ltot">= '+money(tot)+'</span>' : '');
+    (show ? '<span class="ltot">'+(pc?'\u2248 ':'= ')+money(tot)+'</span>' : '');
 }
 function setQty(id,v){
   var f=itemAt(id); if(!f) return;
@@ -723,7 +726,7 @@ function editQty(btn){
 /* how many of the kitchen app's units come in ONE of what you buy (one carton,
    one lb, one cup), so stock levels refill by count x quantity when you check
    something off (store:key -> count) */
-var PACK={"WinCo:eggs":18,"WinCo:bread":15,"WinCo:turkey":16,"WinCo:provolone":20,"WinCo:beef":16,"WinCo:milk":16,"WinCo:yoplait":1,
+var PACK={"WinCo:eggs":18,"WinCo:bread":15,"WinCo:turkey":16,"WinCo:provolone":20,"WinCo:beef":16,"WinCo:milk":16,"WinCo:yoplait":8,
   "WinCo:tortilla":8,"WinCo:smalltort":10,"WinCo:bun":8,"WinCo:hashbrown":10,"WinCo:fries":10,"WinCo:pb":14,"WinCo:pouch":1,"WinCo:pasta":16,
   "WinCo:soup":2,"WinCo:cereal":10,"WinCo:chunks":8,"WinCo:sausage":10,"WinCo:cheddar":8,"WinCo:marinara":6,"WinCo:bar":4,
   "Costco:chicken":48,"Costco:chunks":21,"Costco:sausage":48,"Costco:cheddar":64,"Costco:marinara":12,"Costco:bar":20};
@@ -944,11 +947,12 @@ function editPrice(btn){
   var hint = btn.nextElementSibling && btn.nextElementSibling.classList.contains("price") ? btn.nextElementSibling : null;
   var li = btn.closest("li.item:not(.xitem)"), rowId = li && li.getAttribute("data-id"), fr = rowId && itemAt(rowId), ub = null;
   if(fr){
-    var setPh = function(){ var lb = isLb(pk, fr.it); input.placeholder = lb ? "$ per lb, e.g. 1.29" : "e.g. 3.48"; input.setAttribute("aria-label", lb ? "Price per pound" : "Price for one"); ub.textContent = lb ? "per lb" : "each"; };
+    var MODES = fr.it.pw ? ["pc","lb","ea"] : ["lb","ea"], ML = {pc:"per lb \u00b7 count them", lb:"per lb \u00b7 weigh it", ea:"each"};
+    var setPh = function(){ var lb = perLb(pk, fr.it); input.placeholder = lb ? "$ per lb, e.g. 1.29" : "e.g. 3.48"; input.setAttribute("aria-label", lb ? "Price per pound" : "Price for one"); ub.textContent = ML[unitOf(pk, fr.it)] || "each"; };
     ub = document.createElement("button"); ub.type = "button"; ub.className = "ubtn"; ub.title = "Switch between price per pound and price each";
     ub.addEventListener("mousedown", function(ev){ ev.preventDefault(); });
     ub.addEventListener("click", function(ev){ ev.stopPropagation();
-      var nu = isLb(pk, fr.it) ? "ea" : "lb";
+      var cu = unitOf(pk, fr.it), nu = MODES[(MODES.indexOf(cu) + 1) % MODES.length];
       if(nu === (fr.it.u || "ea")) delete units[pk]; else units[pk] = nu;
       wjs(UNIT_KEY, units); delete qtys[pk]; wjs(QTY_KEY, qtys); setPh(); input.focus(); });
     setPh();
@@ -1193,11 +1197,11 @@ document.getElementById("resetBtn").addEventListener("click", function(){
 });
 
 /* ---- start ---- */
-var BUILD="2026.10.18-a";   /* date + letter, like Daily Protocol */
+var BUILD="2026.10.18-b";   /* date + letter, like Daily Protocol */
 load();
 document.getElementById("weekLabel").textContent = WEEK_LABEL;
 document.title = "Grocery \u2014 " + WEEK_LABEL;
-document.getElementById("lede").innerHTML = "Before you go: tap off anything you already have. In the store, tap each item as it goes in the cart, and tap <b>Add price</b> once \u2014 it remembers. Produce, deli and beef are priced <b>per lb</b>; use <b>\u2212 / +</b> (or tap the amount) for how many or how many lb you're getting. Out of stock? <b>Not there</b> keeps it for next trip." +
+document.getElementById("lede").innerHTML = "Before you go: tap off anything you already have. In the store, tap each item as it goes in the cart, and tap <b>Add price</b> once \u2014 it remembers. Fruit and onions: enter the shelf price per lb and just count what you grab \u2014 the total is estimated from a typical size. Deli and beef go by the weight on the label. Use <b>\u2212 / +</b> or tap the amount to change it. Out of stock? <b>Not there</b> keeps it for next trip." +
   '<span class="costco-sw">' + (COSTCO_TRIP
     ? '<b>Costco is on this week.</b> Check your freezer space before you go. <button type="button" onclick="setCostco(false)">Not this week</button>'
     : (COSTCO_DUE ? '' : 'Costco next in about ' + Math.max(1,4-COSTCO_WEEKS) + ' week' + (4-COSTCO_WEEKS===1?'':'s') + '. ') +
