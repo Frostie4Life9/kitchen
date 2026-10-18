@@ -135,6 +135,8 @@ li.justdone .check{animation:pop .45s cubic-bezier(.3,1.6,.5,1)}
 li.done .name{background-size:100% 1.5px;color:var(--ink-faded)}
 .amt{display:block;font-size:13px;color:var(--ink-faded);margin-top:1px}
 .why{display:block;font-size:13px;color:var(--ink-soft);margin-top:5px;line-height:1.45;transition:opacity .35s}
+.why.pick b{color:var(--ink);font-weight:800}
+.swapbtn{font:inherit;font-size:12px;font-weight:800;border:1.5px solid var(--green);background:var(--green-soft);color:var(--green);border-radius:99px;padding:3px 10px;cursor:pointer}
 li.done .why,li.done .meta{opacity:.45}
 .meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:9px;transition:opacity .35s}
 .tag{font-size:11px;font-weight:800;border-radius:99px;padding:2px 8px;background:var(--paper);color:var(--ink-faded)}
@@ -459,17 +461,29 @@ var DATA = [
     groups:[
       {name:"Fresh — produce", items:[
         {n:"Bananas", a:"2 bunches", u:"pc", q:8, pw:0.4, un:["banana","bananas"], t:"store brand", p:"check shelf",
-         w:"Smoothies, PB-banana toast, snacks. Pick ones still a little green at the stem so the last few aren't brown by midweek."},
-        {n:"Apples", a:"5–6, Honeycrisp or Gala", u:"pc", q:5, pw:0.45, un:["apple","apples"], t:"store brand", p:"check shelf",
-         w:"Your top fiber fruit with the skin on, and backpack-proof for days. Gala if Honeycrisp is pricey."},
-        {n:"Mandarins or oranges", a:"a bag or 5 loose", u:"pc", q:5, pw:0.45, un:["orange","oranges"], t:"store brand", p:"check shelf",
-         w:"Peel in seconds and ride in a backpack fine."},
-        {n:"Pears", a:"3\u20134", u:"pc", q:3, pw:0.45, un:["pear","pears"], t:"store brand", p:"check shelf",
-         w:"The highest-fiber everyday fruit, about 5\u00bd g each with the skin. Buy them firm; they ripen on the counter in 2\u20133 days."},
+         w:"Smoothies, PB-banana toast, snacks. Every store banana is the same kind, so just pick by ripeness.",
+         pick:"Yellow with green tips, so the last few aren't brown by midweek. Counter until ripe, then the fridge is fine — the peel darkens but the inside holds."},
+        {n:"Apples", a:"5–6 Cosmic Crisp", u:"pc", q:5, pw:0.45, un:["apple","apples"], t:"store brand", p:"check shelf",
+         w:"Your top fiber fruit with the skin on, and backpack-proof for days. Cosmic Crisp stays crisp the longest in the fridge.",
+         pick:"Rock-firm with no give, tight skin, no soft bruises. October is peak apple season."},
+        {n:"Mandarins or oranges", a:"a bag of Cuties or Halos", u:"pc", q:5, pw:0.45, un:["orange","oranges"], t:"store brand", p:"check shelf",
+         w:"Peel without a knife and ride in a backpack fine — good for Wednesday and Friday lunches. Bags before November can run sour; once Cara Cara navels show up in winter, they're the pick for a big orange.",
+         pick:"Heavy for their size and firm, with snug skin — not puffy or loose. Color doesn't tell you much."},
+        {n:"Pears", a:"3–4 Anjou (green)", u:"pc", q:3, pw:0.45, un:["pear","pears"], t:"store brand", p:"check shelf",
+         w:"The highest-fiber everyday fruit, about 5½ g each with the skin. Anjou keeps for weeks in the fridge without going mushy.",
+         pick:"Buy them hard; they ripen on the counter. Ready when the neck by the stem gives to a thumb press — Anjou stays green, so press, don't look. Then into the fridge."},
         {n:"Strawberries, fresh", a:"1 lb container", t:"store brand", p:"check shelf",
-         w:"Sides and snacks. Check the bottom of the container for mushy ones before you buy. Rinse right before eating, not when you get home \u2014 wet berries mold fast."},
-        {n:"Mini watermelon or a whole pineapple", a:"1 \u2014 alternate weeks", t:"store brand", p:"check shelf",
-         w:"Buy them whole, not the pre-cut tubs. Cut it once when you get home (5 minutes) into a lidded container; it keeps 3\u20135 days in the fridge. Watermelon is near the end of its season, so pineapple is the safer bet into winter."},
+         w:"Sides and snacks. Rinse right before eating, not when you get home — wet berries mold fast.",
+         pick:"Red all the way to the stem — they don't ripen after picking. Flip the container and check the bottom for mush or mold."},
+        {n:"Mini watermelon or a whole pineapple", t:"store brand", p:"check shelf", sw:"melonpine", def:"pineapple",
+         alts:{
+           pineapple:{dn:"Pineapple, whole", a:"1", label:"pineapple",
+             w:"Buy it whole, not pre-cut. Cut it once when you get home (5 minutes) into a lidded container; it keeps 3–5 days in the fridge. Costco often has the best price.",
+             pick:"Smells sweet at the base. Skip any that smell fermented or have soft, dark spots. More gold usually means riper, but not always."},
+           watermelon:{dn:"Mini seedless watermelon", a:"1", label:"watermelon",
+             w:"Buy it whole, not the pre-cut tubs. Cut it once when you get home into a lidded container; it keeps 3–5 days in the fridge. Out of season roughly October to May — blander and pricier then.",
+             pick:"A creamy yellow field spot (not white), heavy for its size, and a hollow sound when you knock on it."}
+         }},
         {n:"Shredded lettuce", a:"1 bag", t:"store brand", p:"check shelf",
          w:"Burgers, tacos, wraps, subs. Nothing to wash or chop."}
       ]},
@@ -636,6 +650,14 @@ var FRESH_KEYS={"Bananas":["banana"],"Apples":["apple"],"Mandarins or oranges":[
   "Oven-roasted turkey, fresh-sliced":["turkey"],"Provolone, sliced":["provolone"],"85/15 ground beef":["beef"],"Large eggs":["eggs"],
   "Milk":["milk"],"Yoplait Original cups":["yoplait"],"Sourdough loaf, in-store bakery":["bread"],"Guerrero Caseras Burrito Size Flour Tortillas":["tortilla"]};
 DATA.forEach(function(st){ st.groups.forEach(function(g){ g.items.forEach(function(it){ var m=FRESH_KEYS[it.n]; if(m && !it.k){ it.k=m[0]; it.ks=m.slice(1); } }); }); });
+/* Swap items (sw): one line that flips between two fruits week to week.
+   The pick is remembered on this device and changes the name, amount, tips
+   and price key, so pineapple and watermelon keep separate prices. */
+var SWAP_KEY="grocery_swap_v1", SWAP=rjs0(SWAP_KEY);
+function rjs0(k){ try{ return JSON.parse(localStorage.getItem(k))||{}; }catch(e){ return {}; } }
+function applySwap(it){ if(!it.alts) return; var names=Object.keys(it.alts), cur=it.alts[SWAP[it.sw]] ? SWAP[it.sw] : it.def, v=it.alts[cur];
+  it.cur=cur; it.dn=v.dn; it.a=v.a; it.w=v.w; it.pick=v.pick; it.alt=names.filter(function(x){ return x!==cur; })[0]; it.k="fresh_"+cur; it.ks=names; }
+DATA.forEach(function(st){ st.groups.forEach(function(g){ g.items.forEach(applySwap); }); });
 function itemKeys(it){ return [it.k].concat(it.ks||[]).concat([slugN(it.n)]).filter(Boolean); }
 
 /* ===== v6: prices, spending, "not there", aisle order, purchase log =====
@@ -774,12 +796,14 @@ function itemHTML(st, si, gi, ii, it){
   var wasMissed = lastMiss[pk] && lastMiss[pk] < WEEK_START;
   return '<li class="item' + (done ? " done" : "") + (miss ? " missed" : "") + '" data-id="' + id + '" role="checkbox" tabindex="0" aria-checked="' + done + '">' +
     '<span class="check" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 12.5l4 4 8-9"/></svg></span>' +
-    '<span class="body"><span class="name">' + esc(it.n) + '</span>' +
+    '<span class="body"><span class="name">' + esc(it.dn || it.n) + '</span>' +
     '<span class="amt">' + (miss ? 'Not there this trip — it stays on for next time' : esc(it.a)) + '</span>' +
     (it.w && !miss ? '<span class="why">' + esc(it.w) + '</span>' : '') +
+    (it.pick && !miss ? '<span class="why pick"><b>How to pick:</b> ' + esc(it.pick) + '</span>' : '') +
     '<span class="meta">' +
       (wasMissed && !done ? '<span class="tag missedtag">Missed last trip</span>' : '') +
       (it.t ? '<span class="tag ' + it.t.replace(/[^a-z]+/g, "") .replace("storebrand","") + '">' + esc(TAG[it.t] || it.t) + '</span>' : '') +
+      (it.alts ? '<button type="button" class="swapbtn" data-swap="' + id + '">Switch to ' + esc(it.alts[it.alt].label) + '</button>' : '') +
       priceChip(pk, it.p, it) + qtyHTML(pk, it) +
       '<button type="button" class="aisle' + (note ? "" : " empty") + '" data-note="' + esc(key) + '">' + esc(note || "Add aisle") + '</button>' +
       (done ? '' : '<button type="button" class="missbtn" data-miss="' + id + '">' + (miss ? 'Back on list' : 'Not there') + '</button>') +
@@ -1056,6 +1080,8 @@ document.getElementById("stores").addEventListener("click", function(e){
     if(qf){ var qpk = priceKey(qf.st, qf.it); setQty(qid, qtyOf(qpk, qf.it) + (+qb.getAttribute("data-d")) * stepOf(qpk, qf.it)); } return; }
   var qv = e.target.closest(".qv"); if(qv){ e.stopPropagation(); editQty(qv); return; }
   if(e.target.closest(".ubtn, .qty")){ e.stopPropagation(); return; }
+  var swb = e.target.closest(".swapbtn"); if(swb){ e.stopPropagation(); var sf = itemAt(swb.getAttribute("data-swap"));
+    if(sf && sf.it.alts){ SWAP[sf.it.sw] = sf.it.alt; try{ localStorage.setItem(SWAP_KEY, JSON.stringify(SWAP)); }catch(er){} applySwap(sf.it); render(); toast("This week: " + sf.it.alts[sf.it.cur].label); } return; }
   var mb = e.target.closest(".missbtn"); if(mb){ e.stopPropagation(); toggleMiss(mb.getAttribute("data-miss")); return; }
   var sb = e.target.closest(".sortbtn"); if(sb){ e.stopPropagation(); SORT_AISLE = !SORT_AISLE; lsSet(SORT_KEY, SORT_AISLE ? "1" : "0"); render(); return; }
   var chip = e.target.closest(".aisle");
@@ -1167,7 +1193,7 @@ function buildText(){
     st.groups.forEach(function(g, gi){ g.items.forEach(function(it, ii){
       if(wanted(it,st,g) && !state[idOf(si,gi,ii)]){ var note = aisles[noteKey(it.n)];
         var qpk = priceKey(st, it);
-        lines.push("  - " + it.n + " (" + (qtys[qpk] != null ? qtyLabel(qpk, it) : it.a) + ")" + (note ? " [" + note + "]" : "")); }
+        lines.push("  - " + (it.dn || it.n) + " (" + (qtys[qpk] != null ? qtyLabel(qpk, it) : it.a) + ")" + (note ? " [" + note + "]" : "")); }
     }); });
     if(lines.length){ out.push(st.store.toUpperCase() + " \u2014 " + st.loc); out = out.concat(lines); out.push(""); }
   });
@@ -1197,7 +1223,7 @@ document.getElementById("resetBtn").addEventListener("click", function(){
 });
 
 /* ---- start ---- */
-var BUILD="2026.10.18-b";   /* date + letter, like Daily Protocol */
+var BUILD="2026.10.18-c";   /* date + letter, like Daily Protocol */
 load();
 document.getElementById("weekLabel").textContent = WEEK_LABEL;
 document.title = "Grocery \u2014 " + WEEK_LABEL;
