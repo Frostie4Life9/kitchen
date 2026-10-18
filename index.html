@@ -7676,7 +7676,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.10.17-f";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.10.17-g";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
@@ -7853,16 +7853,25 @@ const APP_VERSION="2026.10.17-f";   // date + letter, like Daily Protocol: next 
      sheets to the visible area above the keyboard and keep the field you're in
      on screen. */
   const vv=window.visualViewport;
+  /* Pin the open sheet to exactly the part of the screen you can see. While
+     you're typing in a sheet it is sized to the visible area above the
+     keyboard, wherever the browser has scrolled that area to. This doesn't
+     rely on comparing window heights, because Brave (and other iPhone apps
+     that show web pages) report those differently from Safari. */
+  function typingInSheet(){
+    const ae=document.activeElement;
+    return !!(ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) && ae.closest && ae.closest(".sheet, .v3-sheet"));
+  }
   function fit(){
     if(!vv) return;
-    const kb=Math.max(0, window.innerHeight-vv.height-vv.offsetTop);
-    const up=kb>80;
+    const on=typingInSheet() && vv.height < (screen.height||9999) - 40;
+    const layoutH=document.documentElement.clientHeight||window.innerHeight;
     document.querySelectorAll(".overlay.show").forEach(function(ov){
-      ov.style.top=up?vv.offsetTop+"px":""; ov.style.bottom=up?kb+"px":""; ov.style.height=up?vv.height+"px":"";
-      const sh=ov.querySelector(".sheet"); if(sh) sh.style.maxHeight=up?(vv.height-12)+"px":"";
+      ov.style.top=on?vv.offsetTop+"px":""; ov.style.height=on?vv.height+"px":""; ov.style.bottom=on?"auto":"";
+      const sh=ov.querySelector(".sheet"); if(sh) sh.style.maxHeight=on?(vv.height-8)+"px":"";
     });
     document.querySelectorAll(".v3-sheet.open").forEach(function(sh){
-      sh.style.bottom=up?kb+"px":""; sh.style.maxHeight=up?(vv.height-12)+"px":"";
+      sh.style.bottom=on?Math.max(0, layoutH-vv.offsetTop-vv.height)+"px":""; sh.style.maxHeight=on?(vv.height-8)+"px":"";
     });
   }
   function keepVisible(){
