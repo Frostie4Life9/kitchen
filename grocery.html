@@ -143,6 +143,14 @@ li.done .why,li.done .meta{opacity:.45}
 .price{font-size:12px;color:var(--ink-faded)}
 .pchip{font-size:12px;font-weight:700;border:1.5px dashed var(--rule);background:transparent;color:var(--ink-faded);border-radius:99px;padding:3px 10px;cursor:pointer;font-variant-numeric:tabular-nums}
 .pchip.set{border-style:solid;border-color:var(--today);color:var(--today)}
+.qty{display:inline-flex;align-items:center;border:1.5px solid var(--rule);border-radius:99px;overflow:hidden}
+.qty.changed{border-color:var(--today)}
+.qty button{font:inherit;border:0;background:transparent;cursor:pointer;color:var(--ink-soft);padding:0}
+.qty .qb{font-size:16px;font-weight:800;line-height:1;width:30px;height:26px}
+.qty .qb:disabled{opacity:.35;cursor:default}
+.qty .qv{font-size:12px;font-weight:800;color:var(--ink);min-width:40px;height:26px;padding:0 2px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ltot{font-size:12px;font-weight:800;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.ubtn{font:inherit;font-size:12px;font-weight:800;border:1.5px solid var(--today);background:transparent;color:var(--today);border-radius:99px;padding:4px 10px;cursor:pointer}
 .missbtn{font:inherit;font-size:12px;font-weight:700;border:0;background:transparent;color:var(--ink-faded);padding:3px 2px;cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 li.missed .name{color:var(--amber)}
 li.missed .check{border-style:dashed;border-color:var(--amber)}
@@ -450,13 +458,13 @@ var DATA = [
     note:"Cash or debit only — no credit cards, and you bag your own.",
     groups:[
       {name:"Fresh — produce", items:[
-        {n:"Bananas", a:"2 bunches", t:"store brand", p:"check shelf",
+        {n:"Bananas", a:"2 bunches", u:"lb", q:3, t:"store brand", p:"check shelf",
          w:"Smoothies, PB-banana toast, snacks. Pick ones still a little green at the stem so the last few aren't brown by midweek."},
-        {n:"Apples", a:"5–6, Honeycrisp or Gala", t:"store brand", p:"check shelf",
+        {n:"Apples", a:"5–6, Honeycrisp or Gala", u:"lb", q:2.5, t:"store brand", p:"check shelf",
          w:"Your top fiber fruit with the skin on, and backpack-proof for days. Gala if Honeycrisp is pricey."},
-        {n:"Mandarins or oranges", a:"a bag or 5 loose", t:"store brand", p:"check shelf",
+        {n:"Mandarins or oranges", a:"a bag or 5 loose", u:"lb", q:2, t:"store brand", p:"check shelf",
          w:"Peel in seconds and ride in a backpack fine."},
-        {n:"Pears", a:"3\u20134", t:"store brand", p:"check shelf",
+        {n:"Pears", a:"3\u20134", u:"lb", q:1.5, t:"store brand", p:"check shelf",
          w:"The highest-fiber everyday fruit, about 5\u00bd g each with the skin. Buy them firm; they ripen on the counter in 2\u20133 days."},
         {n:"Strawberries, fresh", a:"1 lb container", t:"store brand", p:"check shelf",
          w:"Sides and snacks. Check the bottom of the container for mushy ones before you buy. Rinse right before eating, not when you get home \u2014 wet berries mold fast."},
@@ -466,21 +474,21 @@ var DATA = [
          w:"Burgers, tacos, wraps, subs. Nothing to wash or chop."}
       ]},
       {name:"Fresh — deli + meat", items:[
-        {n:"Oven-roasted turkey, fresh-sliced", a:"1 lb", t:"researched", p:"check shelf",
+        {n:"Oven-roasted turkey, fresh-sliced", a:"1 lb", u:"lb", q:1, t:"researched", p:"check shelf",
          w:"Omelets, wraps, snack boxes, melts, subs. Fresh-sliced beats the watery pressed packages. Ask for it thin."},
-        {n:"Provolone, sliced", a:"1/2 lb", t:"store brand", p:"check shelf",
+        {n:"Provolone, sliced", a:"1/2 lb", u:"lb", q:0.5, t:"store brand", p:"check shelf",
          w:"Wraps, snack boxes, melts, subs, and now pizza toast too."},
-        {n:"85/15 ground beef", a:"1–2 lb — check your freezer first", t:"researched", p:"check shelf",
+        {n:"85/15 ground beef", a:"1–2 lb — check your freezer first", u:"lb", q:1, t:"researched", p:"check shelf",
          w:"Burgers, tacos, pasta. One 1-lb tube cut in thirds covers three dinners. Freeze what you won't cook in 2 days."}
       ]},
       {name:"Fresh \u2014 dairy + bread", items:[
-        {n:"Large eggs", a:"30, or skip if you have a dozen+", t:"store brand", p:"check shelf",
-         w:"Scrambles, omelets, French toast. The 30-pack is cheaper per egg and keeps for weeks."},
+        {n:"Large eggs", a:"18-pack, or skip if you have a dozen+", un:["carton","cartons"], t:"store brand", p:"check shelf",
+         w:"Scrambles, omelets, French toast. Eggs keep for weeks in the fridge."},
         {n:"Milk", a:"1 gallon", t:"store brand", p:"check shelf",
          w:"Cereal, French toast, mac sauce, and a glass alongside any light breakfast."},
-        {n:"Yoplait Original cups", a:"4–6", t:"store brand", p:"check shelf",
+        {n:"Yoplait Original cups", a:"4–6", q:5, un:["cup","cups"], t:"store brand", p:"check shelf",
          w:"Yoplait-granola-fruit mornings."},
-        {n:"Sourdough loaf, in-store bakery", a:"1 loaf, if under about 5 slices", t:"store brand", p:"about $3.58",
+        {n:"Sourdough loaf, in-store bakery", a:"1 loaf, if under about 5 slices", un:["loaf","loaves"], t:"store brand", p:"about $3.58",
          w:"Toast, French toast, melts, pizza toast, chicken salad. Freeze half if you won't finish it in a week."},
         {n:"Guerrero Caseras Burrito Size Flour Tortillas", a:"1 pack of 8", t:"researched", p:"check shelf",
          w:"Quesadillas, wraps, campus pack, PB-banana roll-up. Mission burrito-size is the fallback."}
@@ -491,8 +499,8 @@ var DATA = [
         {k:"butter", n:"Butter", a:"1 lb", t:"store brand", p:"check shelf", w:"Eggs, grilled sandwiches, quesadillas."},
         {k:"bun", n:"Hamburger buns", a:"1 pack of 8", t:"store brand", p:"check shelf", w:"Burgers and subs. Freeze half so they don't go stale."},
         {k:"smalltort", n:"Guerrero Caseras Flour Tortillas, regular", a:"1 pack", t:"researched", p:"check shelf", w:"Tacos and the lunch quesadilla."},
-        {k:"onion", n:"Yellow onion", a:"1–2", t:"store brand", p:"check shelf", w:"Burgers and meat sauce. Lasts weeks on the counter."},
-        {k:"grapes", n:"Seedless grapes", a:"about 1 lb", t:"store brand", p:"check shelf", w:"Snack boxes and chicken salad sides."},
+        {k:"onion", n:"Yellow onion", a:"1–2", u:"lb", q:1, t:"store brand", p:"check shelf", w:"Burgers and meat sauce. Lasts weeks on the counter."},
+        {k:"grapes", n:"Seedless grapes", a:"about 1 lb", u:"lb", q:1, t:"store brand", p:"check shelf", w:"Snack boxes and chicken salad sides."},
         {k:"hashbrown", n:"Ore-Ida Golden Hash Brown Patties", a:"1 bag", t:"researched", p:"check shelf", w:"Big breakfast plate. Crispiest in air-fryer testing."},
         {k:"strawb", n:"Frozen strawberries", a:"1 bag, WinCo brand", t:"store brand", p:"check shelf", w:"Smoothies."},
         {k:"pineapple", n:"Frozen pineapple chunks", a:"1 bag, WinCo brand", t:"store brand", p:"check shelf", w:"Smoothies."},
@@ -505,22 +513,22 @@ var DATA = [
         {k:"cereal", n:"Cinnamon Protein Cheerios", a:"1 box", t:"researched", p:"check shelf", w:"Rushed mornings. 8 g protein, about double regular cereal."},
         {k:"pb", n:"Peanut butter", a:"1 jar", t:"store brand", p:"check shelf", w:"Campus pack, PB-banana roll-up and toast."},
         {k:"honey", n:"Honey", a:"1 bottle", t:"store brand", p:"check shelf", w:"Campus pack, French toast."},
-        {k:"pouch", n:"Shelf-stable chicken pouches", a:"4–6", t:"store brand", p:"check shelf", w:"Chicken-and-crackers packs and chicken salad."},
+        {k:"pouch", n:"Shelf-stable chicken pouches", a:"4–6", q:4, un:["pouch","pouches"], t:"store brand", p:"check shelf", w:"Chicken-and-crackers packs and chicken salad."},
         {k:"ritz", n:"Ritz crackers", a:"1 box", t:"store brand", p:"check shelf", w:"Crackers packs and snack boxes."},
         {k:"pasta", n:"Pasta, elbows or shells", a:"1 lb", t:"store brand", p:"check shelf", w:"Meat-sauce pasta and chicken mac."},
         {k:"ketchup", n:"Ketchup", a:"1 bottle", t:"store brand", p:"check shelf", w:"Burger sauce and Cane's-style dip."},
         {k:"mayo", n:"Mayo", a:"1 jar", t:"store brand", p:"check shelf", w:"Burger sauce, dip, wraps, chicken salad."},
         {k:"caesar", n:"Caesar dressing", a:"1 bottle", t:"store brand", p:"check shelf", w:"Caesar wraps."},
-        {k:"soup", n:"Campbell's Condensed Tomato Soup", a:"2 cans", t:"store brand", p:"check shelf", w:"Grilled cheese lunches. Each can is two."},
+        {k:"soup", n:"Campbell's Condensed Tomato Soup", a:"2 cans", q:2, un:["can","cans"], t:"store brand", p:"check shelf", w:"Grilled cheese lunches. Each can is two."},
         {k:"oil", n:"Olive oil", a:"1 bottle", t:"store brand", p:"check shelf", w:"Broccoli sides and subs."},
         {k:"vinegar", n:"Red wine vinegar", a:"1 bottle", t:"store brand", p:"check shelf", w:"Subs. Lasts months."}
       ]},
       {name:"Restock — bulk bins", stock:true, items:[
-        {k:"taco", n:"Mild taco seasoning", a:"about 1/4 cup", t:"store brand", p:"cents per use", w:"Taco nights and quesadillas. Make sure the bin says mild."},
-        {k:"garlic", n:"Garlic powder", a:"a small scoop", t:"store brand", p:"cents per use", w:"Broccoli sides, quesadillas, dips."},
-        {k:"cinnamon", n:"Ground cinnamon", a:"a small scoop", t:"store brand", p:"cents per use", w:"French toast."},
-        {k:"oregano", n:"Dried oregano", a:"a small scoop", t:"store brand", p:"cents per use", w:"Subs."},
-        {k:"chia", n:"Chia seeds", a:"a small scoop (about 1/2 cup)", t:"store brand", p:"cents per use", w:"1 tbsp in a smoothie adds about 4 g fiber, like your original recipe."}
+        {k:"taco", u:"lb", q:0.1, s:0.05, n:"Mild taco seasoning", a:"about 1/4 cup", t:"store brand", p:"cents per use", w:"Taco nights and quesadillas. Make sure the bin says mild."},
+        {k:"garlic", u:"lb", q:0.05, s:0.05, n:"Garlic powder", a:"a small scoop", t:"store brand", p:"cents per use", w:"Broccoli sides, quesadillas, dips."},
+        {k:"cinnamon", u:"lb", q:0.05, s:0.05, n:"Ground cinnamon", a:"a small scoop", t:"store brand", p:"cents per use", w:"French toast."},
+        {k:"oregano", u:"lb", q:0.05, s:0.05, n:"Dried oregano", a:"a small scoop", t:"store brand", p:"cents per use", w:"Subs."},
+        {k:"chia", u:"lb", q:0.2, s:0.05, n:"Chia seeds", a:"a small scoop (about 1/2 cup)", t:"store brand", p:"cents per use", w:"1 tbsp in a smoothie adds about 4 g fiber, like your original recipe."}
       ]},
       /* Ran out of a Costco item between trips: buy the WinCo version, sized to
          last until Costco. Only shows when it's flagged AND it isn't a Costco week. */
@@ -650,24 +658,89 @@ function setPrice(pk,v){
   wjs(PRICE_KEY,prices);
 }
 function priceTrend(pk){ var c=prices[pk]; if(!c || !c.h || c.h.length<2) return ""; var a=c.h[c.h.length-2][1], b=c.h[c.h.length-1][1]; return b>a?" \u2191":(b<a?" \u2193":""); }
-function priceChip(pk,hint){
-  var c=prices[pk];
-  return '<button type="button" class="pchip'+(c?' set':'')+'" data-pk="'+esc(pk)+'" aria-label="'+(c?'Price '+money(c.p)+', tap to change':'Add price')+'">'+(c?esc(money(c.p)+priceTrend(pk)):'Add price')+'</button>'+
+/* v7: quantities and per-lb pricing.
+   A price is for ONE unit: one lb (produce, deli, beef, bulk bins) or one of
+   whatever the item is (a carton, a cup, a bag). The -/+ stepper says how many
+   units you're getting this trip; the line total and the trip totals use
+   price x quantity. Quantities are per week; unit choices (per lb vs each)
+   stick, and you can flip one while editing its price. */
+var QTY_KEY="grocery_qty_"+WEEK_START, UNIT_KEY="grocery_units_v1";
+var qtys=rjs(QTY_KEY,{}), units=rjs(UNIT_KEY,{});
+function r2(n){ return Math.round(n*100)/100; }
+function unitOf(pk,it){ return units[pk] || (it && it.u) || "ea"; }
+function isLb(pk,it){ return unitOf(pk,it)==="lb"; }
+function stepOf(pk,it){ return isLb(pk,it) ? ((it && it.s) || 0.25) : 1; }
+function defQty(pk,it){ return (it && it.q!=null && unitOf(pk,it)===(it.u||"ea")) ? it.q : 1; }
+function qtyOf(pk,it){ var v=qtys[pk]; return (typeof v==="number" && isFinite(v) && v>=0) ? v : defQty(pk,it); }
+function qtyLabel(pk,it){
+  var q=qtyOf(pk,it), t=String(r2(q));
+  if(isLb(pk,it)) return t+" lb";
+  var un=it && it.un; return un ? t+" "+(q===1?un[0]:un[1]) : "\u00d7 "+t;
+}
+function lineTotal(pk,it){ var c=prices[pk]; return c ? r2(c.p*qtyOf(pk,it)) : null; }
+function priceChip(pk,hint,it){
+  var c=prices[pk], lb=isLb(pk,it);
+  return '<button type="button" class="pchip'+(c?' set':'')+'" data-pk="'+esc(pk)+'" aria-label="'+(c?'Price '+money(c.p)+(lb?' per pound':'')+', tap to change':'Add price')+'">'+(c?esc(money(c.p)+(lb?'/lb':'')+priceTrend(pk)):(lb?'Add $/lb':'Add price'))+'</button>'+
     (!c && hint ? '<span class="price">'+esc(hint)+'</span>' : '');
 }
-/* how many of the kitchen app's units come in what you buy, so stock levels
-   refill when you check something off (store:key -> count) */
-var PACK={"WinCo:eggs":30,"WinCo:bread":15,"WinCo:turkey":16,"WinCo:provolone":10,"WinCo:beef":16,"WinCo:milk":16,"WinCo:yoplait":5,
-  "WinCo:tortilla":8,"WinCo:smalltort":10,"WinCo:bun":8,"WinCo:hashbrown":10,"WinCo:fries":10,"WinCo:pb":14,"WinCo:pouch":5,"WinCo:pasta":16,
-  "WinCo:soup":4,"WinCo:cereal":10,"WinCo:chunks":8,"WinCo:sausage":10,"WinCo:cheddar":8,"WinCo:marinara":6,"WinCo:bar":4,
+function qtyHTML(pk,it){
+  var q=qtyOf(pk,it), ch=qtys[pk]!=null, tot=lineTotal(pk,it), show=tot!=null && (q!==1 || isLb(pk,it));
+  return '<span class="qty'+(ch?' changed':'')+'" data-pk="'+esc(pk)+'">'+
+    '<button type="button" class="qb" data-d="-1" aria-label="Less"'+(q<=0?' disabled':'')+'>\u2212</button>'+
+    '<button type="button" class="qv" aria-label="Amount '+esc(qtyLabel(pk,it))+', tap to type">'+esc(qtyLabel(pk,it))+'</button>'+
+    '<button type="button" class="qb" data-d="1" aria-label="More">+</button></span>'+
+    (show ? '<span class="ltot">= '+money(tot)+'</span>' : '');
+}
+function setQty(id,v){
+  var f=itemAt(id); if(!f) return;
+  var pk=priceKey(f.st,f.it); v=Math.max(0,r2(v));
+  if(v===defQty(pk,f.it)) delete qtys[pk]; else qtys[pk]=v;
+  wjs(QTY_KEY,qtys);
+  if(state[id]) relogSize(id);
+  refreshItem(id);
+}
+function refreshItem(id){
+  var f=itemAt(id), li=document.querySelector('li.item[data-id="'+id+'"]'); if(!f || !li) return;
+  var p=id.split("-"); li.outerHTML=itemHTML(f.st,+p[0],+p[1],+p[2],f.it);
+  updateMoney();
+}
+function editQty(btn){
+  var wrap=btn.closest(".qty"), li=btn.closest("li.item"), id=li && li.getAttribute("data-id"), f=id && itemAt(id); if(!f) return;
+  var pk=priceKey(f.st,f.it), lb=isLb(pk,f.it);
+  var input=document.createElement("input");
+  input.type="text"; input.inputMode="decimal"; input.className="aisle-input"; input.style.maxWidth="110px";
+  input.placeholder=lb?"lb, e.g. 1.37":"how many"; input.setAttribute("aria-label",lb?"Pounds":"How many");
+  input.value=String(r2(qtyOf(pk,f.it)));
+  wrap.replaceWith(input); input.focus(); input.select();
+  var closed=false;
+  function commit(){ if(closed) return; closed=true;
+    var x=parseFloat(String(input.value).replace(/[^0-9.]/g,""));
+    if(isFinite(x) && x>=0 && x<1000) setQty(id,x); else refreshItem(id); }
+  input.addEventListener("blur",commit);
+  input.addEventListener("keydown",function(ev){ if(ev.key==="Enter"){ ev.preventDefault(); commit(); } if(ev.key==="Escape"){ closed=true; refreshItem(id); } });
+  input.addEventListener("click",function(ev){ ev.stopPropagation(); });
+}
+/* how many of the kitchen app's units come in ONE of what you buy (one carton,
+   one lb, one cup), so stock levels refill by count x quantity when you check
+   something off (store:key -> count) */
+var PACK={"WinCo:eggs":18,"WinCo:bread":15,"WinCo:turkey":16,"WinCo:provolone":20,"WinCo:beef":16,"WinCo:milk":16,"WinCo:yoplait":1,
+  "WinCo:tortilla":8,"WinCo:smalltort":10,"WinCo:bun":8,"WinCo:hashbrown":10,"WinCo:fries":10,"WinCo:pb":14,"WinCo:pouch":1,"WinCo:pasta":16,
+  "WinCo:soup":2,"WinCo:cereal":10,"WinCo:chunks":8,"WinCo:sausage":10,"WinCo:cheddar":8,"WinCo:marinara":6,"WinCo:bar":4,
   "Costco:chicken":48,"Costco:chunks":21,"Costco:sausage":48,"Costco:cheddar":64,"Costco:marinara":12,"Costco:bar":20};
 var BOUGHT_NOW={};
+function packSize(f,k){ var p=PACK[f.st.store+":"+k]; return p ? r2(p*qtyOf(priceKey(f.st,f.it),f.it)) || null : null; }
+function relogSize(id){
+  var f=itemAt(id); if(!f) return;
+  var log=rjs(BOUGHTLOG_KEY,{}), ch=false;
+  [f.it.k].concat(f.it.ks||[]).filter(Boolean).forEach(function(k){ if(log[k] && log[k].id===id+"@"+WEEK_START){ log[k].z=packSize(f,k); ch=true; } });
+  if(ch) wjs(BOUGHTLOG_KEY,log);
+}
 function logPurchase(id,on){
   var f=itemAt(id); if(!f) return;
   var log=rjs(BOUGHTLOG_KEY,{}), keys=[f.it.k].concat(f.it.ks||[]).filter(Boolean);
   if(!keys.length) return;
   if(on){ var now=Date.now(); BOUGHT_NOW[id]=now;
-    keys.forEach(function(k){ log[k]={at:now, n:f.it.n, s:f.st.store, z:PACK[f.st.store+":"+k]||null}; }); }
+    keys.forEach(function(k){ log[k]={at:now, n:f.it.n, s:f.st.store, z:packSize(f,k), id:id+"@"+WEEK_START}; }); }
   else if(BOUGHT_NOW[id]){ keys.forEach(function(k){ if(log[k] && log[k].at===BOUGHT_NOW[id]) delete log[k]; }); delete BOUGHT_NOW[id]; }
   wjs(BOUGHTLOG_KEY,log);
 }
@@ -704,7 +777,7 @@ function itemHTML(st, si, gi, ii, it){
     '<span class="meta">' +
       (wasMissed && !done ? '<span class="tag missedtag">Missed last trip</span>' : '') +
       (it.t ? '<span class="tag ' + it.t.replace(/[^a-z]+/g, "") .replace("storebrand","") + '">' + esc(TAG[it.t] || it.t) + '</span>' : '') +
-      priceChip(pk, it.p) +
+      priceChip(pk, it.p, it) + qtyHTML(pk, it) +
       '<button type="button" class="aisle' + (note ? "" : " empty") + '" data-note="' + esc(key) + '">' + esc(note || "Add aisle") + '</button>' +
       (done ? '' : '<button type="button" class="missbtn" data-miss="' + id + '">' + (miss ? 'Back on list' : 'Not there') + '</button>') +
     '</span></span></li>';
@@ -811,8 +884,8 @@ function moneyTally(){
   var est = 0, cart = 0, unpriced = 0, priced = 0;
   DATA.forEach(function(st, si){ st.groups.forEach(function(g, gi){ g.items.forEach(function(it, ii){
     var id = idOf(si, gi, ii); if(!wanted(it,st,g) || missed[id]) return;
-    var c = prices[priceKey(st, it)];
-    if(c){ priced++; est += c.p; if(state[id]) cart += c.p; } else unpriced++;
+    var lt = lineTotal(priceKey(st, it), it);
+    if(lt != null){ priced++; est += lt; if(state[id]) cart += lt; } else unpriced++;
   }); }); });
   extrasForMoney().forEach(function(k){ var c = prices["Extras:" + k]; if(c){ priced++; est += c.p; } else unpriced++; });
   Object.keys(xspend).forEach(function(k){ cart += xspend[k]; est += xspend[k]; });
@@ -869,19 +942,32 @@ function editPrice(btn){
   input.type = "text"; input.inputMode = "decimal"; input.className = "aisle-input"; input.style.maxWidth = "120px";
   input.placeholder = "e.g. 3.48"; input.setAttribute("aria-label", "Price paid"); input.value = cur ? cur.p.toFixed(2) : "";
   var hint = btn.nextElementSibling && btn.nextElementSibling.classList.contains("price") ? btn.nextElementSibling : null;
-  btn.replaceWith(input); input.focus(); input.select();
+  var li = btn.closest("li.item:not(.xitem)"), rowId = li && li.getAttribute("data-id"), fr = rowId && itemAt(rowId), ub = null;
+  if(fr){
+    var setPh = function(){ var lb = isLb(pk, fr.it); input.placeholder = lb ? "$ per lb, e.g. 1.29" : "e.g. 3.48"; input.setAttribute("aria-label", lb ? "Price per pound" : "Price for one"); ub.textContent = lb ? "per lb" : "each"; };
+    ub = document.createElement("button"); ub.type = "button"; ub.className = "ubtn"; ub.title = "Switch between price per pound and price each";
+    ub.addEventListener("mousedown", function(ev){ ev.preventDefault(); });
+    ub.addEventListener("click", function(ev){ ev.stopPropagation();
+      var nu = isLb(pk, fr.it) ? "ea" : "lb";
+      if(nu === (fr.it.u || "ea")) delete units[pk]; else units[pk] = nu;
+      wjs(UNIT_KEY, units); delete qtys[pk]; wjs(QTY_KEY, qtys); setPh(); input.focus(); });
+    setPh();
+  }
+  btn.replaceWith(input); if(ub) input.after(ub); input.focus(); input.select();
   var closed = false;
   function commit(){
     if(closed) return; closed = true;
     var raw = input.value.trim(), v = parsePrice(raw);
     if(raw === "") setPrice(pk, null); else if(v != null) setPrice(pk, v);
+    if(ub) ub.remove();
+    if(fr){ if(rowId && state[rowId]) relogSize(rowId); refreshItem(rowId); return; }
     var wrap = document.createElement("span"); wrap.innerHTML = priceChip(pk, hint ? hint.textContent : "");
     if(hint) hint.remove();
     var nodes = Array.prototype.slice.call(wrap.childNodes); input.replaceWith.apply(input, nodes);
     if(pk.indexOf("Extras:") === 0 && xspend[pk.slice(7)] != null && prices[pk]){ xspend[pk.slice(7)] = prices[pk].p; wjs(XSPEND_KEY, xspend); }
     updateMoney();
   }
-  input.addEventListener("blur", commit);
+  input.addEventListener("blur", function(){ setTimeout(function(){ if(document.activeElement !== input) commit(); }, 200); });
   input.addEventListener("keydown", function(ev){ if(ev.key === "Enter"){ ev.preventDefault(); commit(); } if(ev.key === "Escape"){ input.value = cur ? String(cur.p) : ""; commit(); } });
   input.addEventListener("click", function(ev){ ev.stopPropagation(); });
 }
@@ -962,6 +1048,10 @@ function editAisle(btn){
 }
 document.getElementById("stores").addEventListener("click", function(e){
   var pc = e.target.closest(".pchip"); if(pc){ e.stopPropagation(); editPrice(pc); return; }
+  var qb = e.target.closest(".qb"); if(qb){ e.stopPropagation(); var qli = qb.closest("li.item"), qid = qli.getAttribute("data-id"), qf = itemAt(qid);
+    if(qf){ var qpk = priceKey(qf.st, qf.it); setQty(qid, qtyOf(qpk, qf.it) + (+qb.getAttribute("data-d")) * stepOf(qpk, qf.it)); } return; }
+  var qv = e.target.closest(".qv"); if(qv){ e.stopPropagation(); editQty(qv); return; }
+  if(e.target.closest(".ubtn, .qty")){ e.stopPropagation(); return; }
   var mb = e.target.closest(".missbtn"); if(mb){ e.stopPropagation(); toggleMiss(mb.getAttribute("data-miss")); return; }
   var sb = e.target.closest(".sortbtn"); if(sb){ e.stopPropagation(); SORT_AISLE = !SORT_AISLE; lsSet(SORT_KEY, SORT_AISLE ? "1" : "0"); render(); return; }
   var chip = e.target.closest(".aisle");
@@ -1072,7 +1162,8 @@ function buildText(){
     var lines = [];
     st.groups.forEach(function(g, gi){ g.items.forEach(function(it, ii){
       if(wanted(it,st,g) && !state[idOf(si,gi,ii)]){ var note = aisles[noteKey(it.n)];
-        lines.push("  - " + it.n + " (" + it.a + ")" + (note ? " [" + note + "]" : "")); }
+        var qpk = priceKey(st, it);
+        lines.push("  - " + it.n + " (" + (qtys[qpk] != null ? qtyLabel(qpk, it) : it.a) + ")" + (note ? " [" + note + "]" : "")); }
     }); });
     if(lines.length){ out.push(st.store.toUpperCase() + " \u2014 " + st.loc); out = out.concat(lines); out.push(""); }
   });
@@ -1102,11 +1193,11 @@ document.getElementById("resetBtn").addEventListener("click", function(){
 });
 
 /* ---- start ---- */
-var BUILD="2026.10.17-d";   /* date + letter, like Daily Protocol */
+var BUILD="2026.10.18-a";   /* date + letter, like Daily Protocol */
 load();
 document.getElementById("weekLabel").textContent = WEEK_LABEL;
 document.title = "Grocery \u2014 " + WEEK_LABEL;
-document.getElementById("lede").innerHTML = "Before you go: tap off anything you already have. In the store, tap each item as it goes in the cart, and tap <b>Add price</b> once \u2014 it remembers. Out of stock? <b>Not there</b> keeps it for next trip." +
+document.getElementById("lede").innerHTML = "Before you go: tap off anything you already have. In the store, tap each item as it goes in the cart, and tap <b>Add price</b> once \u2014 it remembers. Produce, deli and beef are priced <b>per lb</b>; use <b>\u2212 / +</b> (or tap the amount) for how many or how many lb you're getting. Out of stock? <b>Not there</b> keeps it for next trip." +
   '<span class="costco-sw">' + (COSTCO_TRIP
     ? '<b>Costco is on this week.</b> Check your freezer space before you go. <button type="button" onclick="setCostco(false)">Not this week</button>'
     : (COSTCO_DUE ? '' : 'Costco next in about ' + Math.max(1,4-COSTCO_WEEKS) + ' week' + (4-COSTCO_WEEKS===1?'':'s') + '. ') +
