@@ -13,7 +13,7 @@ runs only replace what sits between them.
 """
 import io, re, sys, os
 
-SUITE_VERSION = "1"
+SUITE_VERSION = "2"
 
 APPS = [  # key, label, kitchen-repo file, svg body
     ("kitchen", "Kitchen", "index.html",
@@ -49,43 +49,81 @@ CSS = """<!-- suite:css vVERSION · shared by Kitchen, Grocery, Lift, DishLog, P
   --sx-kitchen:#E8987C; --sx-grocery:#7CC39A; --sx-lift:#EE9C66; --sx-dishlog:#DD8DB2; --sx-protocol:#5FE6B0;
   --sx-on:#15120E;
 }
-/* layout tokens every app's own layout lines up with */
-:root{ --sx-max:1280px; --sx-gut:clamp(16px,2.4vw,32px); --sx-barh:56px; }
+/* layout tokens every app's own layout lines up with. No width cap: on a
+   computer the apps use the whole window; each app decides how many columns. */
+:root{ --sx-max:100000px; --sx-gut:clamp(16px,2vw,40px); --sx-barh:56px; }
 
 .sx-bar{position:relative;z-index:40;background:var(--sx-paper);border-bottom:1px solid var(--sx-line);
   font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;color:var(--sx-ink)}
-.sx-in{max-width:var(--sx-max);margin:0 auto;box-sizing:border-box;min-height:var(--sx-barh);
+.sx-in{max-width:var(--sx-max);margin:0 auto;box-sizing:border-box;min-height:52px;
   padding:calc(8px + env(safe-area-inset-top,0px)) var(--sx-gut) 8px;display:flex;align-items:center;gap:18px}
-.sx-id{display:none;align-items:center;gap:10px;flex:0 0 auto;min-width:0}
+.sx-id{display:flex;align-items:center;gap:10px;flex:0 1 auto;min-width:0}
 .sx-tile{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--app);color:var(--sx-on);flex:0 0 auto}
 .sx-tile svg{width:17px;height:17px}
 .sx-name{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:600;font-size:21px;letter-spacing:-.01em;line-height:1;color:var(--sx-ink);white-space:nowrap}
-.sx-tabs{display:flex;gap:6px;flex:1 1 auto;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 calc(var(--sx-gut) * -1);padding:0 var(--sx-gut)}
-.sx-tabs::-webkit-scrollbar{display:none}
+.sx-tile svg,.sx-t svg,.sx-cell svg,.sx-gbtn svg{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+
+/* phone: app name on the left, the grid button on the right */
+.sx-gbtn{margin-left:auto;flex:0 0 auto;width:40px;height:40px;border-radius:12px;border:1px solid var(--sx-line);background:transparent;
+  color:var(--sx-dim);display:grid;place-items:center;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s}
+.sx-gbtn svg{width:19px;height:19px}
+.sx-gbtn[aria-expanded="true"]{background:var(--sx-hover);color:var(--sx-ink)}
+.sx-menu{position:fixed;inset:0;z-index:300}
+.sx-menu[hidden]{display:none}
+.sx-pop{position:absolute;top:calc(56px + env(safe-area-inset-top,0px));right:var(--sx-gut);width:min(300px,calc(100vw - 2 * var(--sx-gut)));
+  box-sizing:border-box;padding:10px;border-radius:22px;background:var(--sx-paper);border:1px solid var(--sx-line);
+  box-shadow:0 24px 60px -18px rgba(0,0,0,.45);display:grid;grid-template-columns:repeat(3,1fr);gap:4px;
+  transform-origin:top right;animation:sx-pop .2s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes sx-pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+.sx-cell{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 4px 10px;border-radius:16px;text-decoration:none;
+  color:var(--sx-ink);font:700 12px/1.1 'Manrope',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+.sx-cell i{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--c);color:var(--sx-on)}
+.sx-cell svg{width:24px;height:24px}
+.sx-cell:active{background:var(--sx-hover)}
+.sx-cell[aria-current="page"]{background:var(--sx-hover)}
+.sx-cell[aria-current="page"] b{color:var(--sx-dim);font-weight:700}
+.sx-cell b{font-weight:700}
+.sx-tabs{display:none}
+@media (prefers-reduced-motion:reduce){.sx-pop{animation:none}}
+
+/* computer and tablet: the full bar of tabs */
 .sx-t{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px 0 11px;box-sizing:border-box;
-  border-radius:999px;border:1px solid var(--sx-line);background:transparent;color:var(--sx-dim);text-decoration:none;
+  border-radius:999px;border:1px solid transparent;background:transparent;color:var(--sx-dim);text-decoration:none;
   font:700 12.5px/1 'Manrope',system-ui,sans-serif;letter-spacing:.02em;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
-.sx-t svg,.sx-tile svg{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .sx-t svg{width:16px;height:16px;color:var(--c);flex:0 0 auto}
 .sx-t:hover{background:var(--sx-hover);color:var(--sx-ink)}
-.sx-t:focus-visible{outline:2px solid var(--c);outline-offset:2px}
+.sx-t:focus-visible,.sx-gbtn:focus-visible,.sx-cell:focus-visible{outline:2px solid var(--app);outline-offset:2px}
 .sx-t[aria-current="page"]{background:var(--c);border-color:var(--c);color:var(--sx-on)}
 .sx-t[aria-current="page"] svg{color:inherit}
 @media (min-width:900px){
   .sx-bar{position:sticky;top:0;z-index:70;background:color-mix(in srgb,var(--sx-paper) 88%,transparent);
     -webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px)}
-  .sx-id{display:flex}
-  .sx-tabs{flex:0 1 auto;margin:0 0 0 auto;padding:0}
-  .sx-t{border-color:transparent}
-  .sx-t[aria-current="page"]{border-color:var(--c)}
+  .sx-in{min-height:var(--sx-barh)}
+  .sx-tabs{display:flex;gap:6px;margin-left:auto;flex:0 1 auto;min-width:0}
+  .sx-gbtn,.sx-menu{display:none!important}
 }
 @media print{.sx-bar{display:none}}
 </style>
 <!-- /suite:css -->"""
 
 
+GRID_ICON = '<rect x="4" y="4" width="6" height="6" rx="1.6"/><rect x="14" y="4" width="6" height="6" rx="1.6"/><rect x="4" y="14" width="6" height="6" rx="1.6"/><rect x="14" y="14" width="6" height="6" rx="1.6"/>'
+
+MENU_JS = """<script>
+(function(){ /* suite: open/close the app grid on phones */
+  var b=document.getElementById('sx-gbtn'), m=document.getElementById('sx-menu'); if(!b||!m) return;
+  function set(o){ m.hidden=!o; b.setAttribute('aria-expanded',o?'true':'false');
+    if(o){ var f=m.querySelector('.sx-cell'); if(f) f.focus({preventScroll:true}); } }
+  b.addEventListener('click',function(e){ e.stopPropagation(); set(m.hidden); });
+  m.addEventListener('click',function(e){ if(!e.target.closest('.sx-cell')||e.target.closest('[aria-current]')) set(false); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!m.hidden){ set(false); b.focus(); } });
+  window.addEventListener('pageshow',function(){ set(false); });
+})();
+</script>"""
+
+
 def bar(here, repo):
-    tabs = []
+    tabs, cells = [], []
     cur = None
     for key, label, fname, svg in APPS:
         if key == "protocol":
@@ -97,11 +135,16 @@ def bar(here, repo):
             cur = (label, svg)
         tabs.append('<a class="sx-t" style="--c:var(--sx-%s)" href="%s"%s><svg viewBox="0 0 24 24" aria-hidden="true">%s</svg>%s</a>'
                     % (key, href, attr, svg, label))
+        cells.append('<a class="sx-cell" style="--c:var(--sx-%s)" href="%s"%s><i><svg viewBox="0 0 24 24" aria-hidden="true">%s</svg></i><b>%s</b></a>'
+                     % (key, href, attr, svg, label))
     extra = " sx-dark" if here == "protocol" else ""
     return ('<!-- suite:bar -->\n<nav class="sx-bar%s" style="--app:var(--sx-%s)" aria-label="Your apps"><div class="sx-in">\n'
-            '  <div class="sx-id" aria-hidden="true"><span class="sx-tile"><svg viewBox="0 0 24 24">%s</svg></span><span class="sx-name">%s</span></div>\n'
-            '  <div class="sx-tabs">\n    %s\n  </div>\n</div></nav>\n<!-- /suite:bar -->'
-            % (extra, here, cur[1], cur[0], "\n    ".join(tabs)))
+            '  <div class="sx-id"><span class="sx-tile" aria-hidden="true"><svg viewBox="0 0 24 24">%s</svg></span><span class="sx-name">%s</span></div>\n'
+            '  <div class="sx-tabs">\n    %s\n  </div>\n'
+            '  <button class="sx-gbtn" id="sx-gbtn" type="button" aria-label="Your apps" aria-haspopup="true" aria-expanded="false" aria-controls="sx-menu">'
+            '<svg viewBox="0 0 24 24" aria-hidden="true">%s</svg></button>\n'
+            '</div>\n<div class="sx-menu" id="sx-menu" hidden><div class="sx-pop">\n    %s\n</div></div>\n</nav>\n%s\n<!-- /suite:bar -->'
+            % (extra, here, cur[1], cur[0], "\n    ".join(tabs), GRID_ICON, "\n    ".join(cells), MENU_JS))
 
 
 TARGETS = {  # (repo, file) -> app key
