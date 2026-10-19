@@ -13,7 +13,7 @@ runs only replace what sits between them.
 """
 import io, re, sys, os
 
-SUITE_VERSION = "2"
+SUITE_VERSION = "3"
 
 APPS = [  # key, label, kitchen-repo file, svg body
     ("kitchen", "Kitchen", "index.html",
@@ -29,6 +29,18 @@ APPS = [  # key, label, kitchen-repo file, svg body
 ]
 KITCHEN_BASE = "https://frostie4life9.github.io/kitchen/"
 PROTOCOL_URL = "https://frostie4life9.github.io/daily_schedule/"
+# The phone grid shows each app's real home-screen icon, so the menu looks
+# like a little home screen. Kitchen-repo icons live in kitchen/icons/;
+# Protocol's lives at the root of its own repo (keep its ?v= in step with
+# the apple-touch-icon link in daily_schedule/index.html).
+PROTOCOL_ICON = "apple-touch-icon.png?v=20261017p"
+
+
+def icon_src(key, repo):
+    if key == "protocol":
+        return PROTOCOL_ICON if repo == "daily_schedule" else PROTOCOL_URL + PROTOCOL_ICON
+    rel = "icons/%s-180.png" % key
+    return rel if repo == "kitchen" else KITCHEN_BASE + rel
 
 CSS = """<!-- suite:css vVERSION · shared by Kitchen, Grocery, Lift, DishLog, Protocol — edit tools/suite.py in the kitchen repo, not here -->
 <style id="suite-css">
@@ -61,7 +73,7 @@ CSS = """<!-- suite:css vVERSION · shared by Kitchen, Grocery, Lift, DishLog, P
 .sx-tile{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--app);color:var(--sx-on);flex:0 0 auto}
 .sx-tile svg{width:17px;height:17px}
 .sx-name{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:600;font-size:21px;letter-spacing:-.01em;line-height:1;color:var(--sx-ink);white-space:nowrap}
-.sx-tile svg,.sx-t svg,.sx-cell svg,.sx-gbtn svg{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.sx-tile svg,.sx-t svg,.sx-gbtn svg{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 
 /* phone: app name on the left, the grid button on the right */
 .sx-gbtn{margin-left:auto;flex:0 0 auto;width:40px;height:40px;border-radius:12px;border:1px solid var(--sx-line);background:transparent;
@@ -77,8 +89,8 @@ CSS = """<!-- suite:css vVERSION · shared by Kitchen, Grocery, Lift, DishLog, P
 @keyframes sx-pop{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
 .sx-cell{display:flex;flex-direction:column;align-items:center;gap:7px;padding:12px 4px 10px;border-radius:16px;text-decoration:none;
   color:var(--sx-ink);font:700 12px/1.1 'Manrope',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
-.sx-cell i{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:var(--c);color:var(--sx-on)}
-.sx-cell svg{width:24px;height:24px}
+.sx-cell img{width:54px;height:54px;border-radius:12.5px;display:block;background:var(--c);
+  box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 3px 8px -3px rgba(0,0,0,.35)}
 .sx-cell:active{background:var(--sx-hover)}
 .sx-cell[aria-current="page"]{background:var(--sx-hover)}
 .sx-cell[aria-current="page"] b{color:var(--sx-dim);font-weight:700}
@@ -135,8 +147,8 @@ def bar(here, repo):
             cur = (label, svg)
         tabs.append('<a class="sx-t" style="--c:var(--sx-%s)" href="%s"%s><svg viewBox="0 0 24 24" aria-hidden="true">%s</svg>%s</a>'
                     % (key, href, attr, svg, label))
-        cells.append('<a class="sx-cell" style="--c:var(--sx-%s)" href="%s"%s><i><svg viewBox="0 0 24 24" aria-hidden="true">%s</svg></i><b>%s</b></a>'
-                     % (key, href, attr, svg, label))
+        cells.append('<a class="sx-cell" style="--c:var(--sx-%s)" href="%s"%s><img src="%s" alt="" width="54" height="54" decoding="async"><b>%s</b></a>'
+                     % (key, href, attr, icon_src(key, repo), label))
     extra = " sx-dark" if here == "protocol" else ""
     return ('<!-- suite:bar -->\n<nav class="sx-bar%s" style="--app:var(--sx-%s)" aria-label="Your apps"><div class="sx-in">\n'
             '  <div class="sx-id"><span class="sx-tile" aria-hidden="true"><svg viewBox="0 0 24 24">%s</svg></span><span class="sx-name">%s</span></div>\n'
