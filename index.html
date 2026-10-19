@@ -1194,6 +1194,7 @@
     <button class="v3-log-btn" type="button" onclick="submitMealLog()">Log this meal</button>
   </div>
   <div class="v3-sheet" id="v3-link" role="dialog" aria-modal="true" aria-labelledby="v3-link-title" aria-hidden="true">
+    <button class="v3-sheet-x" type="button" aria-label="Close" onclick="closeLinker()">&times;</button>
     <div class="v3-grab"></div>
     <h2 id="v3-link-title">Use your label</h2>
     <p class="v3-hint" id="v3-link-sub" style="margin:4px 2px 14px"></p>
@@ -7969,7 +7970,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.10.19-b";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.10.19-c";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
@@ -8059,6 +8060,9 @@ const APP_VERSION="2026.10.19-b";   // date + letter, like Daily Protocol: next 
   /* layers: backdrop 80 < sheets 81 < second backdrop 83 < linker 84 < legacy overlays 110 */
   .v3-back2 { z-index: 83; }
   #v3-link { z-index: 84; }
+  /* v2026.10.19-c: a way out of the label picker that never depends on a swipe */
+  .v3-sheet-x { position: sticky; top: 0; float: right; margin: -2px -8px -40px 0; z-index: 2; width: 40px; height: 40px; border-radius: 99px;
+    border: 1px solid var(--rule); background: var(--card); color: var(--ink); font-size: 24px; line-height: 1; display: grid; place-items: center; cursor: pointer; }
 
   /* the older form sheets (add, edit, scan, log a portion, settings) wear the v3 look */
   .overlay { background: rgba(31,26,20,.38); }
@@ -8103,12 +8107,17 @@ const APP_VERSION="2026.10.19-b";   // date + letter, like Daily Protocol: next 
   document.addEventListener("touchstart",function(e){
     const sh=sheetFrom(e.target); if(!sh || e.touches.length!==1){ d=null; return; }
     if(e.target.closest("input, textarea, select")){ d=null; return; }
+    /* the label picker is a list to pick from, not a form: nothing is lost by
+       closing it, so it swipes closed from anywhere, even if the search box
+       still holds focus (Brave keeps it focused after the keyboard hides,
+       which used to trap you in it) */
+    const picker = sh.id==="v3-link";
     /* typing: never close on a swipe while the keyboard is up */
-    const ae=document.activeElement; if(ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)){ d=null; return; }
+    const ae=document.activeElement; if(!picker && ae && /^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName)){ d=null; return; }
     /* forms (anything with fields) only close from the grab bar at the top, so
        scrolling back up past the top of a half-filled form can't throw it away */
     const y=e.touches[0].clientY, r=sh.getBoundingClientRect();
-    if(sh.querySelector("input, textarea, select") && y-r.top>56){ d=null; return; }
+    if(!picker && sh.querySelector("input, textarea, select") && y-r.top>56){ d=null; return; }
     d={sh:sh, y0:y, x0:e.touches[0].clientX, t0:Date.now(), dy:0, on:false, top:sh.scrollTop<=0};
   },{passive:true});
   document.addEventListener("touchmove",function(e){
@@ -8117,6 +8126,7 @@ const APP_VERSION="2026.10.19-b";   // date + letter, like Daily Protocol: next 
     if(!d.on){
       if(!d.top || dy<=6 || Math.abs(dx)>Math.abs(dy)){ if(Math.abs(dy)>6||Math.abs(dx)>6){ if(!d.top||dy<0) d=null; } return; }
       d.on=true; d.sh.style.transition="none";
+      { const ae=document.activeElement; if(ae && ae.blur && d.sh.contains(ae)) ae.blur(); }
     }
     e.preventDefault();
     d.dy=Math.max(0,dy);
