@@ -13,7 +13,7 @@ runs only replace what sits between them.
 """
 import io, re, sys, os
 
-SUITE_VERSION = "3"
+SUITE_VERSION = "4"
 
 APPS = [  # key, label, kitchen-repo file, svg body
     ("kitchen", "Kitchen", "index.html",
@@ -70,10 +70,10 @@ CSS = """<!-- suite:css vVERSION · shared by Kitchen, Grocery, Lift, DishLog, P
 .sx-in{max-width:var(--sx-max);margin:0 auto;box-sizing:border-box;min-height:52px;
   padding:calc(8px + env(safe-area-inset-top,0px)) var(--sx-gut) 8px;display:flex;align-items:center;gap:18px}
 .sx-id{display:flex;align-items:center;gap:10px;flex:0 1 auto;min-width:0}
-.sx-tile{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--app);color:var(--sx-on);flex:0 0 auto}
-.sx-tile svg{width:17px;height:17px}
+.sx-tile{width:32px;height:32px;border-radius:7.5px;display:block;background:var(--app);flex:0 0 auto;
+  box-shadow:0 0 0 .5px rgba(0,0,0,.12),0 2px 6px -2px rgba(0,0,0,.3)}
 .sx-name{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:600;font-size:21px;letter-spacing:-.01em;line-height:1;color:var(--sx-ink);white-space:nowrap}
-.sx-tile svg,.sx-t svg,.sx-gbtn svg{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.sx-t svg,.sx-gbtn svg{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 
 /* phone: app name on the left, the grid button on the right */
 .sx-gbtn{margin-left:auto;flex:0 0 auto;width:40px;height:40px;border-radius:12px;border:1px solid var(--sx-line);background:transparent;
@@ -115,6 +115,22 @@ CSS = """<!-- suite:css vVERSION · shared by Kitchen, Grocery, Lift, DishLog, P
   .sx-gbtn,.sx-menu{display:none!important}
 }
 @media print{.sx-bar{display:none}}
+
+/* Moving between apps: they all live on frostie4life9.github.io, so the
+   browser can cross-fade one page into the next instead of cutting. The bar
+   is its own layer, so it holds still and just changes color and name,
+   while the page underneath settles in. Safari 18.2+ and Chrome; anything
+   older just navigates as before. */
+@view-transition{navigation:auto}
+.sx-bar{view-transition-name:sx-bar}
+::view-transition-group(sx-bar){animation-duration:.4s;animation-timing-function:cubic-bezier(.2,.8,.2,1)}
+::view-transition-old(root){animation:sx-leave .2s ease-in both}
+::view-transition-new(root){animation:sx-arrive .42s cubic-bezier(.2,.8,.2,1) .06s both}
+@keyframes sx-leave{to{opacity:0;transform:scale(.985)}}
+@keyframes sx-arrive{from{opacity:0;transform:translateY(14px)}}
+@media (prefers-reduced-motion:reduce){
+  ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}
+}
 </style>
 <!-- /suite:css -->"""
 
@@ -151,12 +167,12 @@ def bar(here, repo):
                      % (key, href, attr, icon_src(key, repo), label))
     extra = " sx-dark" if here == "protocol" else ""
     return ('<!-- suite:bar -->\n<nav class="sx-bar%s" style="--app:var(--sx-%s)" aria-label="Your apps"><div class="sx-in">\n'
-            '  <div class="sx-id"><span class="sx-tile" aria-hidden="true"><svg viewBox="0 0 24 24">%s</svg></span><span class="sx-name">%s</span></div>\n'
+            '  <div class="sx-id"><img class="sx-tile" src="%s" alt="" width="32" height="32"><span class="sx-name">%s</span></div>\n'
             '  <div class="sx-tabs">\n    %s\n  </div>\n'
             '  <button class="sx-gbtn" id="sx-gbtn" type="button" aria-label="Your apps" aria-haspopup="true" aria-expanded="false" aria-controls="sx-menu">'
             '<svg viewBox="0 0 24 24" aria-hidden="true">%s</svg></button>\n'
             '</div>\n<div class="sx-menu" id="sx-menu" hidden><div class="sx-pop">\n    %s\n</div></div>\n</nav>\n%s\n<!-- /suite:bar -->'
-            % (extra, here, cur[1], cur[0], "\n    ".join(tabs), GRID_ICON, "\n    ".join(cells), MENU_JS))
+            % (extra, here, icon_src(here, repo), cur[0], "\n    ".join(tabs), GRID_ICON, "\n    ".join(cells), MENU_JS))
 
 
 TARGETS = {  # (repo, file) -> app key
