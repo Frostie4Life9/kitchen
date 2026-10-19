@@ -46,11 +46,12 @@ body{color:var(--ink);font:400 16px/1.45 Manrope,system-ui,sans-serif;-webkit-fo
 .eyebrow{font:800 11px Manrope;letter-spacing:.14em;text-transform:uppercase;color:var(--mute)}
 h1{font:italic 500 30px/1.1 Fraunces,Georgia,serif;margin:2px 0 2px;letter-spacing:-.5px}
 .sub{color:var(--mute);font-size:12.5px;margin-bottom:14px}
-.tabs{display:flex;gap:6px;margin-bottom:10px}
-.tab{flex:1;padding:11px 4px;border:1px solid var(--line);background:var(--card);border-radius:12px;
-     font:700 13px Manrope;color:var(--mute);text-align:center;cursor:pointer}
+.tabs{display:flex;gap:4px;margin-bottom:10px;padding:4px;border:1px solid var(--line);background:var(--card);border-radius:15px}
+.tab{flex:1;padding:9px 4px;border-radius:11px;font:700 13px Manrope;color:var(--mute);text-align:center;cursor:pointer;
+     -webkit-user-select:none;user-select:none;transition:color .25s var(--sx-ease),scale .2s var(--sx-spring)}
 .tab .d{display:block;font-weight:400;font-size:10.5px;margin-top:2px}
-.tab.on{background:var(--ink);color:var(--onink);border-color:var(--ink)}
+.tab.on{color:var(--onink)}
+.tabs .sx-pill{background:var(--ink);border-radius:11px;box-shadow:0 2px 8px -3px rgba(31,26,20,.4)}
 .bar{display:flex;align-items:center;gap:8px;margin-bottom:12px}
 .wk{display:flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--card);
     border-radius:12px;padding:5px 7px;flex:1}
@@ -78,7 +79,8 @@ h1{font:italic 500 30px/1.1 Fraunces,Georgia,serif;margin:2px 0 2px;letter-spaci
 .exn{font:700 15px Manrope;line-height:1.25;flex:1}
 .pill{font:700 10.5px Manrope;border-radius:5px;padding:2px 6px;background:var(--soft);color:var(--mute);white-space:nowrap}
 .meta{font-size:11.5px;color:var(--mute);margin-top:3px}
-.info{background:none;border:none;color:var(--mute);font-size:13px;padding:0 0 0 5px;cursor:pointer}
+.info{background:none;border:none;color:var(--mute);font-size:13px;padding:0 0 0 5px;cursor:pointer;transition:color .2s,scale .2s var(--sx-spring)}
+.info.on{color:var(--accent)}
 .cues{display:none;margin-top:8px;padding:9px 11px;background:var(--soft2);border-radius:9px;
       font-size:12.5px;line-height:1.55;white-space:pre-line;color:var(--cuetext)}
 .cues.show{display:block}
@@ -93,6 +95,7 @@ h1{font:italic 500 30px/1.1 Fraunces,Georgia,serif;margin:2px 0 2px;letter-spaci
 .sets input:focus{outline:none;border-color:var(--accent);background:var(--card)}
 .sets input.dash{background:var(--dash);border-color:var(--dash);color:var(--dashtext)}
 .sets input.hit{background:var(--greenbg);border-color:var(--greenline)}
+.st .tag{display:inline-block}
 .st{margin-top:8px;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .tag{font:700 11px Manrope;border-radius:6px;padding:3px 8px}
 .t-up{background:var(--greenbg);color:var(--green)}
@@ -104,29 +107,41 @@ h1{font:italic 500 30px/1.1 Fraunces,Georgia,serif;margin:2px 0 2px;letter-spaci
        padding:9px 16px calc(9px + var(--safe-b));z-index:50}
 .timer .inner{max-width:600px;margin:0 auto}
 .tlbl{display:none}
-.chips{display:flex;gap:5px;margin-bottom:7px}
-.chip{flex:1;padding:7px 2px;border:1px solid var(--line);background:var(--card);border-radius:8px;
-      font:700 12px Manrope;color:var(--mute);text-align:center;cursor:pointer}
-.chip.on{background:var(--accent);color:var(--ondark);border-color:var(--accent)}
+.chips{display:flex;gap:3px;margin-bottom:7px;padding:3px;border:1px solid var(--line);background:var(--card);border-radius:11px}
+.chip{flex:1;padding:6px 2px;border-radius:8px;font:700 12px Manrope;color:var(--mute);text-align:center;cursor:pointer;
+      -webkit-user-select:none;user-select:none;transition:color .25s var(--sx-ease),scale .2s var(--sx-spring)}
+.chip.on{color:var(--ondark)}
+.chips .sx-pill{background:var(--accent);border-radius:8px}
 .trun{display:flex;gap:8px;align-items:stretch}
-.go{flex:1;border:none;border-radius:12px;background:var(--ink);color:var(--onink);
-    font:700 17px Manrope;padding:14px;cursor:pointer;letter-spacing:.01em}
+.go{flex:1;border:none;border-radius:12px;background:var(--ink);color:var(--onink);height:56px;
+    font:700 17px Manrope;padding:0 14px;cursor:pointer;letter-spacing:.01em}
 .go.run{background:var(--accent);color:var(--ondark);font-variant-numeric:tabular-nums;font-size:26px;
-        font-family:Fraunces,Georgia,serif;padding:9px}
-.go.done{background:var(--green);color:var(--ondark)}
+        font-family:Fraunces,Georgia,serif}
+.go.done{background:var(--green);color:var(--ondark);animation:go-done .7s var(--sx-spring)}
+@keyframes go-done{0%{scale:.94}45%{scale:1.04}100%{scale:1}}
 .rst{width:56px;border:1px solid var(--line);background:var(--card);border-radius:12px;
      font-size:17px;color:var(--mute);cursor:pointer}
 .tools{display:flex;gap:7px;margin:16px 0 26px}
 .tools button{flex:1;padding:12px 6px;border:1px solid var(--line);background:var(--card);
               border-radius:12px;font:700 12.5px Manrope;color:var(--ink);cursor:pointer}
 .note{font-size:11.5px;color:var(--mute);line-height:1.5;margin-bottom:22px}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(168px + var(--safe-b));
+.toast{position:fixed;left:50%;transform:translateX(-50%);translate:0 12px;scale:.96;bottom:calc(168px + var(--safe-b));
        background:var(--ink);color:var(--onink);padding:10px 17px;border-radius:999px;font:700 13px Manrope;
-       opacity:0;transition:opacity .25s;pointer-events:none;z-index:60;max-width:88%;text-align:center}
-.toast.on{opacity:1}
+       opacity:0;transition:opacity .22s var(--sx-ease),translate .32s var(--sx-ease),scale .32s var(--sx-ease);pointer-events:none;z-index:60;max-width:88%;text-align:center;
+       box-shadow:0 8px 24px -8px rgba(0,0,0,.35)}
+.toast.on{opacity:1;translate:0 0;scale:1}
 dialog{border:none;border-radius:16px;padding:0;max-width:92vw;width:460px;background:var(--card);
        color:var(--ink);box-shadow:0 14px 50px rgba(0,0,0,.22)}
 dialog::backdrop{background:rgba(23,20,15,.5)}
+/* export dialog: rises in and settles out, the backdrop fades with it */
+dialog{opacity:0;translate:0 14px;scale:.97;
+       transition:opacity .2s var(--sx-ease),translate .3s var(--sx-ease),scale .3s var(--sx-ease),overlay .3s allow-discrete,display .3s allow-discrete}
+dialog[open]{opacity:1;translate:0 0;scale:1}
+@starting-style{dialog[open]{opacity:0;translate:0 14px;scale:.97}}
+dialog::backdrop{transition:background-color .25s,overlay .3s allow-discrete,display .3s allow-discrete}
+dialog:not([open])::backdrop{background:rgba(23,20,15,0)}
+@starting-style{dialog[open]::backdrop{background:rgba(23,20,15,0)}}
+@media (prefers-reduced-motion:reduce){dialog,dialog::backdrop,.toast,.tab,.chip{transition:none}.go.done{animation:none}}
 .dlg{padding:17px}
 .dlg h3{font:italic 500 20px Fraunces,Georgia,serif;margin:0 0 9px}
 .dlg textarea{width:100%;height:210px;border:1px solid var(--line);border-radius:10px;padding:10px;
@@ -135,7 +150,7 @@ dialog::backdrop{background:rgba(23,20,15,.5)}
 .dlg .acts button{flex:1;padding:11px;border:none;border-radius:10px;font:700 13px Manrope;cursor:pointer}
 .pri{background:var(--ink);color:var(--onink)}
 .sec{background:var(--soft);color:var(--ink)}
-@media (hover:hover){.tab:not(.on):hover,.chip:not(.on):hover,.tools button:hover,.toggle:not(.on):hover{border-color:var(--mute)}}
+@media (hover:hover){.tab:not(.on):hover,.chip:not(.on):hover{color:var(--ink)}.tools button:hover,.toggle:not(.on):hover{border-color:var(--mute)}}
 
 /* ── wider screens: controls + rest timer in a left panel, the session fills the rest ── */
 @media (min-width:900px){
@@ -159,7 +174,7 @@ dialog::backdrop{background:rgba(23,20,15,.5)}
   #list .group{margin-bottom:0}
 }
 </style>
-<!-- suite:css v4 · shared by Kitchen, Grocery, Lift, DishLog, Protocol — edit tools/suite.py in the kitchen repo, not here -->
+<!-- suite:css v5 · shared by Kitchen, Grocery, Lift, DishLog, Protocol — edit tools/suite.py in the kitchen repo, not here -->
 <style id="suite-css">
 /* App colors come from each app's home-screen icon, so the bar, the icon and
    the page all agree. The tab for every app carries its own color, so the
@@ -194,7 +209,7 @@ dialog::backdrop{background:rgba(23,20,15,.5)}
 
 /* phone: app name on the left, the grid button on the right */
 .sx-gbtn{margin-left:auto;flex:0 0 auto;width:40px;height:40px;border-radius:12px;border:1px solid var(--sx-line);background:transparent;
-  color:var(--sx-dim);display:grid;place-items:center;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s}
+  color:var(--sx-dim);display:grid;place-items:center;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s,scale .22s var(--sx-spring)}
 .sx-gbtn svg{width:19px;height:19px}
 .sx-gbtn[aria-expanded="true"]{background:var(--sx-hover);color:var(--sx-ink)}
 .sx-menu{position:fixed;inset:0;z-index:300}
@@ -218,7 +233,7 @@ dialog::backdrop{background:rgba(23,20,15,.5)}
 /* computer and tablet: the full bar of tabs */
 .sx-t{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px 0 11px;box-sizing:border-box;
   border-radius:999px;border:1px solid transparent;background:transparent;color:var(--sx-dim);text-decoration:none;
-  font:700 12.5px/1 'Manrope',system-ui,sans-serif;letter-spacing:.02em;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
+  font:700 12.5px/1 'Manrope',system-ui,sans-serif;letter-spacing:.02em;white-space:nowrap;transition:background .15s,color .15s,border-color .15s,scale .22s var(--sx-spring)}
 .sx-t svg{width:16px;height:16px;color:var(--c);flex:0 0 auto}
 .sx-t:hover{background:var(--sx-hover);color:var(--sx-ink)}
 .sx-t:focus-visible,.sx-gbtn:focus-visible,.sx-cell:focus-visible{outline:2px solid var(--app);outline-offset:2px}
@@ -248,6 +263,28 @@ dialog::backdrop{background:rgba(23,20,15,.5)}
 @media (prefers-reduced-motion:reduce){
   ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}
 }
+
+/* ---- motion: one feel across every app ----
+   Shared curves, a soft press under the finger on anything tappable, and
+   colors that ease instead of flipping. Everything here has zero
+   specificity (:where), so any app rule that says otherwise wins. The press
+   uses the separate `scale` property, so it stacks with whatever transform
+   an element already has instead of fighting it. */
+:root{ --sx-ease:cubic-bezier(.2,.8,.2,1); --sx-ease-in:cubic-bezier(.4,0,.9,.5); --sx-spring:cubic-bezier(.3,1.35,.5,1); }
+:where(button,[role=button],[role=tab],[role=checkbox],summary,select,a.sx-t,.sx-cell,.sx-gbtn){
+  transition:background-color .18s var(--sx-ease),color .18s var(--sx-ease),border-color .18s var(--sx-ease),
+             box-shadow .22s var(--sx-ease),opacity .2s var(--sx-ease),scale .22s var(--sx-spring)}
+:where(button:not(:disabled),[role=button],[role=tab],summary,a.sx-t,.sx-cell,.sx-gbtn):active{scale:.96;transition-duration:.06s}
+:where(input,textarea,select){transition:border-color .18s var(--sx-ease),background-color .18s var(--sx-ease),box-shadow .2s var(--sx-ease)}
+/* the sliding highlight behind segmented controls and tab rows (SX.pill) */
+.sx-pill{position:absolute;left:0;top:0;z-index:0;pointer-events:none;border-radius:10px;will-change:transform,width}
+.sx-pilled > :not(.sx-pill){position:relative;z-index:1}
+.sx-menu.sx-out .sx-pop{animation:sx-pop-out .14s var(--sx-ease-in) both}
+@keyframes sx-pop-out{to{opacity:0;transform:scale(.94)}}
+@media (prefers-reduced-motion:reduce){
+  :where(*){scale:none!important}
+  .sx-menu.sx-out .sx-pop{animation:none}
+}
 </style>
 <!-- /suite:css -->
 </head>
@@ -275,12 +312,168 @@ dialog::backdrop{background:rgba(23,20,15,.5)}
 <script>
 (function(){ /* suite: open/close the app grid on phones */
   var b=document.getElementById('sx-gbtn'), m=document.getElementById('sx-menu'); if(!b||!m) return;
-  function set(o){ m.hidden=!o; b.setAttribute('aria-expanded',o?'true':'false');
-    if(o){ var f=m.querySelector('.sx-cell'); if(f) f.focus({preventScroll:true}); } }
+  var t=null;
+  function set(o){ b.setAttribute('aria-expanded',o?'true':'false'); clearTimeout(t); m.classList.remove('sx-out');
+    if(o){ m.hidden=false; var f=m.querySelector('.sx-cell'); if(f) f.focus({preventScroll:true}); return; }
+    if(m.hidden) return;
+    /* let the grid shrink away instead of vanishing */
+    if(window.SX && !SX.still()){ m.classList.add('sx-out'); t=setTimeout(function(){ m.hidden=true; m.classList.remove('sx-out'); },140); }
+    else m.hidden=true; }
   b.addEventListener('click',function(e){ e.stopPropagation(); set(m.hidden); });
   m.addEventListener('click',function(e){ if(!e.target.closest('.sx-cell')||e.target.closest('[aria-current]')) set(false); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!m.hidden){ set(false); b.focus(); } });
-  window.addEventListener('pageshow',function(){ set(false); });
+  window.addEventListener('pageshow',function(){ clearTimeout(t); m.classList.remove('sx-out'); m.hidden=true; b.setAttribute('aria-expanded','false'); });
+})();
+</script>
+<script>
+/* suite motion helpers (window.SX), shared by every app. Each one is a
+   no-op extra: if the browser can't animate or you've asked for reduced
+   motion, the change just happens, exactly as it did before.
+     SX.flip(root, sel, change)  redraw a list and let the items that stay
+                                 glide to their new spots; new ones fade in
+     SX.enter(root, sel, dir)    play a short staggered entrance on fresh content
+     SX.pill(row, activeSel)     slide a highlight to the selected tab/chip
+     SX.expand(el, open, apply)  open or close a block by its height
+     SX.morph(root, sel, prop, change)  bars and meters ease to their new size
+     SX.bump(el)                 a small pop for a value that just changed */
+(function(){
+  if(window.SX) return;
+  var mq=window.matchMedia?matchMedia('(prefers-reduced-motion: reduce)'):null;
+  var E='cubic-bezier(.2,.8,.2,1)', SPRING='cubic-bezier(.3,1.25,.5,1)';
+  function still(){ return !!(mq&&mq.matches) || typeof Element.prototype.animate!=='function'; }
+  function q(x){ return typeof x==='string'?document.querySelector(x):x; }
+  function keyOf(el,kf){ return kf?kf(el):(el.getAttribute('data-sx-key')||el.getAttribute('data-id')||el.getAttribute('data-k')||el.id||null); }
+  function quietCss(el){ /* a redraw should not replay an entrance the item already did */
+    try{ el.getAnimations({subtree:true}).forEach(function(a){ if(a.animationName) a.cancel(); }); }catch(e){} }
+
+  function flip(root,sel,change,o){
+    o=o||{}; root=q(root);
+    if(!root || still()){ change(); return; }
+    var before={}, vh=window.innerHeight;
+    root.querySelectorAll(sel).forEach(function(el){
+      var k=keyOf(el,o.key); if(k==null || before[k]) return;
+      var r=el.getBoundingClientRect(); if(!r.width && !r.height) return;
+      before[k]=r;
+    });
+    change();
+    var seen={}, n=0;
+    root.querySelectorAll(sel).forEach(function(el){
+      var k=keyOf(el,o.key); if(k==null || seen[k]) return; seen[k]=1;
+      var b=before[k], r=el.getBoundingClientRect();
+      if(!r.width && !r.height) return;
+      if(r.bottom<-40 || r.top>vh+40){ if(b) quietCss(el); return; }
+      if(b){
+        quietCss(el);
+        var dx=b.left-r.left, dy=b.top-r.top;
+        if(Math.abs(dx)<1 && Math.abs(dy)<1) return;
+        if(Math.abs(dy)>vh) dy=dy>0?vh*.5:-vh*.5;
+        el.animate([{translate:dx+'px '+dy+'px'},{translate:'0 0'}],{duration:o.dur||340,easing:E});
+      } else if(o.enter!==false){
+        quietCss(el);
+        el.animate([{opacity:0,translate:'0 6px',scale:.985},{opacity:1,translate:'0 0',scale:1}],
+                   {duration:260,delay:Math.min(n++,8)*24,easing:E,fill:'backwards'});
+      }
+    });
+  }
+
+  function enter(root,sel,dir,o){
+    o=o||{}; root=q(root); if(!root || still()) return;
+    var els=sel?root.querySelectorAll(sel):root.children, vh=window.innerHeight, i=0;
+    var from=dir==='left'?'-18px 0':dir==='right'?'18px 0':dir==='none'?'0 0':'0 8px';
+    Array.prototype.forEach.call(els,function(el){
+      if(el.classList && el.classList.contains('sx-pill')) return;
+      var r=el.getBoundingClientRect(); if(r.bottom<0 || r.top>vh || !r.height) return;
+      quietCss(el);
+      el.animate([{opacity:0,translate:from},{opacity:1,translate:'0 0'}],
+                 {duration:o.dur||300,delay:Math.min(i++,10)*(o.step==null?30:o.step),easing:E,fill:'backwards'});
+    });
+  }
+
+  var rows=[];
+  function pill(row,activeSel,o){
+    row=q(row); if(!row) return;
+    var rec=null; rows.forEach(function(x){ if(x.row===row) rec=x; });
+    if(!rec){ rec={row:row, sel:activeSel, last:null, o:o||{}}; rows.push(rec); watch(rec); }
+    rec.sel=activeSel||rec.sel; place(rec,true);
+  }
+  function place(rec,animate){
+    var row=rec.row, p=row.querySelector(':scope > .sx-pill');
+    if(!p){ p=document.createElement('span'); p.className='sx-pill'+(rec.o.cls?' '+rec.o.cls:''); p.setAttribute('aria-hidden','true'); row.insertBefore(p,row.firstChild); }
+    if(!row.classList.contains('sx-pilled')){ row.classList.add('sx-pilled');
+      if(getComputedStyle(row).position==='static') row.style.position='relative'; }
+    var a=row.querySelector(rec.sel);
+    if(!a || !a.offsetWidth){ p.style.opacity='0'; rec.last=null; return; }
+    var now={x:a.offsetLeft, y:a.offsetTop, w:a.offsetWidth, h:a.offsetHeight}, last=rec.last;
+    rec.last=now;
+    p.style.opacity='1'; p.style.width=now.w+'px'; p.style.height=now.h+'px';
+    p.style.transform='translate('+now.x+'px,'+now.y+'px)';
+    if(animate && last && !still() && (last.x!==now.x || last.y!==now.y || last.w!==now.w)){
+      p.animate([{transform:'translate('+last.x+'px,'+last.y+'px)',width:last.w+'px',height:last.h+'px'},
+                 {transform:'translate('+now.x+'px,'+now.y+'px)',width:now.w+'px',height:now.h+'px'}],
+                {duration:360,easing:SPRING});
+    }
+  }
+  function watch(rec){ if(window.ResizeObserver){ new ResizeObserver(function(){ place(rec,false); }).observe(rec.row); } }
+  window.addEventListener('resize',function(){ rows.forEach(function(r){ place(r,false); }); });
+
+  function expand(el,open,apply){
+    el=q(el); if(!el){ apply(open); return; }
+    if(el._sx){ el._sx.cancel(); el._sx=null; }
+    if(still()){ apply(open); return; }
+    var cs, h, f, a;
+    if(open){
+      apply(true); cs=getComputedStyle(el); h=el.offsetHeight; if(!h) return;
+      f={height:h+'px',paddingTop:cs.paddingTop,paddingBottom:cs.paddingBottom,marginTop:cs.marginTop,marginBottom:cs.marginBottom,opacity:1};
+      el.style.overflow='hidden';
+      a=el.animate([{height:'0px',paddingTop:'0px',paddingBottom:'0px',marginTop:'0px',marginBottom:'0px',opacity:0},f],{duration:300,easing:E});
+    } else {
+      cs=getComputedStyle(el); h=el.offsetHeight; if(!h){ apply(false); return; }
+      f={height:h+'px',paddingTop:cs.paddingTop,paddingBottom:cs.paddingBottom,marginTop:cs.marginTop,marginBottom:cs.marginBottom,opacity:1};
+      el.style.overflow='hidden';
+      a=el.animate([f,{height:'0px',paddingTop:'0px',paddingBottom:'0px',marginTop:'0px',marginBottom:'0px',opacity:0}],{duration:240,easing:E});
+    }
+    el._sx=a;
+    a.onfinish=function(){ el._sx=null; el.style.overflow=''; if(!open) apply(false); };
+    a.oncancel=function(){ el.style.overflow=''; };
+  }
+
+  /* redraw something whose bars or meters are set inline (width:40%), and
+     let each one ease from where it was instead of snapping */
+  function morph(host,sel,prop,change){
+    host=q(host); if(!host){ change(); return; }
+    var old=Array.prototype.map.call(host.querySelectorAll(sel),function(e){ return e.style[prop]; });
+    change();
+    if(still()) return;
+    var now=host.querySelectorAll(sel), to=Array.prototype.map.call(now,function(e){ return e.style[prop]; });
+    Array.prototype.forEach.call(now,function(e,i){ if(old[i]===to[i]) return; e.style.transition='none'; e.style[prop]=old[i]!=null&&old[i]!==''?old[i]:'0'; });
+    void host.offsetWidth;
+    Array.prototype.forEach.call(now,function(e,i){ e.style.transition=''; e.style[prop]=to[i]; });
+  }
+
+  function bump(el){
+    el=q(el); if(!el || still()) return;
+    el.animate([{scale:1},{scale:1.08},{scale:1}],{duration:320,easing:SPRING});
+  }
+
+  /* <details> sections open and close by height instead of snapping.
+     The toggle still happens for real, so anything listening for it works. */
+  document.addEventListener('click',function(e){
+    var sm=e.target.closest && e.target.closest('summary'); if(!sm || e.defaultPrevented) return;
+    var d=sm.parentElement; if(!d || d.tagName!=='DETAILS' || d.hasAttribute('data-sx-still') || still()) return;
+    e.preventDefault();
+    if(d._sx){ d._sx.cancel(); d._sx=null; }
+    var from=d.offsetHeight, opening=!d.open, to;
+    d.style.overflow='hidden';
+    if(opening){ d.open=true; to=d.offsetHeight; }
+    else { d.open=false; to=d.offsetHeight; d.open=true; }
+    var a=d.animate([{height:from+'px'},{height:to+'px'}],{duration:opening?320:240,easing:E});
+    d._sx=a;
+    a.onfinish=function(){ d._sx=null; d.style.overflow=''; if(!opening) d.open=false; };
+    a.oncancel=function(){ d.style.overflow=''; };
+    if(opening){ Array.prototype.forEach.call(d.children,function(c){ if(c!==sm) c.animate([{opacity:0},{opacity:1}],{duration:260,delay:60,easing:E,fill:'backwards'}); }); }
+  });
+
+  window.SX={still:still, flip:flip, enter:enter, pill:pill, expand:expand, morph:morph, bump:bump};
 })();
 </script>
 <!-- /suite:bar -->
@@ -330,7 +523,7 @@ const LIB={"Barbell Bench Press": {"equip": "Barbell \u2014 total incl. 45 lb ba
 const PROG={"A": {"dow": "Tuesday", "ex": [{"ex": "Chest Press Machine", "pair": "1a", "core": true}, {"ex": "Chest-Supported Row Machine", "pair": "1b", "core": true}, {"ex": "Hack Squat", "pair": "2a", "core": true}, {"ex": "Seated Leg Curl", "pair": "2b", "core": true}, {"ex": "Rope Overhead Triceps Extension", "pair": "3a", "core": false}, {"ex": "Machine Preacher Curl", "pair": "3b", "core": false}, {"ex": "Cable Crunch", "pair": "4a", "core": false}, {"ex": "Back Extension (45\u00b0)", "pair": "4b", "core": false}, {"ex": "Cable Wrist Curl", "pair": "5a", "core": false}, {"ex": "Cable Reverse Wrist Curl", "pair": "5b", "core": false}]}, "B": {"dow": "Thursday", "ex": [{"ex": "Shoulder Press Machine", "pair": "1a", "core": true}, {"ex": "Lat Pulldown", "pair": "1b", "core": true}, {"ex": "Leg Press", "pair": "2a", "core": true}, {"ex": "Seated Leg Curl", "pair": "2b", "core": true}, {"ex": "Lateral Raise Machine", "pair": "3a", "core": false}, {"ex": "Single-Arm Machine Row", "pair": "3b", "core": false}, {"ex": "Triceps Pressdown", "pair": "4a", "core": false}, {"ex": "Cable Rope Hammer Curl", "pair": "4b", "core": false}, {"ex": "Calf Raise Machine", "pair": "5", "core": false}]}, "C": {"dow": "Saturday", "ex": [{"ex": "Incline Chest Press Machine", "pair": "1a", "core": true}, {"ex": "Seated Cable Row", "pair": "1b", "core": true}, {"ex": "Leg Extension", "pair": "2a", "core": true}, {"ex": "Hip Thrust Machine", "pair": "2b", "core": true}, {"ex": "Pec Deck (Chest Fly Machine)", "pair": "3a", "core": false}, {"ex": "Rear Delt Machine", "pair": "3b", "core": false}, {"ex": "Cable Wrist Curl", "pair": "4a", "core": false}, {"ex": "Cable Reverse Wrist Curl", "pair": "4b", "core": false}, {"ex": "Calf Raise Machine", "pair": "5", "core": false}]}};
 const SEED={"A|1|Chest Press Machine": {"w": 100, "s": [7, 7, 3, 4]}, "A|1|Chest-Supported Row Machine": {"w": 85, "s": [12, 12, 12, 7]}, "A|1|Hack Squat": {"w": 90, "s": [null, null, null, null]}, "A|1|Seated Leg Curl": {"w": 90, "s": [12, 12, 12, null]}, "A|1|Rope Overhead Triceps Extension": {"w": 40, "s": [12, 10, 5, null]}, "A|1|Machine Preacher Curl": {"w": 50, "s": [12, 12, 10, null]}, "A|1|Cable Crunch": {"w": 60, "s": [null, null, null, null]}, "A|1|Back Extension (45\u00b0)": {"w": 10, "s": [null, null, null, null]}, "A|1|Cable Wrist Curl": {"w": 30, "s": [null, null, null, null]}, "A|1|Cable Reverse Wrist Curl": {"w": 20, "s": [null, null, null, null]}, "B|1|Shoulder Press Machine": {"w": 50, "s": [7, 7, 5, 5]}, "B|1|Lat Pulldown": {"w": 85, "s": [10, 10, 10, 10]}, "B|1|Leg Press": {"w": 145, "s": [15, 15, 13, null]}, "B|1|Seated Leg Curl": {"w": 80, "s": [12, 12, 12, null]}, "B|1|Lateral Raise Machine": {"w": 15, "s": [15, 15, 12, null]}, "B|1|Single-Arm Machine Row": {"w": 50, "L": [null, null, null, null], "R": [null, null, null, null]}, "B|1|Triceps Pressdown": {"w": 35, "s": [12, 6, 4, null]}, "B|1|Cable Rope Hammer Curl": {"w": 35, "s": [12, 12, 10, null]}, "B|1|Calf Raise Machine": {"w": 130, "s": [15, null, null, null]}, "C|1|Incline Chest Press Machine": {"w": 80, "s": [null, null, null, null]}, "C|1|Seated Cable Row": {"w": 80, "s": [null, null, null, null]}, "C|1|Leg Extension": {"w": 70, "s": [null, null, null, null]}, "C|1|Hip Thrust Machine": {"w": 90, "s": [null, null, null, null]}, "C|1|Pec Deck (Chest Fly Machine)": {"w": 70, "s": [null, null, null, null]}, "C|1|Rear Delt Machine": {"w": 40, "s": [null, null, null, null]}, "C|1|Cable Wrist Curl": {"w": 30, "s": [null, null, null, null]}, "C|1|Cable Reverse Wrist Curl": {"w": 20, "s": [null, null, null, null]}, "C|1|Calf Raise Machine": {"w": 100, "s": [null, null, null, null]}};
 const DATES={"A|1": "2026-09-15"};
-const APP_VERSION = "2026.10.19-a";
+const APP_VERSION = "2026.10.19-b";
 const K = "eos_lift_v1";
 
 /* ---------- state ---------- */
@@ -422,16 +615,23 @@ const fmt = n => (Math.round(n*100)/100).toString();
 
 /* ---------- render ---------- */
 const $ = s => document.querySelector(s);
+const SXo = window.SX || {flip:(r,s,f)=>f(), enter(){}, pill(){}, expand:(e,o,f)=>f(o), bump(){}, still:()=>true};
 const el = (t,c,x) => { const n=document.createElement(t); if(c)n.className=c; if(x!=null)n.textContent=x; return n; };
 
 function renderTabs(){
   const t=$("#tabs"); t.innerHTML="";
   ["A","B","C"].forEach(d=>{
     const b=el("div","tab"+(S.ui.day===d?" on":""));
+    b.setAttribute("role","tab"); b.setAttribute("aria-selected", S.ui.day===d);
     b.innerHTML = "Day "+d+"<span class='d'>"+PROG[d].dow+"</span>";
-    b.onclick=()=>{ S.ui.day=d; save(); render(); };
+    b.onclick=()=>{
+      if(S.ui.day===d) return;
+      const dir = d > S.ui.day ? "right" : "left";
+      S.ui.day=d; save(); render(); SXo.enter("#list",".group",dir);
+    };
     t.appendChild(b);
   });
+  SXo.pill(t,".tab.on");
 }
 function groupsFor(day){
   const out=[]; let cur=null;
@@ -454,7 +654,7 @@ function render(){
   const list=$("#list"); list.innerHTML="";
   let done=0,tot=0;
   groups.forEach(g=>{
-    const box=el("div","group"+(g.core?" core":""));
+    const box=el("div","group"+(g.core?" core":"")); box.dataset.sxKey="g"+g.g;
     const h=el("div","ghead");
     h.appendChild(el("span",null, g.items.length>1 ? "Superset "+g.g : "Straight sets"));
     if(g.core) h.appendChild(el("span","badge","CORE"));
@@ -472,7 +672,9 @@ function exNode(d,w,e){
   const node=el("div","ex");
   const head=el("div","exh");
   const left=el("div","exn",ex);
-  const ib=el("button","info","ⓘ"); ib.onclick=()=>cue.classList.toggle("show");
+  const ib=el("button","info","ⓘ"); ib.setAttribute("aria-label","How to do it"); ib.setAttribute("aria-expanded","false");
+  ib.onclick=()=>{ const open=!cue.classList.contains("show"); ib.classList.toggle("on",open); ib.setAttribute("aria-expanded",open);
+    SXo.expand(cue,open,o=>cue.classList.toggle("show",o)); };
   left.appendChild(ib);
   head.appendChild(left); head.appendChild(el("span","pill",e.pair));
   node.appendChild(head);
@@ -505,7 +707,9 @@ function exNode(d,w,e){
         r[fld][i]=isNaN(v)?null:v;
         if(r.w==null) r.w=wt;
         save(); clearMemo();
-        inp.className = (!isNaN(v)&&v>=L.aim) ? "hit" : "";
+        const hit = !isNaN(v)&&v>=L.aim, was = inp.classList.contains("hit");
+        inp.className = hit ? "hit" : "";
+        if(hit && !was) SXo.bump(inp);
         refreshStatus();
       };
       sets.appendChild(inp);
@@ -521,6 +725,11 @@ function exNode(d,w,e){
   return node;
 }
 function paintStatus(row,d,w,ex){
+  const before=row.textContent;
+  paintStatus_(row,d,w,ex);
+  if(before && before!==row.textContent) SXo.enter(row,null,"none",{dur:260,step:40});
+}
+function paintStatus_(row,d,w,ex){
   row.innerHTML="";
   const st=statusOf(d,w,ex);
   if(!st){ row.appendChild(el("span","nx","Not logged yet")); return; }
@@ -538,20 +747,24 @@ function refreshStatus(){
   document.querySelectorAll(".st").forEach(r=>paintStatus(r,d,w,r.dataset.ex));
   let done=0,tot=0;
   groupsFor(d).filter(g=>!S.ui.core||g.core).forEach(g=>g.items.forEach(e=>{tot++; if(statusOf(d,w,e.ex))done++;}));
-  $("#wst").textContent=done+" of "+tot+" logged";
+  const ws=$("#wst"), txt=done+" of "+tot+" logged";
+  if(ws.textContent!==txt){ ws.textContent=txt; SXo.bump(ws); }
 }
 
 /* ---------- timer ---------- */
 const DURS=[45,60,90,105,120,180];
 let pick=60, endAt=0, tick=null, lock=null, ac=null;
-function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("on"); setTimeout(()=>t.classList.remove("on"),1900); }
+let toastT=null;
+function toast(m){ const t=$("#toast"); t.textContent=m; t.classList.add("on"); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove("on"),1900); }
 function renderChips(){
   const c=$("#chips"); c.innerHTML="";
   DURS.forEach(s=>{
     const b=el("div","chip"+(pick===s?" on":""), s>=60?(s%60?Math.floor(s/60)+":"+String(s%60).padStart(2,"0"):s/60+":00"):s+"s");
+    b.setAttribute("role","tab");
     b.onclick=()=>{ pick=s; renderChips(); };
     c.appendChild(b);
   });
+  SXo.pill(c,".chip.on");
 }
 function pickRest(pair){
   if(tick) return;
@@ -592,7 +805,7 @@ function startTimer(){
   endAt = Date.now()+pick*1000;
   if(tick) clearInterval(tick);
   tick = setInterval(paintGo, 200);
-  wake(true); paintGo();
+  wake(true); paintGo(); SXo.bump("#go");
 }
 function stopTimer(fired){
   if(tick) clearInterval(tick); tick=null; wake(false);
@@ -639,9 +852,10 @@ $("#bClaude").onclick=()=>{
 $("#bBackup").onclick=()=>show("Full backup (JSON)", JSON.stringify(S));
 
 /* ---------- wiring ---------- */
-$("#wprev").onclick=()=>{ if(S.ui.week>1){S.ui.week--;save();render();} };
-$("#wnext").onclick=()=>{ if(S.ui.week<24){S.ui.week++;save();render();} };
-$("#coreBtn").onclick=()=>{ S.ui.core=!S.ui.core; save(); render(); };
+function weekTo(w,dir){ S.ui.week=w; save(); render(); SXo.enter(".wk .lbl",null,dir,{step:0,dur:260}); SXo.enter("#list",".group",dir); }
+$("#wprev").onclick=()=>{ if(S.ui.week>1) weekTo(S.ui.week-1,"left"); };
+$("#wnext").onclick=()=>{ if(S.ui.week<24) weekTo(S.ui.week+1,"right"); };
+$("#coreBtn").onclick=()=>{ S.ui.core=!S.ui.core; save(); SXo.flip("#list",".group",render); };
 $("#dt").onchange=e=>{ S.dates[S.ui.day+"|"+S.ui.week]=e.target.value; save(); };
 $("#go").onclick=()=>{ tick ? stopTimer(false) : startTimer(); };
 $("#rst").onclick=()=>{ if(tick){ stopTimer(false); } startTimer(); };

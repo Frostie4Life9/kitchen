@@ -51,8 +51,8 @@ button{font:inherit}
 .mast{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;padding:6px 0 16px;border-bottom:1px solid var(--rule);margin-bottom:18px}
 .eyebrow{font-size:14px;font-weight:700;color:var(--ink-faded)}
 .mast h1{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:500;font-size:40px;line-height:1;margin:4px 0 0;letter-spacing:-.01em}
-.back{font-size:14px;font-weight:700;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--rule);border-radius:99px;padding:9px 15px;white-space:nowrap;transition:transform .12s}
-.back:active{transform:scale(.96)}
+.back{font-size:14px;font-weight:700;text-decoration:none;color:var(--ink);background:var(--card);border:1px solid var(--rule);border-radius:99px;padding:9px 15px;white-space:nowrap;transition:transform .12s, scale .2s cubic-bezier(.3,1.35,.5,1)}
+.back:active{scale:.96}
 
 /* ---- hero: the cart ring ---- */
 .hero{display:flex;gap:18px;align-items:center;background:var(--card);border-radius:24px;padding:18px 18px 18px 16px;margin-bottom:14px;
@@ -61,7 +61,7 @@ button{font:inherit}
 .ring{width:100%;height:100%;transform:rotate(-90deg)}
 .ring circle{fill:none;stroke-width:11;stroke-linecap:round}
 .ring-bg{stroke:var(--rule);opacity:.6}
-.ring-fg{stroke:var(--today);stroke-dasharray:326.73;stroke-dashoffset:326.73;transition:stroke-dashoffset .9s var(--ease)}
+.ring-fg{stroke:var(--today);stroke-dasharray:326.73;stroke-dashoffset:326.73;transition:stroke-dashoffset .9s var(--ease), scale .2s cubic-bezier(.3,1.35,.5,1)}
 .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .big{font-family:'Fraunces',Georgia,serif;font-weight:900;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
 .big-lbl{font-size:12px;color:var(--ink-faded);margin-top:4px}
@@ -74,7 +74,7 @@ button{font:inherit}
 .bar-row b{color:var(--ink);font-weight:700}
 .bar-row span:last-child{text-align:right;font-variant-numeric:tabular-nums}
 .track{height:7px;border-radius:99px;background:var(--rule);overflow:hidden}
-.track span{display:block;height:100%;width:0;border-radius:99px;background:var(--green);transition:width .9s var(--ease)}
+.track span{display:block;height:100%;width:0;border-radius:99px;background:var(--green);transition:width .9s var(--ease), scale .2s cubic-bezier(.3,1.35,.5,1)}
 .lede{font-size:13.5px;color:var(--ink-faded);margin:0 2px 16px;line-height:1.5}
 .lede b{color:var(--ink)}
 .buildtag{margin-top:10px;font-size:12px;color:var(--ink-faded);opacity:.8}
@@ -82,8 +82,9 @@ button{font:inherit}
 /* ---- store filter: same segmented control as the app's meal tabs ---- */
 .seg{display:flex;background:var(--paper);border:1px solid var(--rule);border-radius:14px;padding:4px;gap:2px;margin:0 0 6px;position:sticky;top:calc(env(safe-area-inset-top,0) + 8px);z-index:5;
   backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
-.seg button{flex:1;border:0;background:transparent;font-size:13px;font-weight:700;color:var(--ink-faded);padding:8px 4px;border-radius:10px;cursor:pointer;transition:background .2s,color .2s}
-.seg button[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 1px 3px rgba(31,26,20,.12)}
+.seg button{flex:1;border:0;background:transparent;font-size:13px;font-weight:700;color:var(--ink-faded);padding:8px 4px;border-radius:10px;cursor:pointer;transition:background .2s,color .2s, scale .2s cubic-bezier(.3,1.35,.5,1)}
+.seg button[aria-selected="true"]{color:var(--ink)}
+.seg .sx-pill{background:var(--card);border-radius:10px;box-shadow:0 1px 3px rgba(31,26,20,.12)}
 
 /* ---- running-low flags from the app ---- */
 .flagged{background:var(--orange-soft);border-radius:18px;padding:14px 16px;margin:0 0 14px}
@@ -92,7 +93,7 @@ button{font:inherit}
 .flagged ul{margin:0 0 10px;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
 .flagged li{list-style:none}
 .flagged .xchip{font:inherit;font-size:13px;font-weight:700;background:var(--card);border:0;border-radius:99px;padding:6px 12px;color:var(--orange);cursor:pointer}
-.flagged .xchip:active{transform:scale(.96)}
+.flagged .xchip:active{scale:.96}
 .flagged ul.xlist{display:block;margin:4px 0 12px;gap:0}
 .flagged ul.xlist li.item{display:flex}
 .flagged li.xitem .meta{margin-top:6px}
@@ -120,25 +121,25 @@ button{font:inherit}
 .group-head{display:flex;justify-content:space-between;font-size:13px;font-weight:800;color:var(--ink-soft);margin:0 4px 7px}
 .group-head span+span{font-weight:700;color:var(--ink-faded)}
 ul.card{list-style:none;margin:0;padding:4px 14px;background:var(--card);border-radius:18px;box-shadow:0 1px 0 var(--rule)}
-li.item{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-top:1px solid var(--rule-soft);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .35s var(--ease)}
+li.item{display:flex;gap:12px;align-items:flex-start;padding:13px 0;border-top:1px solid var(--rule-soft);cursor:pointer;-webkit-tap-highlight-color:transparent;transition:opacity .35s var(--ease), scale .2s cubic-bezier(.3,1.35,.5,1)}
 li.item:first-child{border-top:0}
-li.item:active .check{transform:scale(.9)}
-.check{flex:0 0 24px;height:24px;border-radius:50%;border:2px solid var(--ink-faded);margin-top:1px;display:flex;align-items:center;justify-content:center;transition:background .25s var(--ease),border-color .25s var(--ease),transform .12s}
+li.item:active .check{scale:.9}
+.check{flex:0 0 24px;height:24px;border-radius:50%;border:2px solid var(--ink-faded);margin-top:1px;display:flex;align-items:center;justify-content:center;transition:background .25s var(--ease),border-color .25s var(--ease),transform .12s, scale .2s cubic-bezier(.3,1.35,.5,1)}
 .check svg{width:14px;height:14px;fill:none;stroke:#fff;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-.check path{stroke-dasharray:20;stroke-dashoffset:20;transition:stroke-dashoffset .3s var(--ease) .08s}
+.check path{stroke-dasharray:20;stroke-dashoffset:20;transition:stroke-dashoffset .3s var(--ease) .08s, scale .2s cubic-bezier(.3,1.35,.5,1)}
 li.done .check{background:var(--green);border-color:var(--green)}
 li.done .check path{stroke-dashoffset:0}
 li.justdone .check{animation:pop .45s cubic-bezier(.3,1.6,.5,1)}
 .body{flex:1;min-width:0}
 .name{font-weight:700;font-size:15px;line-height:1.3;
-  background:linear-gradient(currentColor,currentColor) 0 55%/0% 1.5px no-repeat;transition:background-size .35s var(--ease),color .35s}
+  background:linear-gradient(currentColor,currentColor) 0 55%/0% 1.5px no-repeat;transition:background-size .35s var(--ease),color .35s, scale .2s cubic-bezier(.3,1.35,.5,1)}
 li.done .name{background-size:100% 1.5px;color:var(--ink-faded)}
 .amt{display:block;font-size:13px;color:var(--ink-faded);margin-top:1px}
-.why{display:block;font-size:13px;color:var(--ink-soft);margin-top:5px;line-height:1.45;transition:opacity .35s}
+.why{display:block;font-size:13px;color:var(--ink-soft);margin-top:5px;line-height:1.45;transition:opacity .35s, scale .2s cubic-bezier(.3,1.35,.5,1)}
 .why.pick b{color:var(--ink);font-weight:800}
 .swapbtn{font:inherit;font-size:12px;font-weight:800;border:1.5px solid var(--green);background:var(--green-soft);color:var(--green);border-radius:99px;padding:3px 10px;cursor:pointer}
 li.done .why,li.done .meta{opacity:.45}
-.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:9px;transition:opacity .35s}
+.meta{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:9px;transition:opacity .35s, scale .2s cubic-bezier(.3,1.35,.5,1)}
 .tag{font-size:11px;font-weight:800;border-radius:99px;padding:2px 8px;background:var(--paper);color:var(--ink-faded)}
 .tag.researched{background:var(--today-soft);color:var(--today)}
 .tag.deal{background:var(--amber-soft);color:var(--amber)}
@@ -169,7 +170,7 @@ li.missed .why{opacity:.45}
 .spend .sp-big{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink);margin:2px 0}
 .spend .sp-sub{font-size:13px;color:var(--ink-soft);margin:0 0 10px;line-height:1.45}
 .spend .sp-track{height:8px;border-radius:99px;background:var(--paper);overflow:hidden;margin:4px 0 10px}
-.spend .sp-track span{display:block;height:100%;border-radius:99px;background:var(--today);transition:width .5s var(--ease)}
+.spend .sp-track span{display:block;height:100%;border-radius:99px;background:var(--today);transition:width .5s var(--ease), scale .2s cubic-bezier(.3,1.35,.5,1)}
 .spend .sp-track.over span{background:var(--amber)}
 .spend .sp-hist{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;align-items:end;height:64px;margin:8px 0 4px}
 .spend .sp-hist div{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px}
@@ -180,7 +181,11 @@ li.missed .why{opacity:.45}
 .spend .sp-row button{font:inherit;font-size:12.5px;font-weight:800;border:1.5px solid var(--rule);background:transparent;color:var(--ink);border-radius:99px;padding:5px 12px;cursor:pointer}
 .aisle{font-size:12px;font-weight:700;border:1.5px dashed var(--rule);background:transparent;color:var(--ink);border-radius:99px;padding:3px 10px;cursor:pointer}
 .aisle.empty{color:var(--ink-faded)}
-.aisle-input{font:inherit;font-size:14px;border:1.5px solid var(--today);border-radius:10px;padding:5px 9px;width:100%;max-width:260px;background:var(--paper);color:var(--ink)}
+.aisle-input{font:inherit;font-size:14px;border:1.5px solid var(--today);border-radius:10px;padding:5px 9px;width:100%;max-width:260px;background:var(--paper);color:var(--ink);
+  animation:edit-in .24s var(--ease)}
+@keyframes edit-in{from{opacity:0;scale:.94}to{opacity:1;scale:1}}
+.spend .sp-hist i{transition:height .6s var(--ease)}
+.missbtn,.swapbtn,.aisle,.pchip,.sortbtn,.showall,.qty{transition:background-color .18s,border-color .18s,color .18s,opacity .2s,scale .2s cubic-bezier(.3,1.35,.5,1)}
 
 /* ---- notes: quieter than the list ---- */
 .notes-h{font-size:19px;font-weight:800;margin:32px 2px 10px}
@@ -196,18 +201,18 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
 .actionbar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:color-mix(in srgb,var(--paper) 88%,transparent);
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--rule);padding:10px 18px calc(10px + env(safe-area-inset-bottom,0))}
 .actionbar .in{max-width:640px;margin:0 auto;display:flex;gap:10px}
-.primary,.secondary{border:0;border-radius:16px;padding:14px 16px;font-size:15px;font-weight:800;cursor:pointer;transition:transform .12s}
+.primary,.secondary{border:0;border-radius:16px;padding:14px 16px;font-size:15px;font-weight:800;cursor:pointer;transition:transform .12s, scale .2s cubic-bezier(.3,1.35,.5,1)}
 .primary{flex:1;background:var(--today);color:#fff}
 .secondary{background:var(--card);color:var(--ink);border:1px solid var(--rule)}
-.primary:active,.secondary:active{transform:scale(.97)}
+.primary:active,.secondary:active{scale:.97}
 @media (prefers-color-scheme: dark){ .primary,.check svg{color:#14110D} .check svg{stroke:#14110D} .primary{color:#14110D} }
 .toast{position:fixed;left:50%;bottom:calc(88px + env(safe-area-inset-bottom,0));transform:translate(-50%,16px);opacity:0;z-index:30;
   background:var(--ink);color:var(--paper);font-weight:700;font-size:14px;padding:10px 18px;border-radius:99px;pointer-events:none;
-  transition:opacity .25s,transform .35s var(--ease)}
+  transition:opacity .25s,transform .35s var(--ease), scale .2s cubic-bezier(.3,1.35,.5,1)}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
 @media (prefers-reduced-motion: reduce){
-  .rise,.store.fade,.store-count.pop,li.justdone .check,.hero.alldone .ring-wrap{animation:none}
+  .rise,.store.fade,.store-count.pop,li.justdone .check,.hero.alldone .ring-wrap,.aisle-input{animation:none}
   .ring-fg,.track span,.check,.check path,.name,.why,.meta,li.item,.toast,.seg button{transition:none}
 }
 .costco-sw{display:block;margin-top:10px}
@@ -406,7 +411,7 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
   };
 })();
 </script>
-<!-- suite:css v4 · shared by Kitchen, Grocery, Lift, DishLog, Protocol — edit tools/suite.py in the kitchen repo, not here -->
+<!-- suite:css v5 · shared by Kitchen, Grocery, Lift, DishLog, Protocol — edit tools/suite.py in the kitchen repo, not here -->
 <style id="suite-css">
 /* App colors come from each app's home-screen icon, so the bar, the icon and
    the page all agree. The tab for every app carries its own color, so the
@@ -441,7 +446,7 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
 
 /* phone: app name on the left, the grid button on the right */
 .sx-gbtn{margin-left:auto;flex:0 0 auto;width:40px;height:40px;border-radius:12px;border:1px solid var(--sx-line);background:transparent;
-  color:var(--sx-dim);display:grid;place-items:center;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s}
+  color:var(--sx-dim);display:grid;place-items:center;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s,scale .22s var(--sx-spring)}
 .sx-gbtn svg{width:19px;height:19px}
 .sx-gbtn[aria-expanded="true"]{background:var(--sx-hover);color:var(--sx-ink)}
 .sx-menu{position:fixed;inset:0;z-index:300}
@@ -465,7 +470,7 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
 /* computer and tablet: the full bar of tabs */
 .sx-t{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px 0 11px;box-sizing:border-box;
   border-radius:999px;border:1px solid transparent;background:transparent;color:var(--sx-dim);text-decoration:none;
-  font:700 12.5px/1 'Manrope',system-ui,sans-serif;letter-spacing:.02em;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
+  font:700 12.5px/1 'Manrope',system-ui,sans-serif;letter-spacing:.02em;white-space:nowrap;transition:background .15s,color .15s,border-color .15s,scale .22s var(--sx-spring)}
 .sx-t svg{width:16px;height:16px;color:var(--c);flex:0 0 auto}
 .sx-t:hover{background:var(--sx-hover);color:var(--sx-ink)}
 .sx-t:focus-visible,.sx-gbtn:focus-visible,.sx-cell:focus-visible{outline:2px solid var(--app);outline-offset:2px}
@@ -495,6 +500,28 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
 @media (prefers-reduced-motion:reduce){
   ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}
 }
+
+/* ---- motion: one feel across every app ----
+   Shared curves, a soft press under the finger on anything tappable, and
+   colors that ease instead of flipping. Everything here has zero
+   specificity (:where), so any app rule that says otherwise wins. The press
+   uses the separate `scale` property, so it stacks with whatever transform
+   an element already has instead of fighting it. */
+:root{ --sx-ease:cubic-bezier(.2,.8,.2,1); --sx-ease-in:cubic-bezier(.4,0,.9,.5); --sx-spring:cubic-bezier(.3,1.35,.5,1); }
+:where(button,[role=button],[role=tab],[role=checkbox],summary,select,a.sx-t,.sx-cell,.sx-gbtn){
+  transition:background-color .18s var(--sx-ease),color .18s var(--sx-ease),border-color .18s var(--sx-ease),
+             box-shadow .22s var(--sx-ease),opacity .2s var(--sx-ease),scale .22s var(--sx-spring)}
+:where(button:not(:disabled),[role=button],[role=tab],summary,a.sx-t,.sx-cell,.sx-gbtn):active{scale:.96;transition-duration:.06s}
+:where(input,textarea,select){transition:border-color .18s var(--sx-ease),background-color .18s var(--sx-ease),box-shadow .2s var(--sx-ease)}
+/* the sliding highlight behind segmented controls and tab rows (SX.pill) */
+.sx-pill{position:absolute;left:0;top:0;z-index:0;pointer-events:none;border-radius:10px;will-change:transform,width}
+.sx-pilled > :not(.sx-pill){position:relative;z-index:1}
+.sx-menu.sx-out .sx-pop{animation:sx-pop-out .14s var(--sx-ease-in) both}
+@keyframes sx-pop-out{to{opacity:0;transform:scale(.94)}}
+@media (prefers-reduced-motion:reduce){
+  :where(*){scale:none!important}
+  .sx-menu.sx-out .sx-pop{animation:none}
+}
 </style>
 <!-- /suite:css -->
 </head>
@@ -522,12 +549,168 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
 <script>
 (function(){ /* suite: open/close the app grid on phones */
   var b=document.getElementById('sx-gbtn'), m=document.getElementById('sx-menu'); if(!b||!m) return;
-  function set(o){ m.hidden=!o; b.setAttribute('aria-expanded',o?'true':'false');
-    if(o){ var f=m.querySelector('.sx-cell'); if(f) f.focus({preventScroll:true}); } }
+  var t=null;
+  function set(o){ b.setAttribute('aria-expanded',o?'true':'false'); clearTimeout(t); m.classList.remove('sx-out');
+    if(o){ m.hidden=false; var f=m.querySelector('.sx-cell'); if(f) f.focus({preventScroll:true}); return; }
+    if(m.hidden) return;
+    /* let the grid shrink away instead of vanishing */
+    if(window.SX && !SX.still()){ m.classList.add('sx-out'); t=setTimeout(function(){ m.hidden=true; m.classList.remove('sx-out'); },140); }
+    else m.hidden=true; }
   b.addEventListener('click',function(e){ e.stopPropagation(); set(m.hidden); });
   m.addEventListener('click',function(e){ if(!e.target.closest('.sx-cell')||e.target.closest('[aria-current]')) set(false); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!m.hidden){ set(false); b.focus(); } });
-  window.addEventListener('pageshow',function(){ set(false); });
+  window.addEventListener('pageshow',function(){ clearTimeout(t); m.classList.remove('sx-out'); m.hidden=true; b.setAttribute('aria-expanded','false'); });
+})();
+</script>
+<script>
+/* suite motion helpers (window.SX), shared by every app. Each one is a
+   no-op extra: if the browser can't animate or you've asked for reduced
+   motion, the change just happens, exactly as it did before.
+     SX.flip(root, sel, change)  redraw a list and let the items that stay
+                                 glide to their new spots; new ones fade in
+     SX.enter(root, sel, dir)    play a short staggered entrance on fresh content
+     SX.pill(row, activeSel)     slide a highlight to the selected tab/chip
+     SX.expand(el, open, apply)  open or close a block by its height
+     SX.morph(root, sel, prop, change)  bars and meters ease to their new size
+     SX.bump(el)                 a small pop for a value that just changed */
+(function(){
+  if(window.SX) return;
+  var mq=window.matchMedia?matchMedia('(prefers-reduced-motion: reduce)'):null;
+  var E='cubic-bezier(.2,.8,.2,1)', SPRING='cubic-bezier(.3,1.25,.5,1)';
+  function still(){ return !!(mq&&mq.matches) || typeof Element.prototype.animate!=='function'; }
+  function q(x){ return typeof x==='string'?document.querySelector(x):x; }
+  function keyOf(el,kf){ return kf?kf(el):(el.getAttribute('data-sx-key')||el.getAttribute('data-id')||el.getAttribute('data-k')||el.id||null); }
+  function quietCss(el){ /* a redraw should not replay an entrance the item already did */
+    try{ el.getAnimations({subtree:true}).forEach(function(a){ if(a.animationName) a.cancel(); }); }catch(e){} }
+
+  function flip(root,sel,change,o){
+    o=o||{}; root=q(root);
+    if(!root || still()){ change(); return; }
+    var before={}, vh=window.innerHeight;
+    root.querySelectorAll(sel).forEach(function(el){
+      var k=keyOf(el,o.key); if(k==null || before[k]) return;
+      var r=el.getBoundingClientRect(); if(!r.width && !r.height) return;
+      before[k]=r;
+    });
+    change();
+    var seen={}, n=0;
+    root.querySelectorAll(sel).forEach(function(el){
+      var k=keyOf(el,o.key); if(k==null || seen[k]) return; seen[k]=1;
+      var b=before[k], r=el.getBoundingClientRect();
+      if(!r.width && !r.height) return;
+      if(r.bottom<-40 || r.top>vh+40){ if(b) quietCss(el); return; }
+      if(b){
+        quietCss(el);
+        var dx=b.left-r.left, dy=b.top-r.top;
+        if(Math.abs(dx)<1 && Math.abs(dy)<1) return;
+        if(Math.abs(dy)>vh) dy=dy>0?vh*.5:-vh*.5;
+        el.animate([{translate:dx+'px '+dy+'px'},{translate:'0 0'}],{duration:o.dur||340,easing:E});
+      } else if(o.enter!==false){
+        quietCss(el);
+        el.animate([{opacity:0,translate:'0 6px',scale:.985},{opacity:1,translate:'0 0',scale:1}],
+                   {duration:260,delay:Math.min(n++,8)*24,easing:E,fill:'backwards'});
+      }
+    });
+  }
+
+  function enter(root,sel,dir,o){
+    o=o||{}; root=q(root); if(!root || still()) return;
+    var els=sel?root.querySelectorAll(sel):root.children, vh=window.innerHeight, i=0;
+    var from=dir==='left'?'-18px 0':dir==='right'?'18px 0':dir==='none'?'0 0':'0 8px';
+    Array.prototype.forEach.call(els,function(el){
+      if(el.classList && el.classList.contains('sx-pill')) return;
+      var r=el.getBoundingClientRect(); if(r.bottom<0 || r.top>vh || !r.height) return;
+      quietCss(el);
+      el.animate([{opacity:0,translate:from},{opacity:1,translate:'0 0'}],
+                 {duration:o.dur||300,delay:Math.min(i++,10)*(o.step==null?30:o.step),easing:E,fill:'backwards'});
+    });
+  }
+
+  var rows=[];
+  function pill(row,activeSel,o){
+    row=q(row); if(!row) return;
+    var rec=null; rows.forEach(function(x){ if(x.row===row) rec=x; });
+    if(!rec){ rec={row:row, sel:activeSel, last:null, o:o||{}}; rows.push(rec); watch(rec); }
+    rec.sel=activeSel||rec.sel; place(rec,true);
+  }
+  function place(rec,animate){
+    var row=rec.row, p=row.querySelector(':scope > .sx-pill');
+    if(!p){ p=document.createElement('span'); p.className='sx-pill'+(rec.o.cls?' '+rec.o.cls:''); p.setAttribute('aria-hidden','true'); row.insertBefore(p,row.firstChild); }
+    if(!row.classList.contains('sx-pilled')){ row.classList.add('sx-pilled');
+      if(getComputedStyle(row).position==='static') row.style.position='relative'; }
+    var a=row.querySelector(rec.sel);
+    if(!a || !a.offsetWidth){ p.style.opacity='0'; rec.last=null; return; }
+    var now={x:a.offsetLeft, y:a.offsetTop, w:a.offsetWidth, h:a.offsetHeight}, last=rec.last;
+    rec.last=now;
+    p.style.opacity='1'; p.style.width=now.w+'px'; p.style.height=now.h+'px';
+    p.style.transform='translate('+now.x+'px,'+now.y+'px)';
+    if(animate && last && !still() && (last.x!==now.x || last.y!==now.y || last.w!==now.w)){
+      p.animate([{transform:'translate('+last.x+'px,'+last.y+'px)',width:last.w+'px',height:last.h+'px'},
+                 {transform:'translate('+now.x+'px,'+now.y+'px)',width:now.w+'px',height:now.h+'px'}],
+                {duration:360,easing:SPRING});
+    }
+  }
+  function watch(rec){ if(window.ResizeObserver){ new ResizeObserver(function(){ place(rec,false); }).observe(rec.row); } }
+  window.addEventListener('resize',function(){ rows.forEach(function(r){ place(r,false); }); });
+
+  function expand(el,open,apply){
+    el=q(el); if(!el){ apply(open); return; }
+    if(el._sx){ el._sx.cancel(); el._sx=null; }
+    if(still()){ apply(open); return; }
+    var cs, h, f, a;
+    if(open){
+      apply(true); cs=getComputedStyle(el); h=el.offsetHeight; if(!h) return;
+      f={height:h+'px',paddingTop:cs.paddingTop,paddingBottom:cs.paddingBottom,marginTop:cs.marginTop,marginBottom:cs.marginBottom,opacity:1};
+      el.style.overflow='hidden';
+      a=el.animate([{height:'0px',paddingTop:'0px',paddingBottom:'0px',marginTop:'0px',marginBottom:'0px',opacity:0},f],{duration:300,easing:E});
+    } else {
+      cs=getComputedStyle(el); h=el.offsetHeight; if(!h){ apply(false); return; }
+      f={height:h+'px',paddingTop:cs.paddingTop,paddingBottom:cs.paddingBottom,marginTop:cs.marginTop,marginBottom:cs.marginBottom,opacity:1};
+      el.style.overflow='hidden';
+      a=el.animate([f,{height:'0px',paddingTop:'0px',paddingBottom:'0px',marginTop:'0px',marginBottom:'0px',opacity:0}],{duration:240,easing:E});
+    }
+    el._sx=a;
+    a.onfinish=function(){ el._sx=null; el.style.overflow=''; if(!open) apply(false); };
+    a.oncancel=function(){ el.style.overflow=''; };
+  }
+
+  /* redraw something whose bars or meters are set inline (width:40%), and
+     let each one ease from where it was instead of snapping */
+  function morph(host,sel,prop,change){
+    host=q(host); if(!host){ change(); return; }
+    var old=Array.prototype.map.call(host.querySelectorAll(sel),function(e){ return e.style[prop]; });
+    change();
+    if(still()) return;
+    var now=host.querySelectorAll(sel), to=Array.prototype.map.call(now,function(e){ return e.style[prop]; });
+    Array.prototype.forEach.call(now,function(e,i){ if(old[i]===to[i]) return; e.style.transition='none'; e.style[prop]=old[i]!=null&&old[i]!==''?old[i]:'0'; });
+    void host.offsetWidth;
+    Array.prototype.forEach.call(now,function(e,i){ e.style.transition=''; e.style[prop]=to[i]; });
+  }
+
+  function bump(el){
+    el=q(el); if(!el || still()) return;
+    el.animate([{scale:1},{scale:1.08},{scale:1}],{duration:320,easing:SPRING});
+  }
+
+  /* <details> sections open and close by height instead of snapping.
+     The toggle still happens for real, so anything listening for it works. */
+  document.addEventListener('click',function(e){
+    var sm=e.target.closest && e.target.closest('summary'); if(!sm || e.defaultPrevented) return;
+    var d=sm.parentElement; if(!d || d.tagName!=='DETAILS' || d.hasAttribute('data-sx-still') || still()) return;
+    e.preventDefault();
+    if(d._sx){ d._sx.cancel(); d._sx=null; }
+    var from=d.offsetHeight, opening=!d.open, to;
+    d.style.overflow='hidden';
+    if(opening){ d.open=true; to=d.offsetHeight; }
+    else { d.open=false; to=d.offsetHeight; d.open=true; }
+    var a=d.animate([{height:from+'px'},{height:to+'px'}],{duration:opening?320:240,easing:E});
+    d._sx=a;
+    a.onfinish=function(){ d._sx=null; d.style.overflow=''; if(!opening) d.open=false; };
+    a.oncancel=function(){ d.style.overflow=''; };
+    if(opening){ Array.prototype.forEach.call(d.children,function(c){ if(c!==sm) c.animate([{opacity:0},{opacity:1}],{duration:260,delay:60,easing:E,fill:'backwards'}); }); }
+  });
+
+  window.SX={still:still, flip:flip, enter:enter, pill:pill, expand:expand, morph:morph, bump:bump};
 })();
 </script>
 <!-- /suite:bar -->
@@ -1018,11 +1201,14 @@ function updateCounts(fromTap){
   if(fromTap && t.left === 0 && shownLeft !== 0 && !reduceMotion()){ hero.classList.remove("alldone"); void hero.offsetWidth; hero.classList.add("alldone"); }
   shownLeft = t.left;
   document.getElementById("sideTop").textContent = t.left === 0 ? "Everything's in the cart." : done + " of " + t.total + " in the cart";
-  document.getElementById("bars").innerHTML = DATA.map(function(st, si){
+  var barsHTML = DATA.map(function(st, si){
     var s = t.stores[si]; if(!s.total) return "";
     var pct = s.total ? (s.total - s.left) / s.total * 100 : 0;
     return '<div class="bar-row"><b>' + esc(st.store) + '</b><div class="track"><span style="width:' + pct + '%"></span></div><span>' + (s.total - s.left) + '/' + s.total + '</span></div>';
   }).join("");
+  var barsEl = document.getElementById("bars");
+  if(window.SX) SX.morph(barsEl, ".track span", "width", function(){ barsEl.innerHTML = barsHTML; });
+  else barsEl.innerHTML = barsHTML;
   DATA.forEach(function(st, si){
     var s = t.stores[si], sc = document.getElementById("sc-" + si); if(!sc) return;
     var isDone = s.left === 0;
@@ -1064,6 +1250,10 @@ function updateMoney(){
 }
 function renderSpend(m){
   var host = document.getElementById("spend"); if(!host) return;
+  if(window.SX && !renderSpend.inner){ renderSpend.inner = true;
+    try{ SX.morph(host, ".sp-track span, .sp-hist i", "width", function(){
+      SX.morph(host, ".sp-hist i", "height", function(){ renderSpend(m); }); }); }
+    finally{ renderSpend.inner = false; } return; }
   m = m || moneyTally();
   var sp = rjs(SPEND_KEY, {}), budget = parseFloat(lsGet(BUDGET_KEY)) || 0;
   var weeks = []; for(var i = 5; i >= 0; i--){ var d = new Date(MON); d.setDate(d.getDate() - 7 * i); weeks.push(isoD(d)); }
@@ -1152,6 +1342,7 @@ function renderSeg(){
   var opts = [["all","All"]].concat(vis.map(function(st){ return [st.store, st.store]; }));
   seg.innerHTML = opts.map(function(o){
     return '<button type="button" role="tab" aria-selected="' + (filter === o[0]) + '" data-f="' + esc(o[0]) + '">' + esc(o[1]) + '</button>'; }).join("");
+  if(window.SX) SX.pill(seg, 'button[aria-selected="true"]');
 }
 function applyFilter(animate){
   Array.prototype.forEach.call(document.querySelectorAll(".store"), function(sec){
@@ -1162,7 +1353,10 @@ function applyFilter(animate){
 }
 document.getElementById("seg").addEventListener("click", function(e){
   var b = e.target.closest("button[data-f]"); if(!b) return;
-  filter = b.getAttribute("data-f"); renderSeg(); applyFilter(true);
+  if(filter === b.getAttribute("data-f")) return;
+  filter = b.getAttribute("data-f");
+  if(window.SX){ SX.flip("#stores", ".store", function(){ renderSeg(); applyFilter(false); }, {key:function(el){ return el.getAttribute("data-store"); }}); }
+  else { renderSeg(); applyFilter(true); }
 });
 
 /* ---- checking items off ---- */
@@ -1212,7 +1406,8 @@ function editAisle(btn){
 document.getElementById("stores").addEventListener("click", function(e){
   var pc = e.target.closest(".pchip"); if(pc){ e.stopPropagation(); editPrice(pc); return; }
   var qb = e.target.closest(".qb"); if(qb){ e.stopPropagation(); var qli = qb.closest("li.item"), qid = qli.getAttribute("data-id"), qf = itemAt(qid);
-    if(qf){ var qpk = priceKey(qf.st, qf.it); setQty(qid, qtyOf(qpk, qf.it) + (+qb.getAttribute("data-d")) * stepOf(qpk, qf.it)); } return; }
+    if(qf){ var qpk = priceKey(qf.st, qf.it); setQty(qid, qtyOf(qpk, qf.it) + (+qb.getAttribute("data-d")) * stepOf(qpk, qf.it));
+      if(window.SX){ var nli = document.querySelector('li.item[data-id="' + qid + '"]'); if(nli){ SX.bump(nli.querySelector(".qv")); var lt = nli.querySelector(".ltot"); if(lt) SX.bump(lt); } } } return; }
   var qv = e.target.closest(".qv"); if(qv){ e.stopPropagation(); editQty(qv); return; }
   if(e.target.closest(".ubtn, .qty")){ e.stopPropagation(); return; }
   var swb = e.target.closest(".swapbtn"); if(swb){ e.stopPropagation(); var sf = itemAt(swb.getAttribute("data-swap"));
@@ -1254,6 +1449,10 @@ function pantryBrand(k, name){
   return hit && hit.brand ? hit.brand : "";
 }
 function renderFlags(){
+  if(window.SX && renderFlags.drawn && !renderFlags.inner){ renderFlags.inner = true;
+    try{ SX.flip("#flagged", "li.xitem, .xadd", renderFlags, {key:function(el){ return el.getAttribute("data-k") || (el.classList.contains("xadd") ? "xadd" : null); }}); }
+    finally{ renderFlags.inner = false; } return; }
+  renderFlags.drawn = true;
   var host = document.getElementById("flagged"), f = loadFlags(), known = {};
   DATA.forEach(function(st){ st.groups.forEach(function(g){ g.items.forEach(function(it){ itemKeys(it).forEach(function(k){ known[k] = 1; }); }); }); });
   var rows = Object.keys(f).filter(function(k){ return !known[k]; }).map(function(k){ return {k:k, o:f[k], done:false}; });
@@ -1358,7 +1557,7 @@ document.getElementById("resetBtn").addEventListener("click", function(){
 });
 
 /* ---- start ---- */
-var BUILD="2026.10.19-a";   /* date + letter, like Daily Protocol */
+var BUILD="2026.10.19-b";   /* date + letter, like Daily Protocol */
 load();
 document.getElementById("weekLabel").textContent = WEEK_LABEL;
 document.title = "Grocery \u2014 " + WEEK_LABEL;
@@ -1371,6 +1570,13 @@ renderSeg();
 render();
 renderFlags();
 renderStockBar();
+if(window.SX){
+  var render0 = render;
+  render = function(){ SX.flip("#stores", "li.item, .group-head, .store-head", render0, {key:function(el){
+    if(el.hasAttribute("data-id")) return el.getAttribute("data-id");
+    var st = el.closest(".store"), sk = st ? st.getAttribute("data-store") : "";
+    return el.classList.contains("store-head") ? "sh:" + sk : "gh:" + sk + ":" + el.firstChild.textContent; }}); };
+}
 (function(){ var f=document.querySelector("footer"); if(f){ var v=document.createElement("div"); v.className="buildtag"; v.textContent="Grocery "+BUILD; f.appendChild(v); } })();
 </script>
 <!-- ===== New-version banner (same idea as Daily Protocol) =====
@@ -1393,12 +1599,12 @@ renderStockBar();
   .updbar[hidden]{display:none}
   .updin{max-width:520px;margin:0 auto;display:flex;align-items:center;gap:10px;height:50px;padding:0 6px 0 16px;box-sizing:border-box;
     border-radius:25px;background:var(--card);border:1px solid var(--rule);box-shadow:0 10px 30px rgba(0,0,0,.18);pointer-events:auto;
-    transform:translateY(calc(-100% - 40px));transition:transform .4s cubic-bezier(.2,.8,.2,1)}
+    transform:translateY(calc(-100% - 40px));transition:transform .4s cubic-bezier(.2,.8,.2,1), scale .2s cubic-bezier(.3,1.35,.5,1)}
   .updbar.up .updin{transform:none}
   .upddot{width:8px;height:8px;border-radius:4px;background:var(--today);flex:0 0 auto;box-shadow:0 0 0 4px var(--today-soft)}
   .updtxt{flex:1;min-width:0;font-size:14px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .updgo{height:38px;padding:0 18px;border:0;border-radius:19px;background:var(--today);color:var(--card);font:inherit;font-size:14px;font-weight:800;cursor:pointer}
-  .updgo:active{transform:scale(.96)}
+  .updgo:active{scale:.96}
   .updx{width:38px;height:38px;border:0;border-radius:19px;background:transparent;color:var(--ink-faded);display:grid;place-items:center;cursor:pointer}
   .updx svg{width:14px;height:14px;stroke:currentColor;stroke-width:2.4;fill:none;stroke-linecap:round}
   @media (prefers-reduced-motion: reduce){ .updin{transition:none} }

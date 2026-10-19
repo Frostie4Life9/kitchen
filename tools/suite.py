@@ -13,7 +13,7 @@ runs only replace what sits between them.
 """
 import io, re, sys, os
 
-SUITE_VERSION = "4"
+SUITE_VERSION = "5"
 
 APPS = [  # key, label, kitchen-repo file, svg body
     ("kitchen", "Kitchen", "index.html",
@@ -77,7 +77,7 @@ CSS = """<!-- suite:css vVERSION · shared by Kitchen, Grocery, Lift, DishLog, P
 
 /* phone: app name on the left, the grid button on the right */
 .sx-gbtn{margin-left:auto;flex:0 0 auto;width:40px;height:40px;border-radius:12px;border:1px solid var(--sx-line);background:transparent;
-  color:var(--sx-dim);display:grid;place-items:center;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s}
+  color:var(--sx-dim);display:grid;place-items:center;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;transition:background .15s,color .15s,scale .22s var(--sx-spring)}
 .sx-gbtn svg{width:19px;height:19px}
 .sx-gbtn[aria-expanded="true"]{background:var(--sx-hover);color:var(--sx-ink)}
 .sx-menu{position:fixed;inset:0;z-index:300}
@@ -101,7 +101,7 @@ CSS = """<!-- suite:css vVERSION · shared by Kitchen, Grocery, Lift, DishLog, P
 /* computer and tablet: the full bar of tabs */
 .sx-t{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px 0 11px;box-sizing:border-box;
   border-radius:999px;border:1px solid transparent;background:transparent;color:var(--sx-dim);text-decoration:none;
-  font:700 12.5px/1 'Manrope',system-ui,sans-serif;letter-spacing:.02em;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
+  font:700 12.5px/1 'Manrope',system-ui,sans-serif;letter-spacing:.02em;white-space:nowrap;transition:background .15s,color .15s,border-color .15s,scale .22s var(--sx-spring)}
 .sx-t svg{width:16px;height:16px;color:var(--c);flex:0 0 auto}
 .sx-t:hover{background:var(--sx-hover);color:var(--sx-ink)}
 .sx-t:focus-visible,.sx-gbtn:focus-visible,.sx-cell:focus-visible{outline:2px solid var(--app);outline-offset:2px}
@@ -131,6 +131,28 @@ CSS = """<!-- suite:css vVERSION · shared by Kitchen, Grocery, Lift, DishLog, P
 @media (prefers-reduced-motion:reduce){
   ::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}
 }
+
+/* ---- motion: one feel across every app ----
+   Shared curves, a soft press under the finger on anything tappable, and
+   colors that ease instead of flipping. Everything here has zero
+   specificity (:where), so any app rule that says otherwise wins. The press
+   uses the separate `scale` property, so it stacks with whatever transform
+   an element already has instead of fighting it. */
+:root{ --sx-ease:cubic-bezier(.2,.8,.2,1); --sx-ease-in:cubic-bezier(.4,0,.9,.5); --sx-spring:cubic-bezier(.3,1.35,.5,1); }
+:where(button,[role=button],[role=tab],[role=checkbox],summary,select,a.sx-t,.sx-cell,.sx-gbtn){
+  transition:background-color .18s var(--sx-ease),color .18s var(--sx-ease),border-color .18s var(--sx-ease),
+             box-shadow .22s var(--sx-ease),opacity .2s var(--sx-ease),scale .22s var(--sx-spring)}
+:where(button:not(:disabled),[role=button],[role=tab],summary,a.sx-t,.sx-cell,.sx-gbtn):active{scale:.96;transition-duration:.06s}
+:where(input,textarea,select){transition:border-color .18s var(--sx-ease),background-color .18s var(--sx-ease),box-shadow .2s var(--sx-ease)}
+/* the sliding highlight behind segmented controls and tab rows (SX.pill) */
+.sx-pill{position:absolute;left:0;top:0;z-index:0;pointer-events:none;border-radius:10px;will-change:transform,width}
+.sx-pilled > :not(.sx-pill){position:relative;z-index:1}
+.sx-menu.sx-out .sx-pop{animation:sx-pop-out .14s var(--sx-ease-in) both}
+@keyframes sx-pop-out{to{opacity:0;transform:scale(.94)}}
+@media (prefers-reduced-motion:reduce){
+  :where(*){scale:none!important}
+  .sx-menu.sx-out .sx-pop{animation:none}
+}
 </style>
 <!-- /suite:css -->"""
 
@@ -140,12 +162,169 @@ GRID_ICON = '<rect x="4" y="4" width="6" height="6" rx="1.6"/><rect x="14" y="4"
 MENU_JS = """<script>
 (function(){ /* suite: open/close the app grid on phones */
   var b=document.getElementById('sx-gbtn'), m=document.getElementById('sx-menu'); if(!b||!m) return;
-  function set(o){ m.hidden=!o; b.setAttribute('aria-expanded',o?'true':'false');
-    if(o){ var f=m.querySelector('.sx-cell'); if(f) f.focus({preventScroll:true}); } }
+  var t=null;
+  function set(o){ b.setAttribute('aria-expanded',o?'true':'false'); clearTimeout(t); m.classList.remove('sx-out');
+    if(o){ m.hidden=false; var f=m.querySelector('.sx-cell'); if(f) f.focus({preventScroll:true}); return; }
+    if(m.hidden) return;
+    /* let the grid shrink away instead of vanishing */
+    if(window.SX && !SX.still()){ m.classList.add('sx-out'); t=setTimeout(function(){ m.hidden=true; m.classList.remove('sx-out'); },140); }
+    else m.hidden=true; }
   b.addEventListener('click',function(e){ e.stopPropagation(); set(m.hidden); });
   m.addEventListener('click',function(e){ if(!e.target.closest('.sx-cell')||e.target.closest('[aria-current]')) set(false); });
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!m.hidden){ set(false); b.focus(); } });
-  window.addEventListener('pageshow',function(){ set(false); });
+  window.addEventListener('pageshow',function(){ clearTimeout(t); m.classList.remove('sx-out'); m.hidden=true; b.setAttribute('aria-expanded','false'); });
+})();
+</script>"""
+
+MOTION_JS = """<script>
+/* suite motion helpers (window.SX), shared by every app. Each one is a
+   no-op extra: if the browser can't animate or you've asked for reduced
+   motion, the change just happens, exactly as it did before.
+     SX.flip(root, sel, change)  redraw a list and let the items that stay
+                                 glide to their new spots; new ones fade in
+     SX.enter(root, sel, dir)    play a short staggered entrance on fresh content
+     SX.pill(row, activeSel)     slide a highlight to the selected tab/chip
+     SX.expand(el, open, apply)  open or close a block by its height
+     SX.morph(root, sel, prop, change)  bars and meters ease to their new size
+     SX.bump(el)                 a small pop for a value that just changed */
+(function(){
+  if(window.SX) return;
+  var mq=window.matchMedia?matchMedia('(prefers-reduced-motion: reduce)'):null;
+  var E='cubic-bezier(.2,.8,.2,1)', SPRING='cubic-bezier(.3,1.25,.5,1)';
+  function still(){ return !!(mq&&mq.matches) || typeof Element.prototype.animate!=='function'; }
+  function q(x){ return typeof x==='string'?document.querySelector(x):x; }
+  function keyOf(el,kf){ return kf?kf(el):(el.getAttribute('data-sx-key')||el.getAttribute('data-id')||el.getAttribute('data-k')||el.id||null); }
+  function quietCss(el){ /* a redraw should not replay an entrance the item already did */
+    try{ el.getAnimations({subtree:true}).forEach(function(a){ if(a.animationName) a.cancel(); }); }catch(e){} }
+
+  function flip(root,sel,change,o){
+    o=o||{}; root=q(root);
+    if(!root || still()){ change(); return; }
+    var before={}, vh=window.innerHeight;
+    root.querySelectorAll(sel).forEach(function(el){
+      var k=keyOf(el,o.key); if(k==null || before[k]) return;
+      var r=el.getBoundingClientRect(); if(!r.width && !r.height) return;
+      before[k]=r;
+    });
+    change();
+    var seen={}, n=0;
+    root.querySelectorAll(sel).forEach(function(el){
+      var k=keyOf(el,o.key); if(k==null || seen[k]) return; seen[k]=1;
+      var b=before[k], r=el.getBoundingClientRect();
+      if(!r.width && !r.height) return;
+      if(r.bottom<-40 || r.top>vh+40){ if(b) quietCss(el); return; }
+      if(b){
+        quietCss(el);
+        var dx=b.left-r.left, dy=b.top-r.top;
+        if(Math.abs(dx)<1 && Math.abs(dy)<1) return;
+        if(Math.abs(dy)>vh) dy=dy>0?vh*.5:-vh*.5;
+        el.animate([{translate:dx+'px '+dy+'px'},{translate:'0 0'}],{duration:o.dur||340,easing:E});
+      } else if(o.enter!==false){
+        quietCss(el);
+        el.animate([{opacity:0,translate:'0 6px',scale:.985},{opacity:1,translate:'0 0',scale:1}],
+                   {duration:260,delay:Math.min(n++,8)*24,easing:E,fill:'backwards'});
+      }
+    });
+  }
+
+  function enter(root,sel,dir,o){
+    o=o||{}; root=q(root); if(!root || still()) return;
+    var els=sel?root.querySelectorAll(sel):root.children, vh=window.innerHeight, i=0;
+    var from=dir==='left'?'-18px 0':dir==='right'?'18px 0':dir==='none'?'0 0':'0 8px';
+    Array.prototype.forEach.call(els,function(el){
+      if(el.classList && el.classList.contains('sx-pill')) return;
+      var r=el.getBoundingClientRect(); if(r.bottom<0 || r.top>vh || !r.height) return;
+      quietCss(el);
+      el.animate([{opacity:0,translate:from},{opacity:1,translate:'0 0'}],
+                 {duration:o.dur||300,delay:Math.min(i++,10)*(o.step==null?30:o.step),easing:E,fill:'backwards'});
+    });
+  }
+
+  var rows=[];
+  function pill(row,activeSel,o){
+    row=q(row); if(!row) return;
+    var rec=null; rows.forEach(function(x){ if(x.row===row) rec=x; });
+    if(!rec){ rec={row:row, sel:activeSel, last:null, o:o||{}}; rows.push(rec); watch(rec); }
+    rec.sel=activeSel||rec.sel; place(rec,true);
+  }
+  function place(rec,animate){
+    var row=rec.row, p=row.querySelector(':scope > .sx-pill');
+    if(!p){ p=document.createElement('span'); p.className='sx-pill'+(rec.o.cls?' '+rec.o.cls:''); p.setAttribute('aria-hidden','true'); row.insertBefore(p,row.firstChild); }
+    if(!row.classList.contains('sx-pilled')){ row.classList.add('sx-pilled');
+      if(getComputedStyle(row).position==='static') row.style.position='relative'; }
+    var a=row.querySelector(rec.sel);
+    if(!a || !a.offsetWidth){ p.style.opacity='0'; rec.last=null; return; }
+    var now={x:a.offsetLeft, y:a.offsetTop, w:a.offsetWidth, h:a.offsetHeight}, last=rec.last;
+    rec.last=now;
+    p.style.opacity='1'; p.style.width=now.w+'px'; p.style.height=now.h+'px';
+    p.style.transform='translate('+now.x+'px,'+now.y+'px)';
+    if(animate && last && !still() && (last.x!==now.x || last.y!==now.y || last.w!==now.w)){
+      p.animate([{transform:'translate('+last.x+'px,'+last.y+'px)',width:last.w+'px',height:last.h+'px'},
+                 {transform:'translate('+now.x+'px,'+now.y+'px)',width:now.w+'px',height:now.h+'px'}],
+                {duration:360,easing:SPRING});
+    }
+  }
+  function watch(rec){ if(window.ResizeObserver){ new ResizeObserver(function(){ place(rec,false); }).observe(rec.row); } }
+  window.addEventListener('resize',function(){ rows.forEach(function(r){ place(r,false); }); });
+
+  function expand(el,open,apply){
+    el=q(el); if(!el){ apply(open); return; }
+    if(el._sx){ el._sx.cancel(); el._sx=null; }
+    if(still()){ apply(open); return; }
+    var cs, h, f, a;
+    if(open){
+      apply(true); cs=getComputedStyle(el); h=el.offsetHeight; if(!h) return;
+      f={height:h+'px',paddingTop:cs.paddingTop,paddingBottom:cs.paddingBottom,marginTop:cs.marginTop,marginBottom:cs.marginBottom,opacity:1};
+      el.style.overflow='hidden';
+      a=el.animate([{height:'0px',paddingTop:'0px',paddingBottom:'0px',marginTop:'0px',marginBottom:'0px',opacity:0},f],{duration:300,easing:E});
+    } else {
+      cs=getComputedStyle(el); h=el.offsetHeight; if(!h){ apply(false); return; }
+      f={height:h+'px',paddingTop:cs.paddingTop,paddingBottom:cs.paddingBottom,marginTop:cs.marginTop,marginBottom:cs.marginBottom,opacity:1};
+      el.style.overflow='hidden';
+      a=el.animate([f,{height:'0px',paddingTop:'0px',paddingBottom:'0px',marginTop:'0px',marginBottom:'0px',opacity:0}],{duration:240,easing:E});
+    }
+    el._sx=a;
+    a.onfinish=function(){ el._sx=null; el.style.overflow=''; if(!open) apply(false); };
+    a.oncancel=function(){ el.style.overflow=''; };
+  }
+
+  /* redraw something whose bars or meters are set inline (width:40%), and
+     let each one ease from where it was instead of snapping */
+  function morph(host,sel,prop,change){
+    host=q(host); if(!host){ change(); return; }
+    var old=Array.prototype.map.call(host.querySelectorAll(sel),function(e){ return e.style[prop]; });
+    change();
+    if(still()) return;
+    var now=host.querySelectorAll(sel), to=Array.prototype.map.call(now,function(e){ return e.style[prop]; });
+    Array.prototype.forEach.call(now,function(e,i){ if(old[i]===to[i]) return; e.style.transition='none'; e.style[prop]=old[i]!=null&&old[i]!==''?old[i]:'0'; });
+    void host.offsetWidth;
+    Array.prototype.forEach.call(now,function(e,i){ e.style.transition=''; e.style[prop]=to[i]; });
+  }
+
+  function bump(el){
+    el=q(el); if(!el || still()) return;
+    el.animate([{scale:1},{scale:1.08},{scale:1}],{duration:320,easing:SPRING});
+  }
+
+  /* <details> sections open and close by height instead of snapping.
+     The toggle still happens for real, so anything listening for it works. */
+  document.addEventListener('click',function(e){
+    var sm=e.target.closest && e.target.closest('summary'); if(!sm || e.defaultPrevented) return;
+    var d=sm.parentElement; if(!d || d.tagName!=='DETAILS' || d.hasAttribute('data-sx-still') || still()) return;
+    e.preventDefault();
+    if(d._sx){ d._sx.cancel(); d._sx=null; }
+    var from=d.offsetHeight, opening=!d.open, to;
+    d.style.overflow='hidden';
+    if(opening){ d.open=true; to=d.offsetHeight; }
+    else { d.open=false; to=d.offsetHeight; d.open=true; }
+    var a=d.animate([{height:from+'px'},{height:to+'px'}],{duration:opening?320:240,easing:E});
+    d._sx=a;
+    a.onfinish=function(){ d._sx=null; d.style.overflow=''; if(!opening) d.open=false; };
+    a.oncancel=function(){ d.style.overflow=''; };
+    if(opening){ Array.prototype.forEach.call(d.children,function(c){ if(c!==sm) c.animate([{opacity:0},{opacity:1}],{duration:260,delay:60,easing:E,fill:'backwards'}); }); }
+  });
+
+  window.SX={still:still, flip:flip, enter:enter, pill:pill, expand:expand, morph:morph, bump:bump};
 })();
 </script>"""
 
@@ -172,7 +351,7 @@ def bar(here, repo):
             '  <button class="sx-gbtn" id="sx-gbtn" type="button" aria-label="Your apps" aria-haspopup="true" aria-expanded="false" aria-controls="sx-menu">'
             '<svg viewBox="0 0 24 24" aria-hidden="true">%s</svg></button>\n'
             '</div>\n<div class="sx-menu" id="sx-menu" hidden><div class="sx-pop">\n    %s\n</div></div>\n</nav>\n%s\n<!-- /suite:bar -->'
-            % (extra, here, icon_src(here, repo), cur[0], "\n    ".join(tabs), GRID_ICON, "\n    ".join(cells), MENU_JS))
+            % (extra, here, icon_src(here, repo), cur[0], "\n    ".join(tabs), GRID_ICON, "\n    ".join(cells), MENU_JS + "\n" + MOTION_JS))
 
 
 TARGETS = {  # (repo, file) -> app key

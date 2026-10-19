@@ -6,7 +6,7 @@
    Fonts and icons: saved copy first (they never change), refreshed quietly.
    The new-version check (?_=…) and anything that isn't a GET always go
    straight to the network, so updates and sync behave exactly as before. */
-const CACHE = "kitchen-2026.10.19-c";
+const CACHE = "kitchen-2026.10.19-d";
 const PAGES = ["./", "index.html", "grocery.html", "workout.html", "dishlog.html"];
 const ASSETS = ["kitchen", "grocery", "lift", "dishlog"].flatMap(a => [
   "icons/" + a + "-32.png", "icons/" + a + "-180.png", "icons/" + a + "-192.png", a + ".webmanifest"]);
