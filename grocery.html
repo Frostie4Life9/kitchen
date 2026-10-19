@@ -215,13 +215,6 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
 
   /* ===== app switcher (shared across Kitchen / Grocery / Lift / DishLog / Protocol) =====
      Added in the Oct 5 chat (v3.13.0); restored in v3.13.1 after later builds dropped it. */
-  .applinks { display:flex; gap:6px; padding:4px 0 8px; overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none; }
-  .applinks::-webkit-scrollbar { display:none; }
-  .applinks a { flex:0 0 auto; display:flex; align-items:center; gap:5px; text-decoration:none; border:1px solid var(--rule);
-    background:var(--card); color:var(--ink-faded); border-radius:999px; padding:6px 12px;
-    font-family:'Manrope',sans-serif; font-size:11.5px; font-weight:700; letter-spacing:.04em; white-space:nowrap; }
-  .applinks a.here { background:var(--ink); color:var(--paper); border-color:var(--ink); }
-  .applinks a svg{width:14px;height:14px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
 .picks{background:var(--card);border-radius:18px;padding:14px 16px;margin:0 0 14px;box-shadow:0 1px 0 var(--rule)}
 .picks h3{margin:0 0 3px;font-size:15px;font-weight:800;color:var(--ink)}
 .picks p{margin:0 0 10px;font-size:13px;color:var(--ink-soft);line-height:1.45}
@@ -230,6 +223,27 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
 .pick-chips button[aria-pressed="true"]{background:var(--today);border-color:var(--today);color:#fff}
 @media (prefers-color-scheme: dark){ .pick-chips button[aria-pressed="true"]{color:#10160F} }
 .showall{font:inherit;font-size:13px;font-weight:800;border:1.5px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:99px;padding:7px 13px;cursor:pointer}
+
+/* ---- wider screens: the cart summary rides along on the left, the aisles fill the rest ---- */
+@media (min-width:900px){
+  .wrap{max-width:var(--sx-max);padding:22px var(--sx-gut) 0;display:grid;grid-template-columns:380px minmax(0,1fr);column-gap:36px;align-items:start}
+  .g-side{position:sticky;top:calc(var(--sx-barh) + 18px);max-height:calc(100dvh - var(--sx-barh) - 18px - 104px);overflow-y:auto;scrollbar-width:none;
+    padding-bottom:12px;margin-right:-8px;padding-right:8px}
+  .g-side::-webkit-scrollbar{display:none}
+  .g-main{min-width:0;padding-bottom:40px}
+  .mast h1{font-size:36px}
+  .seg{top:calc(var(--sx-barh) + 10px)}
+  body{padding-bottom:0}
+  .actionbar{left:calc(max(0px,(100vw - var(--sx-max)) / 2) + var(--sx-gut));right:auto;bottom:22px;width:380px;
+    border:1px solid var(--rule);border-radius:20px;padding:10px;background:var(--card);box-shadow:0 10px 30px -14px rgba(31,26,20,.35)}
+  .actionbar .in{max-width:none}
+  .toast{left:auto !important;right:var(--sx-gut);transform:none !important}
+}
+@media (min-width:1180px){
+  ul.card{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:30px;padding:0 18px;overflow:clip}
+  ul.card li.item{border-top:0;box-shadow:0 -1px 0 var(--rule-soft)}
+  .store-note{max-width:760px}
+}
 </style>
 <script>
 /* ===================== Kitchen sync (v3.8) =====================
@@ -392,16 +406,75 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
   };
 })();
 </script>
+<!-- suite:css v1 · shared by Kitchen, Grocery, Lift, DishLog, Protocol — edit tools/suite.py in the kitchen repo, not here -->
+<style id="suite-css">
+/* App colors come from each app's home-screen icon, so the bar, the icon and
+   the page all agree. The tab for every app carries its own color, so the
+   whole set reads as one color-coded system wherever you are in it. */
+.sx-bar{
+  --sx-kitchen:#7A2E1E; --sx-grocery:#2D5840; --sx-lift:#A8522B; --sx-dishlog:#6A2347; --sx-protocol:#1E3550;
+  --sx-on:#FFF8EF;
+  --sx-paper:#FAF6F0; --sx-ink:#1F1A14; --sx-dim:#7D7262; --sx-line:#DDD3C2; --sx-hover:#EFE7DA;
+}
+@media (prefers-color-scheme:dark){ .sx-bar:not(.sx-light){
+  --sx-kitchen:#E8987C; --sx-grocery:#7CC39A; --sx-lift:#EE9C66; --sx-dishlog:#DD8DB2; --sx-protocol:#5FE6B0;
+  --sx-on:#15120E;
+  --sx-paper:#17140F; --sx-ink:#F1EADF; --sx-dim:#A0947F; --sx-line:#3B342B; --sx-hover:#2A251E;
+}}
+.sx-bar.sx-dark{
+  --sx-kitchen:#E8987C; --sx-grocery:#7CC39A; --sx-lift:#EE9C66; --sx-dishlog:#DD8DB2; --sx-protocol:#5FE6B0;
+  --sx-on:#15120E;
+}
+/* layout tokens every app's own layout lines up with */
+:root{ --sx-max:1280px; --sx-gut:clamp(16px,2.4vw,32px); --sx-barh:56px; }
+
+.sx-bar{position:relative;z-index:40;background:var(--sx-paper);border-bottom:1px solid var(--sx-line);
+  font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;color:var(--sx-ink)}
+.sx-in{max-width:var(--sx-max);margin:0 auto;box-sizing:border-box;min-height:var(--sx-barh);
+  padding:calc(8px + env(safe-area-inset-top,0px)) var(--sx-gut) 8px;display:flex;align-items:center;gap:18px}
+.sx-id{display:none;align-items:center;gap:10px;flex:0 0 auto;min-width:0}
+.sx-tile{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:var(--app);color:var(--sx-on);flex:0 0 auto}
+.sx-tile svg{width:17px;height:17px}
+.sx-name{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:600;font-size:21px;letter-spacing:-.01em;line-height:1;color:var(--sx-ink);white-space:nowrap}
+.sx-tabs{display:flex;gap:6px;flex:1 1 auto;min-width:0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;margin:0 calc(var(--sx-gut) * -1);padding:0 var(--sx-gut)}
+.sx-tabs::-webkit-scrollbar{display:none}
+.sx-t{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 14px 0 11px;box-sizing:border-box;
+  border-radius:999px;border:1px solid var(--sx-line);background:transparent;color:var(--sx-dim);text-decoration:none;
+  font:700 12.5px/1 'Manrope',system-ui,sans-serif;letter-spacing:.02em;white-space:nowrap;transition:background .15s,color .15s,border-color .15s}
+.sx-t svg,.sx-tile svg{fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.sx-t svg{width:16px;height:16px;color:var(--c);flex:0 0 auto}
+.sx-t:hover{background:var(--sx-hover);color:var(--sx-ink)}
+.sx-t:focus-visible{outline:2px solid var(--c);outline-offset:2px}
+.sx-t[aria-current="page"]{background:var(--c);border-color:var(--c);color:var(--sx-on)}
+.sx-t[aria-current="page"] svg{color:inherit}
+@media (min-width:900px){
+  .sx-bar{position:sticky;top:0;z-index:70;background:color-mix(in srgb,var(--sx-paper) 88%,transparent);
+    -webkit-backdrop-filter:saturate(1.4) blur(14px);backdrop-filter:saturate(1.4) blur(14px)}
+  .sx-id{display:flex}
+  .sx-tabs{flex:0 1 auto;margin:0 0 0 auto;padding:0}
+  .sx-t{border-color:transparent}
+  .sx-t[aria-current="page"]{border-color:var(--c)}
+}
+@media print{.sx-bar{display:none}}
+</style>
+<!-- /suite:css -->
 </head>
 <body>
+<!-- suite:bar -->
+<nav class="sx-bar" style="--app:var(--sx-grocery)" aria-label="Your apps"><div class="sx-in">
+  <div class="sx-id" aria-hidden="true"><span class="sx-tile"><svg viewBox="0 0 24 24"><path d="M3 4h2.2l2.2 11h10.4l2-7.5H6.4"/><circle cx="9.5" cy="19.5" r="1.4"/><circle cx="16.5" cy="19.5" r="1.4"/></svg></span><span class="sx-name">Grocery</span></div>
+  <div class="sx-tabs">
+    <a class="sx-t" style="--c:var(--sx-kitchen)" href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h13v4a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M17 12.5h3M8 4.5c0 1.5 1.5 1.5 1.5 3M12 4.5c0 1.5 1.5 1.5 1.5 3"/></svg>Kitchen</a>
+    <a class="sx-t" style="--c:var(--sx-grocery)" href="grocery.html" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.2l2.2 11h10.4l2-7.5H6.4"/><circle cx="9.5" cy="19.5" r="1.4"/><circle cx="16.5" cy="19.5" r="1.4"/></svg>Grocery</a>
+    <a class="sx-t" style="--c:var(--sx-lift)" href="workout.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7v10M17.5 7v10M4 9.5v5M20 9.5v5M6.5 12h11"/></svg>Lift</a>
+    <a class="sx-t" style="--c:var(--sx-dishlog)" href="dishlog.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3v5a2 2 0 0 0 4 0V3M7 10v11M17 21V3c-2 0-3.5 2.5-3.5 6s1.5 4 3.5 4"/></svg>DishLog</a>
+    <a class="sx-t" style="--c:var(--sx-protocol)" href="https://frostie4life9.github.io/daily_schedule/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5"/><path d="M8 9l1.5 1.5L12 8M8 15l1.5 1.5L12 14M14.5 9.5H16M14.5 15.5H16"/></svg>Protocol</a>
+  </div>
+</div></nav>
+<!-- /suite:bar -->
+
 <main class="wrap">
-  <nav class="applinks" aria-label="Apps">
-    <a href="index.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h13v4a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M17 12.5h3M8 4.5c0 1.5 1.5 1.5 1.5 3M12 4.5c0 1.5 1.5 1.5 1.5 3"/></svg>Kitchen</a>
-    <a class="here" aria-current="page" href="grocery.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2.2l2.2 11h10.4l2-7.5H6.4"/><circle cx="9.5" cy="19.5" r="1.4"/><circle cx="16.5" cy="19.5" r="1.4"/></svg>Grocery</a>
-    <a href="workout.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 7v10M17.5 7v10M4 9.5v5M20 9.5v5M6.5 12h11"/></svg>Lift</a>
-    <a href="dishlog.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3v5a2 2 0 0 0 4 0V3M7 10v11M17 21V3c-2 0-3.5 2.5-3.5 6s1.5 4 3.5 4"/></svg>DishLog</a>
-    <a href="https://frostie4life9.github.io/daily_schedule/"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="3.5" width="15" height="17" rx="2.5"/><path d="M8 9l1.5 1.5L12 8M8 15l1.5 1.5L12 14M14.5 9.5H16M14.5 15.5H16"/></svg>Protocol</a>
-  </nav>
+<div class="g-side">
   <header class="mast rise" style="--i:0">
     <div>
       <div class="eyebrow" id="weekLabel"></div>
@@ -428,11 +501,14 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
   <p class="lede rise" style="--i:2" id="lede"></p>
   <div id="flagged" class="rise" style="--i:2"></div>
   <div id="picks" class="rise" style="--i:2"></div>
+</div>
+<div class="g-main">
   <nav class="seg rise" style="--i:3" id="seg" role="tablist" aria-label="Store"></nav>
   <div id="stores"></div>
   <section class="spend" id="spend" aria-label="Spending"></section>
 
   <footer>WinCo every week, sized for about 7 home meals. Costco once a month for what keeps (chicken, chunks, sausage, cheese, Rao's, protein bars); it appears here on its own when it's due. Out of one of those before then? Add it to Running low in the app and it shows at the top here. Prices marked "est." come from older or out-of-area reports; the shelf tag wins.</footer>
+</div>
 </main>
 
 <div class="actionbar"><div class="in">
@@ -1223,7 +1299,7 @@ document.getElementById("resetBtn").addEventListener("click", function(){
 });
 
 /* ---- start ---- */
-var BUILD="2026.10.18-c";   /* date + letter, like Daily Protocol */
+var BUILD="2026.10.18-d";   /* date + letter, like Daily Protocol */
 load();
 document.getElementById("weekLabel").textContent = WEEK_LABEL;
 document.title = "Grocery \u2014 " + WEEK_LABEL;
