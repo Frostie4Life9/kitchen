@@ -556,9 +556,12 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
     /* let the grid shrink away instead of vanishing */
     if(window.SX && !SX.still()){ m.classList.add('sx-out'); t=setTimeout(function(){ m.hidden=true; m.classList.remove('sx-out'); },140); }
     else m.hidden=true; }
-  b.addEventListener('click',function(e){ e.stopPropagation(); set(m.hidden); });
+  /* a grid that is on its way out counts as closed, so tapping the button
+     again mid-close reopens it rather than closing it a second time */
+  function shut(){ return m.hidden || m.classList.contains('sx-out'); }
+  b.addEventListener('click',function(e){ e.stopPropagation(); set(shut()); });
   m.addEventListener('click',function(e){ if(!e.target.closest('.sx-cell')||e.target.closest('[aria-current]')) set(false); });
-  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!m.hidden){ set(false); b.focus(); } });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!shut()){ set(false); b.focus(); } });
   window.addEventListener('pageshow',function(){ clearTimeout(t); m.classList.remove('sx-out'); m.hidden=true; b.setAttribute('aria-expanded','false'); });
 })();
 </script>
