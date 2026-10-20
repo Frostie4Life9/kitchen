@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-"""Shared "suite" shell for Skyler's apps: Kitchen, Grocery, Lift, DishLog, Protocol.
+"""Shared "suite" shell for Skyler's apps: Kitchen, Grocery, Lift, DishLog, Protocol, Rail.
 
 One top bar, one set of app colors, one set of layout tokens. This script writes
 the identical block into every app between <!-- suite:css --> ... <!-- /suite:css -->
 and <!-- suite:bar --> ... <!-- /suite:bar --> markers, so a change made here lands
 everywhere at once.
 
-    python3 tools/suite.py ../kitchen ../daily_schedule
+    python3 tools/suite.py ../kitchen ../daily_schedule ../the-rail
 
 The first run places the markers (replacing each app's old .applinks nav); later
 runs only replace what sits between them.
 """
 import io, re, sys, os
 
-SUITE_VERSION = "5"
+SUITE_VERSION = "6"
 
 APPS = [  # key, label, kitchen-repo file, svg body
     ("kitchen", "Kitchen", "index.html",
@@ -26,6 +26,8 @@ APPS = [  # key, label, kitchen-repo file, svg body
      '<path d="M5 3v5a2 2 0 0 0 4 0V3M7 10v11M17 21V3c-2 0-3.5 2.5-3.5 6s1.5 4 3.5 4"/>'),
     ("protocol", "Protocol", None,
      '<rect x="4.5" y="3.5" width="15" height="17" rx="2.5"/><path d="M8 9l1.5 1.5L12 8M8 15l1.5 1.5L12 14M14.5 9.5H16M14.5 15.5H16"/>'),
+    ("rail", "Rail", None,
+     '<path d="M12 8.2V7.4c0-.5.3-.9.8-1.1.6-.3 1.2-.7 1.2-1.6a2 2 0 0 0-4 0"/><path d="M12 8.2 3.6 14.4c-.9.7-.5 2.1.7 2.1h15.4c1.2 0 1.6-1.4.7-2.1z"/><path d="M8 16.5v3.5h8v-3.5"/>'),
 ]
 KITCHEN_BASE = "https://frostie4life9.github.io/kitchen/"
 PROTOCOL_URL = "https://frostie4life9.github.io/daily_schedule/"
@@ -34,31 +36,36 @@ PROTOCOL_URL = "https://frostie4life9.github.io/daily_schedule/"
 # Protocol's lives at the root of its own repo (keep its ?v= in step with
 # the apple-touch-icon link in daily_schedule/index.html).
 PROTOCOL_ICON = "apple-touch-icon.png?v=20261017p"
+# The Rail (wardrobe) is its own repo too; its icons live in the-rail/icons/.
+RAIL_URL = "https://frostie4life9.github.io/the-rail/"
+RAIL_ICON = "icons/rail-180.png?v=1"
 
 
 def icon_src(key, repo):
     if key == "protocol":
         return PROTOCOL_ICON if repo == "daily_schedule" else PROTOCOL_URL + PROTOCOL_ICON
+    if key == "rail":
+        return RAIL_ICON if repo == "the-rail" else RAIL_URL + RAIL_ICON
     rel = "icons/%s-180.png" % key
     return rel if repo == "kitchen" else KITCHEN_BASE + rel
 
-CSS = """<!-- suite:css vVERSION · shared by Kitchen, Grocery, Lift, DishLog, Protocol — edit tools/suite.py in the kitchen repo, not here -->
+CSS = """<!-- suite:css vVERSION · shared by Kitchen, Grocery, Lift, DishLog, Protocol, Rail — edit tools/suite.py in the kitchen repo, not here -->
 <style id="suite-css">
 /* App colors come from each app's home-screen icon, so the bar, the icon and
    the page all agree. The tab for every app carries its own color, so the
    whole set reads as one color-coded system wherever you are in it. */
 .sx-bar{
-  --sx-kitchen:#7A2E1E; --sx-grocery:#2D5840; --sx-lift:#A8522B; --sx-dishlog:#6A2347; --sx-protocol:#1E3550;
+  --sx-kitchen:#7A2E1E; --sx-grocery:#2D5840; --sx-lift:#A8522B; --sx-dishlog:#6A2347; --sx-protocol:#1E3550; --sx-rail:#3A2A63;
   --sx-on:#FFF8EF;
   --sx-paper:#FAF6F0; --sx-ink:#1F1A14; --sx-dim:#7D7262; --sx-line:#DDD3C2; --sx-hover:#EFE7DA;
 }
 @media (prefers-color-scheme:dark){ .sx-bar:not(.sx-light){
-  --sx-kitchen:#E8987C; --sx-grocery:#7CC39A; --sx-lift:#EE9C66; --sx-dishlog:#DD8DB2; --sx-protocol:#5FE6B0;
+  --sx-kitchen:#E8987C; --sx-grocery:#7CC39A; --sx-lift:#EE9C66; --sx-dishlog:#DD8DB2; --sx-protocol:#5FE6B0; --sx-rail:#B9A6F2;
   --sx-on:#15120E;
   --sx-paper:#17140F; --sx-ink:#F1EADF; --sx-dim:#A0947F; --sx-line:#3B342B; --sx-hover:#2A251E;
 }}
 .sx-bar.sx-dark{
-  --sx-kitchen:#E8987C; --sx-grocery:#7CC39A; --sx-lift:#EE9C66; --sx-dishlog:#DD8DB2; --sx-protocol:#5FE6B0;
+  --sx-kitchen:#E8987C; --sx-grocery:#7CC39A; --sx-lift:#EE9C66; --sx-dishlog:#DD8DB2; --sx-protocol:#5FE6B0; --sx-rail:#B9A6F2;
   --sx-on:#15120E;
 }
 /* layout tokens every app's own layout lines up with. No width cap: on a
@@ -338,6 +345,8 @@ def bar(here, repo):
     for key, label, fname, svg in APPS:
         if key == "protocol":
             href = "./" if repo == "daily_schedule" else PROTOCOL_URL
+        elif key == "rail":
+            href = "./" if repo == "the-rail" else RAIL_URL
         else:
             href = fname if repo == "kitchen" else KITCHEN_BASE + fname
         attr = ' aria-current="page"' if key == here else ""
@@ -363,6 +372,7 @@ TARGETS = {  # (repo, file) -> app key
     ("kitchen", "workout.html"): "lift",
     ("kitchen", "dishlog.html"): "dishlog",
     ("daily_schedule", "index.html"): "protocol",
+    ("the-rail", "index.html"): "rail",
 }
 
 
