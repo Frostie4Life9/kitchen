@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
-"""Shared "suite" shell for Skyler's apps: Kitchen, Grocery, Lift, DishLog, Protocol, Rail, Game Log.
+"""Shared "suite" shell for Skyler's apps: Kitchen, Grocery, Lift, DishLog, Protocol, Rail, Game Log, Playback.
 
 One top bar, one set of app colors, one set of layout tokens. This script writes
 the identical block into every app between <!-- suite:css --> ... <!-- /suite:css -->
 and <!-- suite:bar --> ... <!-- /suite:bar --> markers, so a change made here lands
 everywhere at once.
 
-    python3 tools/suite.py ../kitchen ../daily_schedule ../the-rail ../gamelog
+    python3 tools/suite.py ../kitchen ../daily_schedule ../the-rail ../gamelog ../playback
 
 The first run places the markers (replacing each app's old .applinks nav); later
 runs only replace what sits between them.
 """
 import io, re, sys, os
 
-SUITE_VERSION = "8"
+SUITE_VERSION = "9"
 
 APPS = [  # key, label, kitchen-repo file, svg body
     ("kitchen", "Kitchen", "index.html",
@@ -30,6 +30,8 @@ APPS = [  # key, label, kitchen-repo file, svg body
      '<path d="M12 8.2V7.4c0-.5.3-.9.8-1.1.6-.3 1.2-.7 1.2-1.6a2 2 0 0 0-4 0"/><path d="M12 8.2 3.6 14.4c-.9.7-.5 2.1.7 2.1h15.4c1.2 0 1.6-1.4.7-2.1z"/><path d="M8 16.5v3.5h8v-3.5"/>'),
     ("gamelog", "Game Log", None,
      '<path d="M7.5 7.5h9a4.5 4.5 0 0 1 4.5 4.5v2.6a2.9 2.9 0 0 1-5.3 1.6l-1-1.7h-5.4l-1 1.7A2.9 2.9 0 0 1 3 14.6V12a4.5 4.5 0 0 1 4.5-4.5z"/><path d="M7.5 10.5v3M6 12h3M15.5 11h.01M17.5 13h.01"/>'),
+    ("playback", "Playback", None,
+     '<rect x="3" y="5.5" width="18" height="13" rx="2.2"/><circle cx="8.5" cy="11" r="1.7"/><circle cx="15.5" cy="11" r="1.7"/><path d="M10.2 11h3.6M7.2 18.5l1.3-3h7l1.3 3"/>'),
 ]
 KITCHEN_BASE = "https://frostie4life9.github.io/kitchen/"
 PROTOCOL_URL = "https://frostie4life9.github.io/daily_schedule/"
@@ -44,6 +46,9 @@ RAIL_ICON = "icons/rail-180.png?v=1"
 # Game Log is its own repo; icons at its root (keep ?v= in step with gamelog/index.html).
 GAMELOG_URL = "https://frostie4life9.github.io/gamelog/"
 GAMELOG_ICON = "apple-touch-icon.png?v=20261021a"
+# Playback (music + TV/film log) is its own repo; icons at its root (keep ?v= in step with playback/index.html).
+PLAYBACK_URL = "https://frostie4life9.github.io/playback/"
+PLAYBACK_ICON = "apple-touch-icon.png?v=20261021a"
 # Bump an entry when a kitchen-repo icon is redrawn, so every app's grid (and
 # browsers holding the old PNG) fetch the new one. Keep in step with the icon
 # links in that app's page and .webmanifest.
@@ -57,26 +62,28 @@ def icon_src(key, repo):
         return RAIL_ICON if repo == "the-rail" else RAIL_URL + RAIL_ICON
     if key == "gamelog":
         return GAMELOG_ICON if repo == "gamelog" else GAMELOG_URL + GAMELOG_ICON
+    if key == "playback":
+        return PLAYBACK_ICON if repo == "playback" else PLAYBACK_URL + PLAYBACK_ICON
     rel = "icons/%s-180.png" % key + (("?v=" + KITCHEN_ICON_V[key]) if key in KITCHEN_ICON_V else "")
     return rel if repo == "kitchen" else KITCHEN_BASE + rel
 
-CSS = """<!-- suite:css vVERSION · shared by Kitchen, Grocery, Lift, DishLog, Protocol, Rail, Game Log — edit tools/suite.py in the kitchen repo, not here -->
+CSS = """<!-- suite:css vVERSION · shared by Kitchen, Grocery, Lift, DishLog, Protocol, Rail, Game Log, Playback — edit tools/suite.py in the kitchen repo, not here -->
 <style id="suite-css">
 /* App colors come from each app's home-screen icon, so the bar, the icon and
    the page all agree. The tab for every app carries its own color, so the
    whole set reads as one color-coded system wherever you are in it. */
 .sx-bar{
-  --sx-kitchen:#7A2E1E; --sx-grocery:#2D5840; --sx-lift:#A8522B; --sx-dishlog:#6A2347; --sx-protocol:#1E3550; --sx-rail:#3A2A63; --sx-gamelog:#242B5C;
+  --sx-kitchen:#7A2E1E; --sx-grocery:#2D5840; --sx-lift:#A8522B; --sx-dishlog:#6A2347; --sx-protocol:#1E3550; --sx-rail:#3A2A63; --sx-gamelog:#242B5C; --sx-playback:#124C50;
   --sx-on:#FFF8EF;
   --sx-paper:#FAF6F0; --sx-ink:#1F1A14; --sx-dim:#7D7262; --sx-line:#DDD3C2; --sx-hover:#EFE7DA;
 }
 @media (prefers-color-scheme:dark){ .sx-bar:not(.sx-light){
-  --sx-kitchen:#E8987C; --sx-grocery:#7CC39A; --sx-lift:#EE9C66; --sx-dishlog:#DD8DB2; --sx-protocol:#5FE6B0; --sx-rail:#B9A6F2; --sx-gamelog:#F5B63F;
+  --sx-kitchen:#E8987C; --sx-grocery:#7CC39A; --sx-lift:#EE9C66; --sx-dishlog:#DD8DB2; --sx-protocol:#5FE6B0; --sx-rail:#B9A6F2; --sx-gamelog:#F5B63F; --sx-playback:#6FD3C6;
   --sx-on:#15120E;
   --sx-paper:#17140F; --sx-ink:#F1EADF; --sx-dim:#A0947F; --sx-line:#3B342B; --sx-hover:#2A251E;
 }}
 .sx-bar.sx-dark{
-  --sx-kitchen:#E8987C; --sx-grocery:#7CC39A; --sx-lift:#EE9C66; --sx-dishlog:#DD8DB2; --sx-protocol:#5FE6B0; --sx-rail:#B9A6F2; --sx-gamelog:#F5B63F;
+  --sx-kitchen:#E8987C; --sx-grocery:#7CC39A; --sx-lift:#EE9C66; --sx-dishlog:#DD8DB2; --sx-protocol:#5FE6B0; --sx-rail:#B9A6F2; --sx-gamelog:#F5B63F; --sx-playback:#6FD3C6;
   --sx-on:#15120E;
 }
 /* layout tokens every app's own layout lines up with. No width cap: on a
@@ -360,6 +367,8 @@ def bar(here, repo):
             href = "./" if repo == "the-rail" else RAIL_URL
         elif key == "gamelog":
             href = "./" if repo == "gamelog" else GAMELOG_URL
+        elif key == "playback":
+            href = "./" if repo == "playback" else PLAYBACK_URL
         else:
             href = fname if repo == "kitchen" else KITCHEN_BASE + fname
         attr = ' aria-current="page"' if key == here else ""
@@ -387,6 +396,7 @@ TARGETS = {  # (repo, file) -> app key
     ("daily_schedule", "index.html"): "protocol",
     ("the-rail", "index.html"): "rail",
     ("gamelog", "index.html"): "gamelog",
+    ("playback", "index.html"): "playback",
 }
 
 
