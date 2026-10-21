@@ -13,7 +13,7 @@ runs only replace what sits between them.
 """
 import io, re, sys, os
 
-SUITE_VERSION = "7"
+SUITE_VERSION = "8"
 
 APPS = [  # key, label, kitchen-repo file, svg body
     ("kitchen", "Kitchen", "index.html",
@@ -21,7 +21,7 @@ APPS = [  # key, label, kitchen-repo file, svg body
     ("grocery", "Grocery", "grocery.html",
      '<path d="M3 4h2.2l2.2 11h10.4l2-7.5H6.4"/><circle cx="9.5" cy="19.5" r="1.4"/><circle cx="16.5" cy="19.5" r="1.4"/>'),
     ("lift", "Lift", "workout.html",
-     '<path d="M6.5 7v10M17.5 7v10M4 9.5v5M20 9.5v5M6.5 12h11"/>'),
+     '<path d="M8.6 11.2V8.5a3.4 3.4 0 0 1 6.8 0v2.7"/><path d="M7.6 20a6 6 0 1 1 8.8 0z"/>'),
     ("dishlog", "DishLog", "dishlog.html",
      '<path d="M5 3v5a2 2 0 0 0 4 0V3M7 10v11M17 21V3c-2 0-3.5 2.5-3.5 6s1.5 4 3.5 4"/>'),
     ("protocol", "Protocol", None,
@@ -44,6 +44,10 @@ RAIL_ICON = "icons/rail-180.png?v=1"
 # Game Log is its own repo; icons at its root (keep ?v= in step with gamelog/index.html).
 GAMELOG_URL = "https://frostie4life9.github.io/gamelog/"
 GAMELOG_ICON = "apple-touch-icon.png?v=20261021a"
+# Bump an entry when a kitchen-repo icon is redrawn, so every app's grid (and
+# browsers holding the old PNG) fetch the new one. Keep in step with the icon
+# links in that app's page and .webmanifest.
+KITCHEN_ICON_V = {"lift": "20261021b"}
 
 
 def icon_src(key, repo):
@@ -53,7 +57,7 @@ def icon_src(key, repo):
         return RAIL_ICON if repo == "the-rail" else RAIL_URL + RAIL_ICON
     if key == "gamelog":
         return GAMELOG_ICON if repo == "gamelog" else GAMELOG_URL + GAMELOG_ICON
-    rel = "icons/%s-180.png" % key
+    rel = "icons/%s-180.png" % key + (("?v=" + KITCHEN_ICON_V[key]) if key in KITCHEN_ICON_V else "")
     return rel if repo == "kitchen" else KITCHEN_BASE + rel
 
 CSS = """<!-- suite:css vVERSION · shared by Kitchen, Grocery, Lift, DishLog, Protocol, Rail, Game Log — edit tools/suite.py in the kitchen repo, not here -->
