@@ -13,7 +13,7 @@ runs only replace what sits between them.
 """
 import io, re, sys, os
 
-SUITE_VERSION = "9"
+SUITE_VERSION = "10"
 
 APPS = [  # key, label, kitchen-repo file, svg body
     ("kitchen", "Kitchen", "index.html",
@@ -66,6 +66,221 @@ def icon_src(key, repo):
         return PLAYBACK_ICON if repo == "playback" else PLAYBACK_URL + PLAYBACK_ICON
     rel = "icons/%s-180.png" % key + (("?v=" + KITCHEN_ICON_V[key]) if key in KITCHEN_ICON_V else "")
     return rel if repo == "kitchen" else KITCHEN_BASE + rel
+
+# ---- Ideas: a tiny wish list for each app, in the bar --------------------------
+# One lightbulb button opens a small panel: a text box and a list you can tick
+# off or delete, plus Copy list. Every app has its own list. Ideas are saved on
+# the device first, then synced in the background to the ideas Worker
+# (tools/ideas-worker.js, backed by the "app-ideas" D1 database) so they follow
+# you between devices and Claude can read and update them. Offline just means
+# "saved here, will sync".
+IDEAS_WORKER = "https://ideas-sync.skyfro04.workers.dev"   # the Worker's address
+# Must equal the Worker's WRITE_KEY secret. It sits in every app's page, so it
+# only keeps strangers' scanners out; the Worker holds nothing but a wish list.
+IDEAS_KEY = "omakJuBdO4ZE2rXXPBuWuxRRnt920iqn"
+
+BULB_ICON = '<path d="M9.5 18h5M10.5 21h3M12 3a6 6 0 0 0-3.6 10.8c.7.6 1.1 1.4 1.1 2.2h5c0-.8.4-1.6 1.1-2.2A6 6 0 0 0 12 3z"/>'
+IDEAS_BTN = ('<button class="sx-ibtn" id="sx-ibtn" type="button" aria-label="Ideas" title="Ideas" aria-haspopup="dialog" '
+             'aria-expanded="false" aria-controls="sx-ideas"><svg viewBox="0 0 24 24" aria-hidden="true">' + BULB_ICON + '</svg></button>')
+IDEAS_PANEL = """<div class="sx-ideas" id="sx-ideas" hidden><div class="sx-ipop" role="dialog" aria-label="Ideas">
+  <div class="sx-ih"><b>Ideas</b><span class="sx-ist" id="sx-ist" role="status" aria-live="polite"></span></div>
+  <form class="sx-iadd" id="sx-iform" autocomplete="off"><input id="sx-iin" type="text" maxlength="280" placeholder="Add a feature idea" aria-label="New idea" enterkeyhint="done"><button type="submit">Add</button></form>
+  <ul class="sx-ilist" id="sx-ilist"></ul>
+  <div class="sx-if"><button type="button" id="sx-icopy">Copy list</button><button type="button" id="sx-iclr">Clear done</button></div>
+</div></div>"""
+
+IDEAS_CSS = r"""
+/* ---- Ideas ---- */
+.sx-ibtn{margin-left:auto;flex:0 0 auto;width:40px;height:40px;border-radius:12px;border:1px solid var(--sx-line);background:transparent;
+  color:var(--sx-dim);display:grid;place-items:center;cursor:pointer;padding:0;-webkit-tap-highlight-color:transparent;
+  transition:background-color .18s var(--sx-ease),color .18s var(--sx-ease),scale .22s var(--sx-spring)}
+.sx-ibtn svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.sx-ibtn:hover,.sx-ibtn[aria-expanded="true"]{background:var(--sx-hover);color:var(--sx-ink)}
+.sx-ibtn:active{scale:.96;transition-duration:.06s}
+.sx-ibtn:focus-visible{outline:2px solid var(--app);outline-offset:2px}
+.sx-ibtn + .sx-gbtn{margin-left:0}
+@media (min-width:900px){ .sx-ibtn{margin-left:0} }
+/* when the tabs would run into the button, every tab but the current one shows just its icon (see fit() below) */
+.sx-compact .sx-t:not([aria-current="page"]){font-size:0;gap:0;padding:0 11px}
+
+.sx-ideas{position:fixed;inset:0;z-index:310;font-family:'Manrope',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;color:var(--sx-ink,#1F1A14)}
+.sx-ideas[hidden]{display:none}
+.sx-ideas *{box-sizing:border-box}
+.sx-ipop{position:absolute;top:calc(60px + env(safe-area-inset-top,0px));right:var(--sx-gut,16px);width:min(380px,calc(100vw - 2 * var(--sx-gut,16px)));
+  max-height:calc(100dvh - 84px - env(safe-area-inset-top,0px));display:flex;flex-direction:column;padding:14px;border-radius:22px;
+  background:var(--sx-paper,#FAF6F0);border:1px solid var(--sx-line,#DDD3C2);box-shadow:0 24px 60px -18px rgba(0,0,0,.45);
+  transform-origin:top right;animation:sx-pop .2s cubic-bezier(.2,.9,.3,1.2)}
+.sx-ih{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 2px 10px}
+.sx-ih b{font-family:'Fraunces',Georgia,serif;font-style:italic;font-weight:600;font-size:20px;letter-spacing:-.01em;line-height:1}
+.sx-ist{color:var(--sx-dim);font:700 11.5px/1 'Manrope',system-ui,sans-serif;white-space:nowrap}
+.sx-iadd{display:flex;gap:8px;margin:0 0 8px}
+.sx-iadd input{flex:1;min-width:0;height:42px;padding:0 12px;border-radius:12px;border:1px solid var(--sx-line);background:transparent;
+  color:var(--sx-ink);font:600 16px/1 'Manrope',system-ui,sans-serif}
+.sx-iadd input::placeholder{color:var(--sx-dim)}
+.sx-iadd input:focus{outline:2px solid var(--sx-ac,#1E3550);outline-offset:1px}
+.sx-iadd button{height:42px;padding:0 16px;border-radius:12px;border:0;background:var(--sx-ac,#1E3550);color:var(--sx-on,#FFF8EF);cursor:pointer;
+  font:800 13px/1 'Manrope',system-ui,sans-serif}
+.sx-ilist{list-style:none;margin:0;padding:0;overflow-y:auto;overscroll-behavior:contain;min-height:0;flex:1 1 auto}
+.sx-ii{display:flex;align-items:flex-start;gap:10px;padding:10px 4px;border-top:1px solid var(--sx-line)}
+.sx-ii:first-child{border-top:0}
+.sx-ick{flex:0 0 auto;width:22px;height:22px;margin-top:1px;border-radius:50%;border:1.8px solid var(--sx-dim);background:transparent;padding:0;
+  cursor:pointer;display:grid;place-items:center;color:var(--sx-on,#FFF8EF)}
+.sx-ick svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:3;stroke-linecap:round;stroke-linejoin:round;opacity:0}
+.sx-ii.sx-done .sx-ick{background:var(--sx-ac,#1E3550);border-color:var(--sx-ac,#1E3550)}
+.sx-ii.sx-done .sx-ick svg{opacity:1}
+.sx-itx{flex:1;min-width:0;font:600 14.5px/1.35 'Manrope',system-ui,sans-serif;overflow-wrap:anywhere}
+.sx-ii.sx-done .sx-itx{color:var(--sx-dim);text-decoration:line-through}
+.sx-idel{flex:0 0 auto;width:28px;height:28px;margin:-2px -4px 0 0;padding:0;border:0;border-radius:8px;background:transparent;color:var(--sx-dim);
+  cursor:pointer;display:grid;place-items:center}
+.sx-idel svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round}
+.sx-idel:hover{background:var(--sx-hover);color:var(--sx-ink)}
+.sx-iempty{list-style:none;margin:6px 2px 4px;color:var(--sx-dim);font:600 13.5px/1.45 'Manrope',system-ui,sans-serif}
+.sx-if{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--sx-line)}
+.sx-if button{flex:1;height:36px;border-radius:10px;border:1px solid var(--sx-line);background:transparent;color:var(--sx-ink);cursor:pointer;
+  font:700 12.5px/1 'Manrope',system-ui,sans-serif}
+.sx-if button:hover:not(:disabled){background:var(--sx-hover)}
+.sx-if button:disabled{opacity:.45;cursor:default}
+.sx-ideas button:focus-visible{outline:2px solid var(--sx-ac,#1E3550);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){ .sx-ipop{animation:none} }
+@media print{ .sx-ideas{display:none} }
+"""
+
+IDEAS_JS = r"""<script>
+(function(){ /* suite: Ideas, a small wish list for this app. Saved on this device, synced to the ideas Worker so Claude can read it */
+  var bar=document.querySelector('.sx-bar'), btn=document.getElementById('sx-ibtn'), pan=document.getElementById('sx-ideas');
+  if(!bar||!btn||!pan) return;
+  var APP=bar.getAttribute('data-app')||'', KEY='suite_ideas_v2_'+APP, URLKEY='suite_ideas_url', DAY=86400000,
+      WORKER='@@IDEAS_WORKER@@', TOKEN='@@IDEAS_KEY@@', mem=[];
+  var NAMES={kitchen:'Kitchen',grocery:'Grocery',lift:'Lift',dishlog:'DishLog',protocol:'Protocol',rail:'Rail',gamelog:'Game Log',playback:'Playback'};
+  var LABEL=NAMES[APP]||'this app';
+  var VARS=['--sx-kitchen','--sx-grocery','--sx-lift','--sx-dishlog','--sx-protocol','--sx-rail','--sx-gamelog','--sx-playback',
+            '--sx-on','--sx-paper','--sx-ink','--sx-dim','--sx-line','--sx-hover'];
+  var form=pan.querySelector('#sx-iform'), input=pan.querySelector('#sx-iin'), list=pan.querySelector('#sx-ilist'),
+      copyB=pan.querySelector('#sx-icopy'), clrB=pan.querySelector('#sx-iclr'), stat=pan.querySelector('#sx-ist');
+  input.placeholder='Add an idea for '+LABEL;
+
+  /* On narrower windows the tabs and this button don't both fit. Measure the real thing (fonts included) and, only if they
+     would touch, let every tab but the current one show just its icon. */
+  function fit(){
+    bar.classList.remove('sx-compact');
+    var tabs=bar.querySelector('.sx-tabs'); if(!tabs || getComputedStyle(tabs).display==='none' || !tabs.lastElementChild) return;
+    if(tabs.lastElementChild.getBoundingClientRect().right > btn.getBoundingClientRect().left - 10) bar.classList.add('sx-compact');
+  }
+  fit(); window.addEventListener('resize',fit);
+  if(document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+
+  /* ---- storage: every idea is {id,text,done,deleted,t (made),u (last changed)}. A deleted idea stays as a small marker for
+     30 days so another device can't bring it back. ---- */
+  function good(x){ return x && typeof x.id==='string' && typeof x.text==='string'; }
+  function load(){
+    var a; try{ var r=localStorage.getItem(KEY); a=r?JSON.parse(r):[]; }catch(e){ a=mem; }
+    return Array.isArray(a)?a.filter(good):[];
+  }
+  function put(a){ mem=a; try{ localStorage.setItem(KEY,JSON.stringify(a)); }catch(e){} }
+  function live(a){ return a.filter(function(x){ return !x.deleted; }); }
+  function merge(a,b){   /* same idea on two sides: the one changed last wins */
+    var m={}; a.concat(b).forEach(function(x){ if(!good(x)) return; var o=m[x.id]; if(!o || (x.u||0)>(o.u||0)) m[x.id]=x; });
+    var cut=Date.now()-30*DAY;
+    return Object.keys(m).map(function(k){ return m[k]; }).filter(function(x){ return !(x.deleted && (x.u||0)<cut); });
+  }
+  function plain(){
+    var rows=live(load()).filter(function(x){ return !x.done; }).sort(function(a,b){ return (a.t||0)-(b.t||0); });
+    if(!rows.length) return '';
+    return ['## '+LABEL].concat(rows.map(function(x){ return '- '+x.text; })).join(String.fromCharCode(10));
+  }
+
+  /* ---- sync: saved here first, then sent in the background. Failing is fine; it tries again on the next change. ---- */
+  var busy=false, again=false, timer=null;
+  function say(s){ stat.textContent=s; }
+  function endpoint(){ var u=''; try{ u=localStorage.getItem(URLKEY)||''; }catch(e){} return (u||WORKER).replace(/\/+$/,''); }
+  function schedule(ms){ clearTimeout(timer); timer=setTimeout(sync, ms==null?600:ms); }
+  function sync(){
+    if(!window.fetch) return;
+    if(navigator.onLine===false){ say('Offline · saved here'); return; }
+    if(busy){ again=true; return; }
+    busy=true; again=false; say('Syncing…');
+    fetch(endpoint()+'/sync/'+APP,{method:'POST',headers:{'content-type':'application/json','x-ideas-key':TOKEN},body:JSON.stringify({items:load()})})
+      .then(function(r){ if(!r.ok) throw new Error('http '+r.status); return r.json(); })
+      .then(function(j){ put(merge(load(), j.items||[])); say('Synced'); if(!pan.hidden) render(); })
+      .catch(function(){ say('Not synced yet'); })
+      .then(function(){ busy=false; if(again) schedule(300); });
+  }
+  schedule(1500);
+  window.addEventListener('online',function(){ schedule(300); });
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden && !pan.hidden) schedule(300); });
+
+  /* ---- panel ---- */
+  function mk(tag,cls,txt){ var e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
+  var SVG_CK='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+  var SVG_X='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+  function render(){
+    var pool=live(load()).sort(function(a,b){ return (a.done?1:0)-(b.done?1:0) || (b.t||0)-(a.t||0); });
+    list.textContent='';
+    if(!pool.length) list.appendChild(mk('li','sx-iempty','Nothing yet. Jot down anything you wish '+LABEL+' did.'));
+    pool.forEach(function(x){
+      var li=mk('li','sx-ii'+(x.done?' sx-done':'')); li.setAttribute('data-id',x.id);
+      var ck=mk('button','sx-ick'); ck.type='button'; ck.setAttribute('role','checkbox'); ck.setAttribute('aria-checked',x.done?'true':'false');
+      ck.setAttribute('aria-label',(x.done?'Mark not done: ':'Mark done: ')+x.text); ck.innerHTML=SVG_CK;
+      li.appendChild(ck); li.appendChild(mk('span','sx-itx',x.text));
+      var dl=mk('button','sx-idel'); dl.type='button'; dl.setAttribute('aria-label','Delete idea: '+x.text); dl.innerHTML=SVG_X;
+      li.appendChild(dl); list.appendChild(li);
+    });
+    copyB.disabled=!plain();
+    clrB.disabled=!pool.some(function(x){ return x.done; });
+  }
+  function paint(){ /* the panel lives on <body>, so hand it the bar's current colors */
+    var cs=getComputedStyle(bar);
+    VARS.forEach(function(v){ pan.style.setProperty(v,cs.getPropertyValue(v)); });
+    pan.style.setProperty('--sx-ac',cs.getPropertyValue('--app'));
+  }
+  function set(o){
+    btn.setAttribute('aria-expanded',o?'true':'false');
+    if(!o){ pan.hidden=true; return; }
+    var g=document.getElementById('sx-gbtn'); if(g && g.getAttribute('aria-expanded')==='true') g.click();
+    if(pan.parentNode!==document.body) document.body.appendChild(pan);
+    paint(); pan.hidden=false; render(); input.focus({preventScroll:true}); schedule(0);
+  }
+
+  btn.addEventListener('click',function(e){ e.stopPropagation(); set(pan.hidden); });
+  pan.addEventListener('click',function(e){ if(e.target===pan) set(false); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape' && !pan.hidden){ set(false); btn.focus(); } });
+  window.addEventListener('pageshow',function(e){ if(e.persisted){ pan.hidden=true; btn.setAttribute('aria-expanded','false'); } });  /* only when the page comes back from the back/forward cache */
+  window.addEventListener('storage',function(e){ if(e.key===KEY && !pan.hidden) render(); });
+
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    var v=input.value.replace(/\s+/g,' ').trim(); if(!v){ input.value=''; return; }
+    var n=Date.now(), a=load(); a.push({id:n.toString(36)+Math.random().toString(36).slice(2,6), text:v.slice(0,280), done:0, deleted:0, t:n, u:n});
+    put(a); input.value=''; render(); schedule(); input.focus({preventScroll:true});
+  });
+  list.addEventListener('click',function(e){
+    var li=e.target.closest('.sx-ii'); if(!li) return;
+    var id=li.getAttribute('data-id'), a=load(), n=Date.now();
+    if(e.target.closest('.sx-ick')){ a.forEach(function(x){ if(x.id===id){ x.done=x.done?0:1; x.u=n; } }); }
+    else if(e.target.closest('.sx-idel')){ a.forEach(function(x){ if(x.id===id){ x.deleted=1; x.text=''; x.u=n; } }); }
+    else return;
+    put(a); render(); schedule();
+  });
+  clrB.addEventListener('click',function(){
+    var n=Date.now(), a=load(); a.forEach(function(x){ if(x.done && !x.deleted){ x.deleted=1; x.text=''; x.u=n; } });
+    put(a); render(); schedule();
+  });
+  copyB.addEventListener('click',function(){
+    var t=plain(); if(!t) return;
+    function ok(){ copyB.textContent='Copied'; setTimeout(function(){ copyB.textContent='Copy list'; },1400); }
+    function fallback(){
+      var ta=document.createElement('textarea'); ta.value=t; ta.setAttribute('readonly',''); ta.style.cssText='position:fixed;top:0;left:0;opacity:0';
+      document.body.appendChild(ta); ta.select();
+      try{ document.execCommand('copy'); ok(); }catch(err){ copyB.textContent='Copy failed'; }
+      document.body.removeChild(ta);
+    }
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(t).then(ok,fallback); else fallback();
+  });
+})();
+</script>"""
+IDEAS_JS = IDEAS_JS.replace("@@IDEAS_WORKER@@", IDEAS_WORKER).replace("@@IDEAS_KEY@@", IDEAS_KEY)
+
 
 CSS = """<!-- suite:css vVERSION · shared by Kitchen, Grocery, Lift, DishLog, Protocol, Rail, Game Log, Playback — edit tools/suite.py in the kitchen repo, not here -->
 <style id="suite-css">
@@ -178,8 +393,10 @@ CSS = """<!-- suite:css vVERSION · shared by Kitchen, Grocery, Lift, DishLog, P
   :where(*){scale:none!important}
   .sx-menu.sx-out .sx-pop{animation:none}
 }
+/*IDEAS_CSS*/
 </style>
 <!-- /suite:css -->"""
+CSS = CSS.replace("/*IDEAS_CSS*/", IDEAS_CSS)
 
 
 GRID_ICON = '<rect x="4" y="4" width="6" height="6" rx="1.6"/><rect x="14" y="4" width="6" height="6" rx="1.6"/><rect x="4" y="14" width="6" height="6" rx="1.6"/><rect x="14" y="14" width="6" height="6" rx="1.6"/>'
@@ -374,18 +591,21 @@ def bar(here, repo):
         attr = ' aria-current="page"' if key == here else ""
         if key == here:
             cur = (label, svg)
-        tabs.append('<a class="sx-t" style="--c:var(--sx-%s)" href="%s"%s><svg viewBox="0 0 24 24" aria-hidden="true">%s</svg>%s</a>'
-                    % (key, href, attr, svg, label))
+        tabs.append('<a class="sx-t" style="--c:var(--sx-%s)" href="%s" title="%s"%s><svg viewBox="0 0 24 24" aria-hidden="true">%s</svg>%s</a>'
+                    % (key, href, label, attr, svg, label))
         cells.append('<a class="sx-cell" style="--c:var(--sx-%s)" href="%s"%s><img src="%s" alt="" width="54" height="54" decoding="async"><b>%s</b></a>'
                      % (key, href, attr, icon_src(key, repo), label))
     extra = " sx-dark" if here in ("protocol", "gamelog") else ""
-    return ('<!-- suite:bar -->\n<nav class="sx-bar%s" style="--app:var(--sx-%s)" aria-label="Your apps"><div class="sx-in">\n'
-            '  <div class="sx-id"><img class="sx-tile" src="%s" alt="" width="32" height="32"><span class="sx-name">%s</span></div>\n'
-            '  <div class="sx-tabs">\n    %s\n  </div>\n'
+    return ('<!-- suite:bar -->\n<nav class="sx-bar%(extra)s" style="--app:var(--sx-%(here)s)" data-app="%(here)s" aria-label="Your apps"><div class="sx-in">\n'
+            '  <div class="sx-id"><img class="sx-tile" src="%(icon)s" alt="" width="32" height="32"><span class="sx-name">%(label)s</span></div>\n'
+            '  <div class="sx-tabs">\n    %(tabs)s\n  </div>\n'
+            '  %(ibtn)s\n'
             '  <button class="sx-gbtn" id="sx-gbtn" type="button" aria-label="Your apps" aria-haspopup="true" aria-expanded="false" aria-controls="sx-menu">'
-            '<svg viewBox="0 0 24 24" aria-hidden="true">%s</svg></button>\n'
-            '</div>\n<div class="sx-menu" id="sx-menu" hidden><div class="sx-pop">\n    %s\n</div></div>\n</nav>\n%s\n<!-- /suite:bar -->'
-            % (extra, here, icon_src(here, repo), cur[0], "\n    ".join(tabs), GRID_ICON, "\n    ".join(cells), MENU_JS + "\n" + MOTION_JS))
+            '<svg viewBox="0 0 24 24" aria-hidden="true">%(grid)s</svg></button>\n'
+            '</div>\n<div class="sx-menu" id="sx-menu" hidden><div class="sx-pop">\n    %(cells)s\n</div></div>\n%(panel)s\n</nav>\n%(js)s\n<!-- /suite:bar -->'
+            % dict(extra=extra, here=here, icon=icon_src(here, repo), label=cur[0], tabs="\n    ".join(tabs),
+                   ibtn=IDEAS_BTN, grid=GRID_ICON, cells="\n    ".join(cells), panel=IDEAS_PANEL,
+                   js=MENU_JS + "\n" + IDEAS_JS + "\n" + MOTION_JS))
 
 
 TARGETS = {  # (repo, file) -> app key
