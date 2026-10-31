@@ -1858,7 +1858,7 @@ function shopSave(st){ try{ localStorage.setItem(shopKey(), JSON.stringify(st));
    for the old weekly-plan model; grocery.html now does that job, and one
    list is easier to keep honest than three. Their code is left in place. */
 const SHOP_RHYTHM_HTML='<div class="tmeal note" style="margin-bottom:12px"><div class="nt"><b>WinCo every week.</b> Cash or debit only. Produce, ground beef, eggs, bread, tortillas, pantry.<br><br>'+
-  '<b>Costco once a month.</b> Tyson rotisserie chicken strips (fully cooked, frozen), chicken chunks, turkey sausage, cheese, Rao\u2019s, protein bars.<br><br>'+
+  '<b>Costco once a month.</b> rotisserie chickens (pulled and frozen in 4\u20135 oz bags; Tyson strips if they come back), chicken chunks, turkey sausage, cheese, Rao\u2019s, protein bars.<br><br>'+
   '<b>Smith\u2019s only if you\u2019re passing by</b> \u2014 Hillshire turkey patties or a good fruit deal on the weekly ad.</div></div>';
 function renderShop(){
   const host=document.getElementById('shopBody'); if(!host) return;
@@ -2630,7 +2630,7 @@ const KITCHEN_RULES = {
 
   pantry: {
     proteins: "jumbo chicken breasts (20 oz each; 1 breast = 4 portions), eggs, canned tuna (sparingly), canned chicken, Yoplait, extra sharp cheddar (shredded, cups), Hillshire turkey sausage PATTIES (not links; 2/serving), chuck eye steak (~0.83 lb / 2 steaks per pack; 1 steak ~6.6 oz raw ~400 cal/35g P)",
-    produceCarbs: "romaine, tomatoes (cooked only), cucumber, apples, fruit bowl (pineapple/melon/banana), fresh strawberries (default over frozen), tortillas (always specify size), Minute rice, oats, pasta, peanut butter",
+    produceCarbs: "romaine, tomatoes (cooked only), cucumber, apples, fruit bowl (pineapple/melon/banana), fresh strawberries (default over frozen), tortillas (always specify size), microwave rice pouches, oats, pasta, peanut butter",
     frozenConvenience: "broccoli, mixed vegetables, stir-fry mix, frozen strawberries (secondary), Healthy Choice steamers, Chicken Pockets, Progresso soup, Prego sauce",
     condiments: "mayo (sparingly), less-sodium soy sauce, olive oil, red wine vinegar, toasted sesame oil, honey, BBQ sauce, marinara, Alfredo, Caesar dressing, kosher salt, peppercorn grinder, bulk-bin spices (garlic powder, smoked paprika, cumin, Italian seasoning, cinnamon, lemon-pepper, oregano, chili powder, onion powder) — NO mustard, NO salsa, NO pickles",
     startsEmpty: "Pantry data in the app starts empty and is never auto-seeded. The Shop tab's Day One list is the physical restock, not app data."
@@ -4531,7 +4531,7 @@ const STAPLE_ROUNDERS=[
   {name:"1 banana",                         cal:105, pro:1.3},
   {name:"1 cup fruit bowl (pineapple/melon)",cal:80, pro:1},
   {name:"1 tortilla + 1 tbsp peanut butter", cal:230, pro:8},
-  {name:"3/4 cup Minute rice (cooked)",     cal:150, pro:3},
+  {name:"1/2 microwave rice pouch",          cal:110, pro:2},
   {name:"1/4 cup crunchy granola",          cal:130, pro:3},
   {name:"1.5 cup frozen broccoli",          cal:50,  pro:4},
   {name:"1 handful fresh strawberries",     cal:50,  pro:1}
@@ -5263,7 +5263,7 @@ const ROTATION=[
         "1 tsp butter, medium pan, 2–3 min a side until deep golden. Rest 1 min, cut.",
         "Dip: 1 tbsp mayo + ½ tbsp ketchup, a pinch of garlic powder, and lots of black pepper. That's the Cane's sauce."]},
     {k:"tacos", n:"Beef tacos (3)", c:690, p:37,
-     d:"Mild seasoning, cheese, lettuce. Swap the beef for heated chicken strips any night.",
+     d:"Mild seasoning, cheese, lettuce. Swap the beef for heated chicken any night.",
      r:["Brown ¼ lb ground beef, breaking it up, 6–7 min. Drain most of the fat.",
         "Stir in 1 tbsp mild taco seasoning and a splash of water, 2 min.",
         "Warm 3 regular tortillas in a dry pan, 20 sec a side.",
@@ -5312,9 +5312,9 @@ const ROTATION=[
   const L=ROTATION.find(function(x){ return x.sec==="Lunch"; }), D=ROTATION.find(function(x){ return x.sec==="Dinner"; });
   L.items.push(
     {k:"lquesa", n:"Lunch quesadilla", c:470, p:30, tag:"At home \u00b7 10 min",
-     d:"Smaller and faster than the dinner one: chicken strips and cheddar in two regular tortillas.", r:[]},
+     d:"Smaller and faster than the dinner one: chicken and cheddar in two regular tortillas.", r:[]},
     {k:"caesarwrap", n:"Chicken Caesar wrap", c:470, p:30, tag:"Ice pack",
-     d:"Warm chicken strips, crunchy lettuce, Caesar dressing, rolled tight.", r:[]},
+     d:"Warm chicken, crunchy lettuce, Caesar dressing, rolled tight.", r:[]},
     {k:"chxsalad", n:"Chicken salad sandwich", c:540, p:38, tag:"Ice pack",
      d:"Two chicken pouches mixed with mayo on sourdough. Make it the night before.", r:[]},
     {k:"gcsoup", n:"Grilled cheese + tomato soup", c:540, p:22, tag:"Comfort",
@@ -5330,7 +5330,7 @@ const ROTATION=[
   );
   D.items.splice(4,0,
     {k:"mac", n:"Chicken mac and cheese", c:780, p:53,
-     d:"Stovetop mac with real cheddar, chicken strips, and broccoli stirred in.", r:[]}
+     d:"Stovetop mac with real cheddar, chicken, and broccoli stirred in.", r:[]}
   );
 })();
 
@@ -5372,7 +5372,7 @@ const INGR={
   onion:     {n:"Onion",                   u:"1/4 onion",    e:[11,0.3,2.5,0],   q:"onion"},
   beef:      {n:"85/15 ground beef",       u:"oz raw",       e:[60,5.3,0,4.3],   q:"ground beef"},
   bun:       {n:"Burger buns",             u:"bun",          e:[150,5,27,2],     q:"bun"},
-  chicken:   {n:"Cooked chicken strips",   u:"oz",           e:[36.7,5.7,0.7,1.2], q:"chicken strips rotisserie grilled tyson"},
+  chicken:   {n:"Cooked chicken",          u:"oz",           e:[36.7,5.7,0.7,1.2], q:"chicken strips rotisserie grilled tyson"},
   broccoli:  {n:"Frozen broccoli florets", u:"cup",          e:[40,3,7,0.4],     q:"broccoli"},
   caesar:    {n:"Caesar dressing",         u:"tbsp",         e:[80,0.5,0.5,8.5], q:"caesar"},
   soup:      {n:"Tomato soup",             u:"cup made",     e:[90,2,20,0],      q:"tomato soup campbell"},
@@ -5566,7 +5566,7 @@ const ROT_STEPS={
     ["Flip and cheese","Push the spatula edge hard under each patty to scrape up the brown crust with it, and flip. Put 2 tbsp cheddar on each right away. 1 more minute. Patties this thin are fully cooked by then.",60],
     ["Stack it","Sauce on both bun halves. Bottom bun, lettuce, both patties stacked, onion, top bun.",0]],
   quesadilla:[
-    ["Heat the chicken","5 oz frozen chicken strips (about 5 strips) in the air fryer at 350°F for 8 min — no thawing, they're already cooked. In a hurry? Microwave them covered for about 2 min, until hot all the way through.",480],
+    ["Heat the chicken","5 oz cooked chicken. Frozen strips: air fryer at 350°F for 8 min — no thawing, they're already cooked — or microwave covered about 2 min. Rotisserie chicken from the fridge instead: microwave it covered 1 min, stir, then 30 more seconds, until steaming all the way through.",480],
     ["Chop and season","Chop the chicken into small pieces, about ½ inch. In a bowl, toss with 1 tsp mild taco seasoning, a pinch of garlic powder, and 1 tbsp water so it coats. Microwave 45 seconds to warm it through.",45],
     ["Fill","Lay the burrito-size tortilla flat. On one half only: ¼ cup cheddar, then the chicken, then another ¼ cup cheddar on top. Cheese on both sides glues it shut. Fold the empty half over.",0],
     ["Cook side one","Nonstick pan on medium (about 5). Melt 1 tsp butter, then lay the quesadilla in. Press it flat gently with the spatula. 2½ minutes, until the bottom is deep golden — lift the edge to check.",150],
@@ -5629,12 +5629,12 @@ Object.assign(ROT_STEPS,{
     ["Grab a shake","One Orgain protein shake. Unopened it's shelf-stable, so no ice pack needed. Shake it well before opening.",0],
     ["Round it out","Add a piece of fruit if there's room in your bag.",0]],
   lquesa:[
-    ["Heat the chicken","3 oz frozen chicken strips (about 3 strips) in the air fryer at 350°F for 7 min. In a hurry? Microwave them covered for about 1½ min, until hot all the way through. Chop into small pieces.",420],
+    ["Heat the chicken","3 oz cooked chicken. Frozen strips: air fryer at 350°F for 7 min, or microwave covered about 1½ min. Rotisserie chicken from the fridge instead: microwave it covered 1 min, stir, then 30 more seconds, until steaming all the way through. Chop into small pieces.",420],
     ["Fill","Lay one regular tortilla flat, sprinkle half of ⅓ cup shredded cheddar, add the chicken, the rest of the cheese, then the second tortilla on top.",0],
     ["Cook side one","Nonstick pan on medium (about 5) with 1 tsp butter. 2 minutes, until the bottom is golden — lift an edge to check.",120],
     ["Flip and finish","Slide a spatula under it, flip, 2 more minutes. Rest 1 minute, then cut into 4 wedges. Salsa or the Cane's-style dip on the side if you have it.",120]],
   caesarwrap:[
-    ["Heat the chicken","4 oz frozen chicken strips (about 4 strips) in the air fryer at 350°F for 8 min, or microwave covered about 2 min. Let them cool 5 minutes so they don't wilt the lettuce, then slice.",480],
+    ["Heat the chicken","4 oz cooked chicken. Frozen strips: air fryer at 350°F for 8 min, or microwave covered about 2 min. Rotisserie chicken from the fridge instead: microwave it covered 1 min, stir, then 30 more seconds, until steaming all the way through. Let it cool 5 minutes so it doesn't wilt the lettuce, then slice.",480],
     ["Dress the lettuce","In a bowl, toss a big handful of shredded lettuce with 1 tbsp Caesar dressing until every piece is coated.",0],
     ["Roll","Lay a burrito-size tortilla flat. Lettuce and chicken in a strip across the lower third. Fold the bottom up over it, fold both sides in, and roll tight. Wrap in foil.",0],
     ["Pack","An apple on the side. Ice pack in your bag — chicken and dressing are good for about 2 hours without one.",0]],
@@ -5650,7 +5650,7 @@ Object.assign(ROT_STEPS,{
     ["Eat","Cut the sandwich in half and dip it. Put the other half of the soup in the fridge — good for 3–4 days."  ,0]],
   mac:[
     ["Boil the water","About 8 cups of water and 1 tsp salt in a pot, lid on, high heat. 8–10 minutes to boil.",540],
-    ["Start the chicken","While the water heats: 4 oz frozen chicken strips (about 4) in the air fryer at 350°F for 8 min. Chop them when they're done.",480],
+    ["Start the chicken","While the water heats: 4 oz cooked chicken. Frozen strips go in the air fryer at 350°F for 8 min; rotisserie chicken from the fridge just needs chopping, since the hot pasta and sauce warm it. Chop it into bite-size pieces.",480],
     ["Cook the pasta","When the water is at a full rolling boil, add 3 oz pasta (about ¾ cup elbows or shells). Stir. Cook the box time plus 1–2 minutes for Provo's elevation. Got frozen broccoli? Toss a cup in for the last 3 minutes \u2014 optional.",660],
     ["Drain","Scoop out a mug of the pasta water first, then drain the pasta and broccoli in a colander.",0],
     ["Make the sauce","Same pot, now on low (2–3). Melt 1 tsp butter, add ⅓ cup milk, then ½ cup shredded cheddar a handful at a time, stirring until each handful melts. Too thick? A splash of the pasta water. Keep the heat low — high heat makes cheese grainy.",0],
@@ -5864,7 +5864,7 @@ const HEALTH={
   wrap:["Lean turkey and provolone give you protein with no cooking, and lettuce adds crunch.",
     "Carrots and an apple; both pack well next to the ice pack.",
     "Large burrito tortillas can be around 300 calories and 600 mg of sodium each. Check your label, because that's where this wrap's calories hide."],
-  lquesa:["Chicken strips are lean, so most of the 35 g of protein comes without much fat.",
+  lquesa:["Chicken breast meat is lean, so most of the 35 g of protein comes without much fat.",
     "An orange or pineapple. The bright, juicy fruit cuts through the cheese, and both are high in vitamin C.",
     "Cheddar is most of the saturated fat here. About ¼ cup per tortilla is enough to melt and stick."],
   caesarwrap:["Chicken and lettuce make this one of the leaner lunches, with a little bit of greens.",
@@ -8172,7 +8172,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.10.24-a";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.10.31-a";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
@@ -8670,6 +8670,24 @@ if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
     if(!e.target.closest(".cal-day")) return;
     requestAnimationFrame(function(){ SX.enter("#detail-panel", null, null, {step:40}); });
   });
+})();
+</script>
+<script>
+/* ?weight=205.4 — an Apple Shortcut opens this link with the latest weigh-in
+   from Health (Withings syncs there), so the weight logs itself. The value is
+   saved like a manual weigh-in (current weight + today's record) and synced. */
+(function(){
+  var m=/[?&]weight=([^&#]*)/.exec(location.search); if(!m) return;
+  try{ var rest=location.search.replace(/([?&])weight=[^&#]*&?/,"$1").replace(/[?&]$/,""); history.replaceState(null,"",location.pathname+rest+location.hash); }catch(e){}
+  var w=parseFloat(decodeURIComponent(m[1]).replace(/[^0-9.]/g,""));
+  if(!(w>=80 && w<=500)){ if(typeof showToast==="function") showToast("That weight link had no usable number"); return; }
+  w=Math.round(w*10)/10;
+  try{
+    wgoal.cur=w; saveWg();
+    dayState.weight=w; saveDay(todayStr,dayState);
+    renderToday(); if(typeof renderWeek==="function") renderWeek();
+    showToast("Logged "+w+" lb from Health");
+  }catch(e){}
 })();
 </script>
 </body>

@@ -1070,6 +1070,8 @@ var DATA = [
       /* Ran out of a Costco item between trips: buy the WinCo version, sized to
          last until Costco. Only shows when it's flagged AND it isn't a Costco week. */
       {name:"Costco items \u2014 WinCo stand-ins", standin:true, items:[
+        {k:"chicken", n:"Rotisserie chicken (stand-in)", a:"1 whole chicken", t:"store brand", p:"check the deli",
+         w:"Out of chicken before Costco. Deli hot case; if WinCo is out, look for frozen fully cooked grilled strips (\u201cgrilled\u201d or \u201coven-roasted\u201d on the front, no breading in the ingredients). Pull the meat off the same day."},
         {k:"chunks", n:"Frozen breaded chicken chunks (stand-in)", a:"1 bag, smallest size", t:"store brand", p:"check shelf",
          w:"Out of the Kirkland chunks before Costco. Look for white-meat chicken as the first ingredient."},
         {k:"sausage", n:"Turkey sausage links (stand-in)", a:"1 small box", t:"store brand", p:"check shelf",
@@ -1087,11 +1089,17 @@ var DATA = [
     store:"Costco",
     loc:"Orem · once a month",
     monthly:true,
-    note:"Everything here keeps for weeks. On Costco weeks the whole list shows. Between trips, anything you mark low goes on the WinCo list as a store-brand stand-in instead. The Tyson strips are the exception: WinCo has no match, so they wait here for the next trip, and the pouch or beef meals cover you until then.",
+    note:"Everything here keeps for weeks. On Costco weeks the whole list shows. Between trips, anything you mark low goes on the WinCo list as a store-brand stand-in instead. Chicken works the same way: a WinCo deli rotisserie chicken holds you over until the Costco run.",
     groups:[
       {name:"Freezer", items:[
-        {k:"chicken", n:"Tyson Rotisserie Chicken Strips", a:"1 × 3 lb bag", t:"researched", p:"usually ~$16–17",
-         w:"Item 1448891. Fully cooked: air fry from frozen at 350°F for 7–9 min. Quesadillas, Caesar wraps, mac, chicken tacos."},
+        {k:"chicken", n:"Tyson Rotisserie Chicken Strips", t:"researched", p:"usually ~$16–17", sw:"costcochicken", def:"rotisserie",
+         alts:{
+           rotisserie:{dn:"Kirkland Signature Rotisserie Chicken", a:"2 whole chickens", label:"rotisserie chicken", pk:"chicken_rotisserie", p:"$4.99 each",
+             w:"Standing in for the Tyson strips, which your warehouse stopped carrying. Fully cooked, no breading. Same day: pull the meat off (drop the skin if you want it leaner), pack it into 4–5 oz zip bags, keep 2–3 bags in the fridge (good 3–4 days) and freeze the rest flat. Move a bag to the fridge the night before.",
+             pick:"Hot case by the registers. Grab the newest ones (check the time on the label) and get them home and into the fridge within 2 hours."},
+           strips:{dn:"Tyson Rotisserie Chicken Strips", a:"1 × 3 lb bag", label:"Tyson strips", pk:"chicken", p:"usually ~$16–17",
+             w:"Item 1448891, if your warehouse gets it back. Fully cooked: air fry from frozen at 350°F for 7–9 min. Quesadillas, Caesar wraps, mac, chicken tacos."}
+         }},
         {k:"chunks", n:"Kirkland Signature Lightly Breaded Chicken Breast Chunks", a:"1 × 4 lb bag", t:"researched", p:"est. $14–18",
          w:"Item 1736931. Chunks night and the tenders + fries box."},
         {k:"sausage", n:"Jimmy Dean Turkey Sausage Links", a:"1 box of 48", t:"researched", p:"check shelf",
@@ -1179,7 +1187,11 @@ DATA.forEach(function(st){ st.groups.forEach(function(g){ g.items.forEach(functi
 var SWAP_KEY="grocery_swap_v1", SWAP=rjs0(SWAP_KEY);
 function rjs0(k){ try{ return JSON.parse(localStorage.getItem(k))||{}; }catch(e){ return {}; } }
 function applySwap(it){ if(!it.alts) return; var names=Object.keys(it.alts), cur=it.alts[SWAP[it.sw]] ? SWAP[it.sw] : it.def, v=it.alts[cur];
-  it.cur=cur; it.dn=v.dn; it.a=v.a; it.w=v.w; it.pick=v.pick; it.alt=names.filter(function(x){ return x!==cur; })[0]; it.k="fresh_"+cur; it.ks=names; }
+  it.cur=cur; it.dn=v.dn; it.a=v.a; it.w=v.w; it.pick=v.pick; it.alt=names.filter(function(x){ return x!==cur; })[0];
+  if(it.kb===undefined) it.kb=it.k||null;
+  /* fruit swaps: a key per fruit. Stock items (Costco chicken): one stock key, a price key per option */
+  if(it.kb){ it.k=it.kb; it.ks=[]; it.pk=v.pk||null; if(v.p) it.p=v.p; }
+  else { it.k="fresh_"+cur; it.ks=names; } }
 DATA.forEach(function(st){ st.groups.forEach(function(g){ g.items.forEach(applySwap); }); });
 function itemKeys(it){ return [it.k].concat(it.ks||[]).concat([slugN(it.n)]).filter(Boolean); }
 
@@ -1193,7 +1205,7 @@ function wjs(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
 var prices=rjs(PRICE_KEY,{}), missed=rjs(MISS_KEY,{}), lastMiss=rjs(LASTMISS_KEY,{}), xspend=rjs(XSPEND_KEY,{});
 var SORT_AISLE = lsGet(SORT_KEY)==="1";
 function itemAt(id){ var p=String(id).split("-"), st=DATA[+p[0]], g=st&&st.groups[+p[1]], it=g&&g.items[+p[2]]; return it?{st:st,g:g,it:it}:null; }
-function priceKey(st,it){ return st.store+":"+(it.k||slugN(it.n)); }
+function priceKey(st,it){ return st.store+":"+(it.pk||it.k||slugN(it.n)); }
 function money(n){ return "$"+(Math.round(n*100)/100).toFixed(2); }
 function parsePrice(v){ var x=parseFloat(String(v||"").replace(/[^0-9.]/g,"")); return (isFinite(x) && x>0 && x<1000) ? Math.round(x*100)/100 : null; }
 function setPrice(pk,v){
@@ -1273,7 +1285,7 @@ function editQty(btn){
    something off (store:key -> count) */
 var PACK={"WinCo:eggs":18,"WinCo:bread":15,"WinCo:turkey":16,"WinCo:provolone":20,"WinCo:beef":16,"WinCo:milk":16,"WinCo:yoplait":8,
   "WinCo:tortilla":8,"WinCo:smalltort":10,"WinCo:bun":8,"WinCo:hashbrown":10,"WinCo:fries":10,"WinCo:pb":14,"WinCo:pouch":1,"WinCo:pasta":16,
-  "WinCo:soup":2,"WinCo:cereal":10,"WinCo:chunks":8,"WinCo:sausage":10,"WinCo:cheddar":8,"WinCo:marinara":6,"WinCo:bar":4,
+  "WinCo:soup":2,"WinCo:cereal":10,"WinCo:chunks":8,"WinCo:sausage":10,"WinCo:cheddar":8,"WinCo:marinara":6,"WinCo:bar":4,"WinCo:chicken":24,
   "Costco:chicken":48,"Costco:chunks":21,"Costco:sausage":48,"Costco:cheddar":64,"Costco:marinara":12,"Costco:bar":20};
 var BOUGHT_NOW={};
 function packSize(f,k){ var p=PACK[f.st.store+":"+k]; return p ? r2(p*qtyOf(priceKey(f.st,f.it),f.it)) || null : null; }
@@ -1762,7 +1774,7 @@ document.getElementById("resetBtn").addEventListener("click", function(){
 });
 
 /* ---- start ---- */
-var BUILD="2026.10.24-a";   /* date + letter, like Daily Protocol */
+var BUILD="2026.10.31-a";   /* date + letter, like Daily Protocol */
 load();
 document.getElementById("weekLabel").textContent = WEEK_LABEL;
 document.title = "Grocery \u2014 " + WEEK_LABEL;
