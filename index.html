@@ -5394,6 +5394,21 @@ const ROTATION=[
      d:"Stovetop mac with real cheddar, chicken, and broccoli stirred in.", r:[]}
   );
 })();
+/* v3.21 — more no-prep chicken dinners. Every one uses chicken that's already
+   cooked (rotisserie bags, Tyson strips, or the breaded chunks), and all but
+   one ingredient (rice pouches, for the honey-garlic bowl) is already on the
+   list, so more choices without a longer grocery run. */
+(function(){
+  const D=ROTATION.find(function(x){ return x.sec==="Dinner"; });
+  D.items.push(
+    {k:"chxparm", n:"Chicken parm melt", c:560, p:45, tag:"15 min",
+     d:"Saucy chicken and melted provolone on a garlic-butter bun. One bag of chicken, no frying.", r:[]},
+    {k:"crispysand", n:"Crispy chicken sandwich + fries", c:695, p:39, tag:"Air fryer",
+     d:"Cane's night as a sandwich: breaded chunks, Cane's-style sauce, toasted bun, fries alongside.", r:[]},
+    {k:"honeybowl", n:"Honey-garlic chicken bowl", c:535, p:34, tag:"15 min",
+     d:"Sweet-savory takeout-style chicken over a rice pouch. A break from cheese and tortillas.", r:[]}
+  );
+})();
 
 const INGR={
   eggs:      {n:"Eggs",                    u:"egg",          e:[70,6,0.5,5],     q:"egg"},
@@ -5450,7 +5465,9 @@ const INGR={
   mandarin:  {n:"Mandarins",               u:"2 mandarins",  e:[94,1.4,23.6,0.6], q:"mandarin cutie halos"},
   pear:      {n:"Pears",                   u:"pear",         e:[100,0.6,27,0.2], q:"pear"},
   chia:      {n:"Chia seeds",              u:"tbsp",         e:[60,2,5,4],       q:"chia"},
-  watermelon:{n:"Watermelon",              u:"2 cups",       e:[91,1.9,23,0.5],  q:"watermelon"}
+  watermelon:{n:"Watermelon",              u:"2 cups",       e:[91,1.9,23,0.5],  q:"watermelon"},
+  rice:      {n:"Microwave rice pouches",  u:"pouch",        e:[220,4,46,1.5],   q:"rice pouch ready rice minute"},
+  soy:       {n:"Soy sauce",               u:"tbsp",         e:[5,1,0.5,0],      q:"soy sauce kikkoman"}
 };
 /* v3.9 — "which fruit?" Cards with a fruit side ask which one you had, so
    the numbers are that fruit's, not an average. USDA values per portion. */
@@ -5510,14 +5527,17 @@ Object.assign(CARD_PARTS,{
   pizzatoast: [["bread",2],["marinara",0.5],["provolone",3],["pepperoni",1,1]],
   sub:        [["bun",1],["turkey",3],["provolone",2],["oil",1],["vinegar",1],["lettuce",1,1],["salami",1,1],["carrots",1,1]],
   uncrust:    [["uncrust",2],["shake",1],["fruit",1,1]],
-  mac:        [["pasta",3],["milk",0.33],["cheddar",2],["butter",1],["chicken",4],["broccoli",1,1]]
+  mac:        [["pasta",3],["milk",0.33],["cheddar",2],["butter",1],["chicken",4],["broccoli",1,1]],
+  chxparm:    [["chicken",5],["marinara",0.5],["provolone",2],["bun",1],["butter",1],["garlic",1]],
+  crispysand: [["chunks",2],["bun",1],["fries",1],["mayo",1],["ketchup",0.5],["garlic",1],["lettuce",1,1]],
+  honeybowl:  [["chicken",5],["rice",1],["honey",1.5],["soy",1],["butter",1],["garlic",1]]
 });
 /* v3.16 — vegetables. Every dinner gets an optional broccoli side and every
    packed lunch optional baby carrots: no recipe changes, just one more thing
    on the plate. Optional parts never block a meal when you're out. */
 /* v3.17: he'd rather have fruit than broccoli, so the side is fruit (picker
    on the recipe), and fiber-rich picks (apple, pear, strawberries) lead the list. */
-["burger","quesadilla","tacos","pasta","mac","lburger","tendersbox","pizzatoast","lquesa","melt","gcsoup"].forEach(function(k){
+["burger","quesadilla","tacos","pasta","mac","lburger","tendersbox","pizzatoast","lquesa","melt","gcsoup","chxparm","crispysand","honeybowl"].forEach(function(k){
   if(CARD_PARTS[k] && !CARD_PARTS[k].some(function(p){ return p[0]==="fruit" || (p[2] && FRUIT_SWAP[p[0]]); })) CARD_PARTS[k]=CARD_PARTS[k].concat([["fruit",1,1]]); });
 if(CARD_PARTS.smoothie && !CARD_PARTS.smoothie.some(function(p){ return p[0]==="chia"; })) CARD_PARTS.smoothie=CARD_PARTS.smoothie.concat([["chia",1,1]]);
 if(CARD_PARTS.smoothiebar && !CARD_PARTS.smoothiebar.some(function(p){ return p[0]==="chia"; })) CARD_PARTS.smoothiebar=CARD_PARTS.smoothiebar.concat([["chia",1,1]]);
@@ -5715,12 +5735,30 @@ Object.assign(ROT_STEPS,{
     ["Cook the pasta","When the water is at a full rolling boil, add 3 oz pasta (about ¾ cup elbows or shells). Stir. Cook the box time plus 1–2 minutes for Provo's elevation. Got frozen broccoli? Toss a cup in for the last 3 minutes \u2014 optional.",660],
     ["Drain","Scoop out a mug of the pasta water first, then drain the pasta and broccoli in a colander.",0],
     ["Make the sauce","Same pot, now on low (2–3). Melt 1 tsp butter, add ⅓ cup milk, then ½ cup shredded cheddar a handful at a time, stirring until each handful melts. Too thick? A splash of the pasta water. Keep the heat low — high heat makes cheese grainy.",0],
-    ["Combine","Stir in the pasta, broccoli, and chicken until everything's coated. Salt, pepper, and a pinch of garlic powder.",0]]
+    ["Combine","Stir in the pasta, broccoli, and chicken until everything's coated. Salt, pepper, and a pinch of garlic powder.",0]],
+  chxparm:[
+    ["Heat the chicken","5 oz cooked chicken (one bag). Frozen strips: air fryer at 350°F for 8 min, or microwave covered about 2 min. Rotisserie chicken from the fridge instead: microwave it covered 1 min, stir, then 30 more seconds, until steaming all the way through. Tear or chop it into bite-size pieces.",480],
+    ["Sauce it","In a microwave-safe bowl, stir the chicken with ¼ cup Rao's marinara and a pinch of garlic powder (about ⅛ tsp). Cover and microwave 45 seconds, until the sauce bubbles at the edges.",45],
+    ["Garlic-butter the bun","Open a burger bun. Spread ½ tsp butter on each cut side, then a pinch of garlic powder over the butter. That's the garlic bread.",0],
+    ["Build and melt","Both bun halves cut-side up in the air fryer basket. Pile the saucy chicken on the bottom half and lay 2 slices of provolone over it. 375°F for 3 minutes, until the cheese bubbles and the top half is golden. No air fryer: oven at 425°F for about 6 minutes.",180],
+    ["Rest a minute","Put the top on and press down gently. Wait 1 minute — the sauce is lava-hot. A fork and knife is fine if it gets messy.",60]],
+  crispysand:[
+    ["Fries first","3 oz frozen fries (a big handful) in a single layer in the air fryer basket, 400°F for 6 minutes.",360],
+    ["Add the chicken","Add 6 oz frozen chicken chunks (about 9 pieces) straight from the bag next to the fries. 9 more minutes at 400°F, shaking the basket once halfway. Small basket? Do the fries, then the chunks.",540],
+    ["Make the sauce","While it cooks: 1 tbsp mayo, ½ tbsp ketchup, a pinch of garlic powder, and lots of black pepper (about 10 turns of the grinder). Stir until it's one color. That's the Cane's sauce.",0],
+    ["Toast the bun","For the last minute, lay the bun halves cut-side down on top of the chicken in the basket. Or a dry pan on medium (about 5), cut-side down, 1 minute until golden.",60],
+    ["Build","Sauce on both halves. Pile on the chunks and press them down a little so they don't roll off, a handful of shredded lettuce if you have it, top bun. Fries on the side.",0]],
+  honeybowl:[
+    ["Heat the chicken","5 oz cooked chicken (one bag). Frozen strips: air fryer at 350°F for 8 min, or microwave covered about 2 min. Rotisserie chicken from the fridge instead: microwave it covered 1 min, stir, then 30 more seconds, until steaming all the way through. Cut it into bite-size pieces.",480],
+    ["Make the sauce","Small nonstick pan on medium (about 5): 1 tsp butter, 1½ tbsp honey, 1 tbsp soy sauce, and ¼ tsp garlic powder (a good shake). Stir as it bubbles for 1–2 minutes, until it's a little thicker and coats the spoon. Keep stirring — honey burns fast, and if it smells sharp or goes dark, lift the pan off the heat.",90],
+    ["Coat the chicken","Pan off the heat. Add the chicken and stir for 30 seconds, until every piece is glossy.",0],
+    ["Heat the rice","Squeeze the rice pouch to break up clumps, tear open the corner about 2 inches, and microwave 90 seconds.",90],
+    ["Bowl it","Rice in a bowl, chicken on top, then scrape every bit of sauce from the pan over it.",0]]
 });
 /* the veg step rides along at the end of each recipe */
 const VEG_HOT=["Fruit on the side","Whatever you picked under \u201cWhich fruit?\u201d \u2014 slice an apple or pear, peel an orange, or a cup of strawberries. Apples and pears with the skin on carry the most fiber.",0];
 const VEG_PACK=["Add crunch (optional)","Baby carrots in a zip bag next to the fruit, if you like them. No cooking, and they survive a backpack.",0];
-["burger","quesadilla","tacos","pasta","mac","chunks","lburger","tendersbox","pizzatoast","lquesa","melt","gcsoup"].forEach(function(k){ if(ROT_STEPS[k]) ROT_STEPS[k]=ROT_STEPS[k].concat([VEG_HOT]); });
+["burger","quesadilla","tacos","pasta","mac","chunks","lburger","tendersbox","pizzatoast","lquesa","melt","gcsoup","chxparm","crispysand","honeybowl"].forEach(function(k){ if(ROT_STEPS[k]) ROT_STEPS[k]=ROT_STEPS[k].concat([VEG_HOT]); });
 ["campus","pouch","snackbox","wrap","caesarwrap","chxsalad","uncrust","sub"].forEach(function(k){ if(ROT_STEPS[k]) ROT_STEPS[k]=ROT_STEPS[k].concat([VEG_PACK]); });
 ROTATION.forEach(function(sec){ sec.items.forEach(function(it){
   const S=ROT_STEPS[it.k]; if(!S) return;
@@ -5883,6 +5921,15 @@ let sheetKey=null, sheetReturn=null, sheetFruit=null;
    [why it works, best pairing, good to know]. Written as things to add, never as
    corrections. Fruit notes show under the fruit picker and follow your pick. */
 const HEALTH={
+  chxparm:["Chicken parm flavor with no frying: lean chicken carries the 45 g of protein, and Rao's adds cooked tomato with no added sugar.",
+    "Strawberries or an orange. Vitamin C and fiber next to the bread and cheese.",
+    "Provolone and the garlic butter carry most of the fat. Two slices of cheese is the sweet spot; a third adds about 70 calories."],
+  crispysand:["Your Cane's night as a sandwich, air-fried instead of deep-fried, with about 39 g of protein.",
+    "An apple or pineapple. Something fresh and crunchy next to a salty plate.",
+    "Breading, fries and dip make this one of the saltier dinners. Drink plenty of water with it and keep the sauce to the 1½ tbsp in the recipe."],
+  honeybowl:["One of the lighter dinners, and a sweet-savory change from the cheese-and-tortilla nights.",
+    "Pineapple or an orange. They go with honey-garlic the way they do at a takeout counter, and add vitamin C.",
+    "Soy sauce is where the sodium is. Less-sodium soy keeps the tablespoon around 575 mg instead of about 900."],
   scramble:["Three eggs, cheese and sausage come to about 38 g of protein, enough to carry you to lunch. Egg yolks are one of the best sources of choline, which your brain uses for memory and mood.",
     "An orange or strawberries. Eggs have no fiber or vitamin C, so the fruit adds both, and vitamin C helps you absorb the iron in the eggs.",
     "Most of the salt comes from the turkey sausage. One salty item at breakfast is fine; just go easy on salty snacks later."],
@@ -6130,9 +6177,9 @@ function syncRotTimerDOM(){
 var INV_KEY="inv_v1", GBOUGHT_KEY="grocery_bought_v1";
 var INV_UNIT={eggs:"eggs",bread:"slices",turkey:"oz",provolone:"slices",beef:"oz",milk:"cups",yoplait:"cups",tortilla:"big tortillas",
   smalltort:"tortillas",bun:"buns",hashbrown:"patties",fries:"servings",pb:"servings",pouch:"pouches",pasta:"oz",soup:"cups",cereal:"bowls",
-  chicken:"oz",chunks:"servings",sausage:"links",bar:"bars",marinara:"servings",cheddar:"servings"};
+  chicken:"oz",chunks:"servings",sausage:"links",bar:"bars",marinara:"servings",cheddar:"servings",rice:"pouches"};
 var INV_PACK={eggs:12,bread:15,turkey:16,provolone:10,beef:16,milk:16,yoplait:5,tortilla:8,smalltort:10,bun:8,hashbrown:10,fries:10,pb:14,
-  pouch:5,pasta:16,soup:4,cereal:10,chicken:48,chunks:21,sausage:48,bar:20,marinara:6,cheddar:32};
+  pouch:5,pasta:16,soup:4,cereal:10,chicken:48,chunks:21,sausage:48,bar:20,marinara:6,cheddar:32,rice:6};
 function rjx(k,d){ try{ const v=JSON.parse(localStorage.getItem(k)); return v==null?d:v; }catch(e){ return d; } }
 function wjx(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
 function loadInv(){ const o=rjx(INV_KEY,{}); return (o&&typeof o==="object")?o:{}; }
@@ -8233,7 +8280,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.11.02-a";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.11.02-b";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);

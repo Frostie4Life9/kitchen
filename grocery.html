@@ -1075,7 +1075,7 @@ var DATA = [
         {n:"Oven-roasted turkey, fresh-sliced", a:"1 lb", u:"lb", q:1, t:"researched", p:"check shelf",
          w:"Omelets, wraps, snack boxes, melts, subs. Fresh-sliced beats the watery pressed packages. Ask for it thin."},
         {n:"Provolone, sliced", a:"1/2 lb", u:"lb", q:0.5, t:"store brand", p:"check shelf",
-         w:"Wraps, snack boxes, melts, subs, and now pizza toast too."},
+         w:"Wraps, snack boxes, melts, subs, pizza toast and chicken parm melts."},
         {n:"85/15 ground beef", a:"1–2 lb — check your freezer first", u:"lb", q:1, t:"researched", p:"check shelf",
          w:"Burgers, tacos, pasta. One 1-lb tube cut in thirds covers three dinners. Freeze what you won't cook in 2 days."}
       ]},
@@ -1095,14 +1095,14 @@ var DATA = [
         {k:"carrots", n:"Baby carrots", a:"1 bag", t:"store brand", p:"check shelf", w:"Optional lunch-bag crunch, if you like them."},
         {k:"broccoli", n:"Frozen broccoli florets", a:"1 bag", t:"store brand", p:"check shelf", w:"Optional, for chicken mac."},
         {k:"butter", n:"Butter", a:"1 lb", t:"store brand", p:"check shelf", w:"Eggs, grilled sandwiches, quesadillas."},
-        {k:"bun", n:"Hamburger buns", a:"1 pack of 8", t:"store brand", p:"check shelf", w:"Burgers and subs. Freeze half so they don't go stale."},
+        {k:"bun", n:"Hamburger buns", a:"1 pack of 8", t:"store brand", p:"check shelf", w:"Burgers, subs, chicken parm melts and crispy chicken sandwiches. Freeze half so they don't go stale."},
         {k:"smalltort", n:"Guerrero Caseras Flour Tortillas, regular", a:"1 pack", t:"researched", p:"check shelf", w:"Tacos and the lunch quesadilla."},
         {k:"onion", n:"Yellow onion", a:"1–2", u:"pc", q:1, pw:0.4, un:["onion","onions"], t:"store brand", p:"check shelf", w:"Burgers and meat sauce. Lasts weeks on the counter."},
         {k:"grapes", n:"Seedless grapes", a:"about 1 lb", u:"lb", q:1, t:"store brand", p:"check shelf", w:"Snack boxes and chicken salad sides."},
         {k:"hashbrown", n:"Ore-Ida Golden Hash Brown Patties", a:"1 bag", t:"researched", p:"check shelf", w:"Big breakfast plate. Crispiest in air-fryer testing."},
         {k:"strawb", n:"Frozen strawberries", a:"1 bag, WinCo brand", t:"store brand", p:"check shelf", w:"Smoothies."},
         {k:"pineapple", n:"Frozen pineapple chunks", a:"1 bag, WinCo brand", t:"store brand", p:"check shelf", w:"Smoothies."},
-        {k:"fries", n:"Crinkle-cut fries", a:"1 bag", t:"store brand", p:"check shelf", w:"Tenders + fries box. Ore-Ida or store brand."},
+        {k:"fries", n:"Crinkle-cut fries", a:"1 bag", t:"store brand", p:"check shelf", w:"Tenders + fries box and crispy chicken sandwiches. Ore-Ida or store brand."},
         {k:"pepperoni", n:"Hormel Original Pepperoni", a:"1 pack", t:"store brand", p:"check shelf", w:"Pizza toast. Keeps for weeks unopened."},
         {k:"salami", n:"Genoa salami, pre-sliced", a:"1 small pack", t:"store brand", p:"check shelf", w:"Optional, for the sub. Unopened it keeps for weeks; once open, use it within about 5 days."}
       ]},
@@ -1110,12 +1110,14 @@ var DATA = [
         {k:"granola", n:"Post Honey Roasted Granola", a:"1 bag", t:"store brand", p:"check shelf", w:"Yoplait mornings."},
         {k:"cereal", n:"Cinnamon Protein Cheerios", a:"1 box", t:"researched", p:"check shelf", w:"Rushed mornings. 8 g protein, about double regular cereal."},
         {k:"pb", n:"Peanut butter", a:"1 jar", t:"store brand", p:"check shelf", w:"Campus pack, PB-banana roll-up and toast."},
-        {k:"honey", n:"Honey", a:"1 bottle", t:"store brand", p:"check shelf", w:"Campus pack, French toast."},
+        {k:"honey", n:"Honey", a:"1 bottle", t:"store brand", p:"check shelf", w:"Campus pack, French toast, honey-garlic bowls."},
         {k:"pouch", n:"Shelf-stable chicken pouches", a:"4–6", q:4, un:["pouch","pouches"], t:"store brand", p:"check shelf", w:"Chicken-and-crackers packs and chicken salad."},
         {k:"ritz", n:"Ritz crackers", a:"1 box", t:"store brand", p:"check shelf", w:"Crackers packs and snack boxes."},
         {k:"pasta", n:"Pasta, elbows or shells", a:"1 lb", t:"store brand", p:"check shelf", w:"Meat-sauce pasta and chicken mac."},
         {k:"ketchup", n:"Ketchup", a:"1 bottle", t:"store brand", p:"check shelf", w:"Burger sauce and Cane's-style dip."},
         {k:"mayo", n:"Mayo", a:"1 jar", t:"store brand", p:"check shelf", w:"Burger sauce, dip, wraps, chicken salad."},
+        {k:"rice", n:"Microwave rice pouches", a:"4", q:4, un:["pouch","pouches"], t:"store brand", p:"check shelf", w:"Honey-garlic chicken bowls. 90 seconds in the bag; they keep for months."},
+        {k:"soy", n:"Less-sodium soy sauce", a:"1 bottle", t:"store brand", p:"check shelf", w:"Honey-garlic bowls. Less-sodium cuts about a third of the salt and tastes the same in a sauce."},
         {k:"caesar", n:"Caesar dressing", a:"1 bottle", t:"store brand", p:"check shelf", w:"Caesar wraps."},
         {k:"soup", n:"Campbell's Condensed Tomato Soup", a:"2 cans", q:2, un:["can","cans"], t:"store brand", p:"check shelf", w:"Grilled cheese lunches. Each can is two."},
         {k:"oil", n:"Olive oil", a:"1 bottle", t:"store brand", p:"check shelf", w:"Broccoli sides and subs."},
@@ -1170,7 +1172,7 @@ var DATA = [
         {k:"cheddar", n:"Kirkland Signature Shredded Sharp Cheddar", a:"1 twin pack", t:"researched", p:"est. ~$16.99",
          w:"Scrambles, quesadillas, tacos, burgers, mac. Freeze the second bag unopened."},
         {k:"marinara", n:"Rao's Homemade Marinara", a:"1 two-pack", t:"researched", p:"est. under $11",
-         w:"Pasta nights and pizza toast. No added sugar."},
+         w:"Pasta nights, pizza toast and chicken parm melts. No added sugar."},
         {k:"bar", n:"Kirkland Signature Protein Bar Variety Pack", a:"1 box of 20", t:"researched", p:"est. $20–24",
          w:"Permanent backpack slot so a missed lunch isn't a missed meal."}
       ]}
@@ -1345,7 +1347,7 @@ function editQty(btn){
    one lb, one cup), so stock levels refill by count x quantity when you check
    something off (store:key -> count) */
 var PACK={"WinCo:eggs":18,"WinCo:bread":15,"WinCo:turkey":16,"WinCo:provolone":20,"WinCo:beef":16,"WinCo:milk":16,"WinCo:yoplait":8,
-  "WinCo:tortilla":8,"WinCo:smalltort":10,"WinCo:bun":8,"WinCo:hashbrown":10,"WinCo:fries":10,"WinCo:pb":14,"WinCo:pouch":1,"WinCo:pasta":16,
+  "WinCo:tortilla":8,"WinCo:smalltort":10,"WinCo:bun":8,"WinCo:hashbrown":10,"WinCo:fries":10,"WinCo:pb":14,"WinCo:pouch":1,"WinCo:rice":1,"WinCo:pasta":16,
   "WinCo:soup":2,"WinCo:cereal":10,"WinCo:chunks":8,"WinCo:sausage":10,"WinCo:cheddar":8,"WinCo:marinara":6,"WinCo:bar":4,"WinCo:chicken":24,
   "Costco:chicken":48,"Costco:chunks":21,"Costco:sausage":48,"Costco:cheddar":64,"Costco:marinara":12,"Costco:bar":20};
 var BOUGHT_NOW={};
@@ -1835,7 +1837,7 @@ document.getElementById("resetBtn").addEventListener("click", function(){
 });
 
 /* ---- start ---- */
-var BUILD="2026.11.02-a";   /* date + letter, like Daily Protocol */
+var BUILD="2026.11.02-b";   /* date + letter, like Daily Protocol */
 load();
 document.getElementById("weekLabel").textContent = WEEK_LABEL;
 document.title = "Grocery \u2014 " + WEEK_LABEL;
