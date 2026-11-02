@@ -695,9 +695,11 @@
   }
 </style>
 <script>
-/* ===================== Kitchen sync (v3.8) =====================
+/* ===================== Kitchen sync (v3.9) =====================
    Keeps the kitchen app's saved data in step across devices through your own
-   Cloudflare Worker (kitchen-sync). Shared by index.html and grocery.html.
+   Cloudflare Worker (kitchen-sync). Shared, word for word, by index.html,
+   grocery.html and workout.html (Lift): every page must allow the same keys,
+   because they share one "last synced" mark on this origin.
 
    - Only the kitchen app's own keys are synced. This origin also hosts Daily
      Protocol, so nothing outside the allowlist below ever leaves the device.
@@ -707,14 +709,40 @@
    - Before a sync overwrites anything here, the old values are kept so
      "Undo last sync" in Settings can put them back.
    - The password is typed in Settings and stays on the device. It is never
-     in the page source, which is public on GitHub. */
+     in the page source, which is public on GitHub.
+   - Lift workouts sync as one key per session (lift_s_v1_<day>|<week>). Those
+     keys are merged exercise by exercise (the newest edit of each exercise
+     wins) instead of whole-key, and a device always pulls the cloud copy
+     before sending its own, so a session edited on two devices keeps both. */
 (function(){
   var CFG="kitchenSync_v1", META="kitchenSyncMeta_v1", ACK="kitchenSyncAck_v1", UNDO="kitchenSyncUndo_v1";
   var EXACT=["mealRatings_v1","pantryItems_v2","pantryPrefs_v1","myMeals_v1","weightGoal_v1","stock_v1",
              "ingLinks_v1","runningLow_v1","recentMeals_v1","ingAliases_v1","groceryAisles_v1","inv_v1"];
-  var PREFIX=["day_v1_","prepdone-","kitchen-shop-","thuCheck_","grocery_"];
+  var PREFIX=["day_v1_","prepdone-","kitchen-shop-","thuCheck_","grocery_","lift_s_v1_"];
   function synced(k){ if(typeof k!=="string") return false; if(EXACT.indexOf(k)>=0) return true;
     for(var i=0;i<PREFIX.length;i++){ if(k.indexOf(PREFIX[i])===0) return true; } return false; }
+
+  /* ---- Lift sessions: merged per exercise ---- */
+  var LIFT="lift_s_v1_";
+  function mergeable(k){ return typeof k==="string" && k.indexOf(LIFT)===0; }
+  function fillOf(r){ var n=0; if(!r) return 0; if(r.w!=null && r.w!=="") n++;
+    ["s","L","R"].forEach(function(f){ (r[f]||[]).forEach(function(v){ if(typeof v==="number") n++; }); }); return n; }
+  /* a = this device's copy, b = the cloud's (both JSON strings).
+     Returns {v: merged string, mine: true if this device's copy added anything} */
+  function liftMerge(a,b){
+    var A=null,B=null; try{ A=JSON.parse(a); }catch(e){} try{ B=JSON.parse(b); }catch(e){}
+    if(!A||typeof A!=="object") return {v:b, mine:false};
+    if(!B||typeof B!=="object") return {v:a, mine:true};
+    var la=A.log||{}, lb=B.log||{}, out={log:{}}, mine=false;
+    Object.keys(lb).forEach(function(x){ out.log[x]=lb[x]; });
+    Object.keys(la).forEach(function(x){
+      var p=la[x], q=lb[x], pu=(p&&p.u)||0, qu=(q&&q.u)||0;
+      if(!q || pu>qu || (pu===qu && fillOf(p)>fillOf(q))){ out.log[x]=p; if(JSON.stringify(p)!==JSON.stringify(q)) mine=true; }
+    });
+    if((A.du||0)>(B.du||0) && (A.date||"")!==(B.date||"")){ out.date=A.date; out.du=A.du; mine=true; }
+    else { if(B.date!=null) out.date=B.date; if(B.du!=null) out.du=B.du; }
+    return {v: mine?JSON.stringify(out):b, mine:mine};
+  }
 
   var LS; try{ LS=window.localStorage; }catch(e){ return; }
   var S=Storage.prototype, rawSet=S.setItem, rawDel=S.removeItem, rawGet=S.getItem;
@@ -759,14 +787,18 @@
      then saving that form would write the old copy back over the new one.
      Mid-task, a sync only uploads; the download waits until you're done. */
   var pullWaiting=false;
-  function sync(mode, over){
+  function sync(mode, over, round2){
     var c=over||cfg();
     if(!c || !c.url || !c.token) return Promise.resolve({ok:false, msg:"Sync isn't set up on this device."});
     if(!over && !c.on) return Promise.resolve({ok:false, msg:"Sync is off."});
     if(busy){ again=true; return Promise.resolve({ok:false, msg:"busy"}); }
     busy=true;
-    var m=rj(META,{}), keys={}, sent=[];
-    if(!mode || mode==="force"){ dirtyKeys().forEach(function(k){ keys[k]={v:get(k), t:m[k]||1}; sent.push(k); }); }
+    var m=rj(META,{}), keys={}, sent=[], held=0;
+    if(!mode || mode==="force"){ dirtyKeys().forEach(function(k){
+      /* Lift keys go up only after this device has seen the cloud copy (round 2),
+         so the Worker's newer-wins rule can never drop another device's sets */
+      if(mergeable(k) && !round2){ held++; return; }
+      keys[k]={v:get(k), t:m[k]||1}; sent.push(k); }); }
     var since=(mode==="adopt"||mode==="probe")?0:(c.since||0);
     return fetch(endpoint(c),{method:"POST", headers:{"Authorization":"Bearer "+c.token, "Content-Type":"application/json"},
                               body:JSON.stringify({since:since, keys:keys})})
@@ -784,6 +816,16 @@
         var meta=rj(META,{}), ack=rj(ACK,{}), undo={}, changed=[];
         Object.keys(srv).forEach(function(k){
           if(!synced(k)) return;
+          if(mergeable(k) && mode!=="adopt"){
+            var le=srv[k], lc=get(k);
+            if(sent.indexOf(k)>=0 && le.t===(meta[k]||1)){ ack[k]=le.t; return; }   /* our own copy, stored */
+            if(lc!=null && le.v!=null && lc!==le.v){
+              var mg=liftMerge(lc, le.v);
+              if(mg.v!==lc){ undo[k]=lc; changed.push(k); applying=true; put(k,mg.v); applying=false; }
+              if(mg.mine){ meta[k]=Math.max(Date.now(), le.t+1); } else { meta[k]=le.t; ack[k]=le.t; }
+              return;
+            }
+          }
           if(pushOnly){ if(sent.indexOf(k)>=0 && srv[k].t===(meta[k]||1)) ack[k]=srv[k].t; else pullWaiting=true; return; }
           var e=srv[k], lt=meta[k]||0, cur=get(k);
           if(mode==="adopt" || e.t>lt){
@@ -796,31 +838,50 @@
         if(changed.length) wj(UNDO,{at:Date.now(), keys:undo});
         var c2=cfg()||c; if(!pushOnly) c2.since=res.at||c2.since||0; c2.last={at:Date.now(), ok:true, pulled:changed.length, pushed:sent.length}; wj(CFG,c2);
         emit();
-        if(changed.length) remoteChanged();
-        return {ok:true, pulled:changed.length, pushed:sent.length};
+        if(changed.length) remoteChanged(changed);
+        return {ok:true, pulled:changed.length, pushed:sent.length, held:held};
       })
       .catch(function(err){
         var msg=(err && err.user) ? err.message : "Couldn't reach your Worker. You may be offline, or the address is wrong.";
         if(!over) setLast({at:Date.now(), ok:false, msg:msg});
         return {ok:false, msg:msg};
       })
-      .then(function(r){ busy=false; if(again){ again=false; schedule(300); } return r; });
+      .then(function(r){
+        busy=false;
+        if(r.ok && r.held && !round2) return sync(mode==="force"?"force":undefined, over, true).then(function(r2){
+          return r2.ok ? {ok:true, pulled:r.pulled+r2.pulled, pushed:r.pushed+r2.pushed} : r2; });
+        if(again){ again=false; schedule(300); } return r; });
   }
 
   /* New data arrived from another device. The app reads storage once when it
      opens, so reload, unless you're in the middle of something. */
-  var reloadWaiting=false;
+  var reloadWaiting=false, hookWaiting=[];
   function quiet(){
-    if(document.querySelector(".v3-sheet.open, .overlay.show")) return false;
+    if(document.querySelector(".v3-sheet.open, .overlay.show, dialog[open]")) return false;
     var a=document.activeElement; if(a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return false;
     return true;
   }
-  function remoteChanged(){
+  /* A page only reacts to its own data: Lift ignores kitchen keys and the
+     kitchen pages ignore Lift sessions. A page that sets
+     window.KitchenSyncChanged = function(keys){...} redraws in place instead
+     of reloading (Lift does, so a running rest timer survives a sync). */
+  function ownKeys(ks){
+    var lift=window.KitchenSyncPage==="lift";
+    return ks.filter(function(k){ return lift ? mergeable(k) : !mergeable(k); });
+  }
+  function remoteChanged(ks){
+    ks=ownKeys(ks||[]); if(!ks.length) return;
+    if(typeof window.KitchenSyncChanged==="function"){
+      hookWaiting=hookWaiting.concat(ks);
+      if(quiet()){ var h=hookWaiting; hookWaiting=[]; try{ window.KitchenSyncChanged(h); }catch(e){} }
+      return;
+    }
     if(quiet()){ location.reload(); return; }
     reloadWaiting=true;   /* after "Sync now" or first connect, from inside Settings */
   }
   setInterval(function(){
     if(!quiet()) return;
+    if(hookWaiting.length){ var h=hookWaiting; hookWaiting=[]; try{ window.KitchenSyncChanged(h); }catch(e){} }
     if(reloadWaiting){ location.reload(); return; }
     if(pullWaiting && !busy){ pullWaiting=false; sync(); }
   }, 1500);
@@ -835,7 +896,7 @@
   if(ready()) setTimeout(function(){ sync(); }, 400);
 
   window.KitchenSync={
-    status:status, sync:function(){ return sync("force"); },
+    status:status, sync:function(){ return sync("force"); }, liftMerge:liftMerge,
     /* first connect on a device: test the password, see whether the cloud
        already has data, and let Settings ask which copy to keep */
     probe:function(url,token){ return sync("probe",{url:url, token:token, on:true}); },
@@ -8172,7 +8233,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.10.31-a";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.11.02-a";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
