@@ -574,7 +574,7 @@
   .v3-dot.all { background: var(--green); border-color: var(--green); }
   .v3-dot.today { box-shadow: 0 0 0 2px var(--paper), 0 0 0 4px var(--today); }
   .v3-headline { font-size: 15px; font-weight: 700; color: var(--ink); margin: 10px 0 14px; }
-  .v3-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .v3-stats { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .v3-stat { background: var(--paper); border-radius: 14px; padding: 11px 12px; }
   .v3-stat b { display: block; white-space: nowrap; font-size: 19px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
   .v3-stat span { font-size: 12px; color: var(--ink-faded); line-height: 1.35; display: block; }
@@ -649,6 +649,13 @@
   .v3-fresh-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 6px 0; font-size: 14px; color: var(--ink); line-height: 1.4; }
   .v3-fresh-row button { flex: 0 0 auto; font: inherit; font-size: 12px; font-weight: 800; border: 1.5px solid var(--green); background: transparent; color: var(--green); border-radius: 99px; padding: 5px 12px; cursor: pointer; }
   .v3-fresh-note { margin: 4px 0 0; font-size: 12px; color: var(--ink-soft); }
+  .v3-fresh.pro { background: var(--blue-soft); }
+  .v3-fresh.pro .v3-fresh-h { color: var(--blue); }
+  .v3-fresh.pro .v3-fresh-row button { border-color: var(--blue); color: var(--blue); }
+  .v3-fresh.pro .v3-fresh-row small { display: block; color: var(--ink-faded); font-size: 12px; }
+  .v3-fresh.pro .v3-pro-skip { border: 0; background: none; font: inherit; font-size: 12px; font-weight: 700; color: var(--ink-faded); padding: 6px 0 0; cursor: pointer; }
+  .v3-stock-eta { font-size: 12px; color: var(--ink-faded); margin: 2px 0 0; }
+  .v3-stock.low .v3-stock-eta, .v3-stock-eta.soon { color: var(--orange); font-weight: 700; }
   .v3-tile-tag.soon { background: var(--green-soft); color: var(--green); }
   .v3-low-panel { background: var(--card); border-radius: 20px; padding: 16px; margin: 0 0 14px; box-shadow: 0 1px 0 var(--rule); }
   .v3-low-panel h3 { font-size: 17px; font-weight: 800; margin: 0 0 4px; color: var(--ink); }
@@ -1515,6 +1522,7 @@
   </section>
 
   <div id="t-fresh"></div>
+  <div id="t-pro"></div>
   <section class="v3-block">
     <h2 class="v3-h">Log a meal</h2>
     <div class="v3-seg" id="v3-seg" role="tablist" aria-label="Meal"></div>
@@ -4463,6 +4471,7 @@ function renderToday(){
   renderThursday();
   renderCheck();
   if(typeof renderFresh==="function") renderFresh();
+  if(typeof renderProNudge==="function") renderProNudge();
   renderRotation();
   setTimeout(renderRing, 0);   /* after the budget text below is written */
 
@@ -6238,11 +6247,14 @@ function stockPanelHTML(){
   const inv=loadInv();
   const keys=Object.keys(INV_UNIT).sort(function(a,b){ return INGR[a].n.localeCompare(INGR[b].n); });
   const on=keys.filter(function(k){ return inv[k]; }), off=keys.filter(function(k){ return !inv[k]; });
+  const rate=(typeof invUsage==="function")?invUsage():{};
   return '<div class="v3-low-panel"><h3>Stock levels</h3>'+
-    '<p>Checking an item off on the grocery list fills it up. Logging a meal counts it down, and when about one meal is left it goes on Running low for you.</p>'+
+    '<p>Checking an item off on the grocery list fills it up. Logging a meal counts it down. Once there\u2019s a few days of logging, each item shows when it runs out at your pace, and anything that won\u2019t last until the next shop goes on Running low for you.</p>'+
     (on.length ? on.map(function(k){ const e=inv[k], pct=Math.max(0,Math.min(100,e.full?e.left/e.full*100:0)), lowish=e.left<invLowLine(k,e.full);
       return '<div class="v3-stock'+(lowish?' low':'')+'"><div class="v3-stock-top"><b>'+esc(INGR[k].n)+'</b><span>'+invFmt(e.left)+' '+esc(INV_UNIT[k])+'</span></div>'+
         '<div class="v3-stock-bar"><i style="width:'+pct+'%"></i></div>'+
+        (function(){ const t=(typeof invEtaText==="function")?invEtaText(k,rate):""; if(!t) return ""; const dl=invDaysLeft(k,rate);
+          return '<div class="v3-stock-eta'+(dl!=null&&dl<daysToShop()+1?' soon':'')+'">'+esc(t)+'</div>'; })()+
         '<div class="v3-stock-btns"><button type="button" onclick="invSet(\''+k+'\',\'full\')">Refill</button><button type="button" onclick="invSet(\''+k+'\',\'out\')">I’m out</button><button type="button" onclick="invSet(\''+k+'\',\'stop\')">Stop tracking</button></div></div>';
     }).join('') : '<p style="margin:0 0 10px">Nothing tracked yet. It starts on its own the next time you check these off at the store, or tap one below if you have a full pack now.</p>')+
     (off.length ? '<div class="v3-label" style="margin:12px 2px 7px">Start tracking (tap if you have a full pack)</div><div class="v3-chips" style="margin:0">'+
@@ -6276,7 +6288,122 @@ function renderFresh(){
     '<p class="v3-fresh-note">Pick for me favors meals that use these up.</p></div>';
 }
 reconcileInv();
-document.addEventListener("visibilitychange", function(){ if(document.visibilityState==="visible"){ reconcileInv(); renderFresh(); } });
+
+/* ================= 2026.11.03 — ROOM FOR PROTEIN =================
+   Late in the day, if protein is running behind, offer one or two things
+   from the kitchen that close the gap and still fit under the calorie
+   target. Something to add, never a "you missed". One tap logs it and
+   counts the stock down like any other card. */
+const PRO_ADDS=[
+  {k:"pa_bar",    n:"Protein bar",                 parts:[["bar",1]],                  how:"Straight from the backpack."},
+  {k:"pa_turkey", n:"Turkey + provolone roll-ups", parts:[["turkey",3],["provolone",1]], how:"3 oz deli turkey rolled around a slice of provolone, torn in strips."},
+  {k:"pa_chicken",n:"Chicken strips, cold or warm",parts:[["chicken",3]],              how:"3 oz of the fully cooked strips; 45 sec in the microwave if you want them warm."},
+  {k:"pa_pouch",  n:"Chicken pouch + Ritz",        parts:[["pouch",1],["ritz",1]],     how:"One pouch on 5 crackers."},
+  {k:"pa_eggs",   n:"2 microwave scrambled eggs",  parts:[["eggs",2],["butter",1]],    how:"Whisk 2 eggs in a buttered mug, microwave 45 sec, stir, 30 sec more."},
+  {k:"pa_milk",   n:"Glass of milk",               parts:[["milk",1]],                 how:"1 cup."}
+];
+function proAddNut(a){ let c=0,p=0,cb=0,f=0; a.parts.forEach(function(pt){ const n=ingNut(pt[0],pt[1]); c+=n.c; p+=n.p; cb+=n.cb; f+=n.f; });
+  return {c:Math.round(c/5)*5, p:Math.round(p), cb:Math.round(cb), f:Math.round(f)}; }
+function proAddOk(a){
+  const low=loadLow(), inv=loadInv();
+  return a.parts.every(function(pt){ const e=inv[pt[0]], f=low[pt[0]];
+    if(e) return e.left>=pt[1];                  /* tracked: go by the count */
+    return !(f && !f.auto);                      /* untracked: only a manual "out" stops it */ });
+}
+function proNudgeState(){
+  if(todayStr!==isoToday()) return null;
+  try{ if(localStorage.getItem("proSkip_"+todayStr)==="1") return null; }catch(e){}
+  const now=new Date(), h=now.getHours()+now.getMinutes()/60;
+  if(h<14 || h>=22) return null;
+  const pt=(typeof PROTEIN_TARGET_G!=="undefined"?PROTEIN_TARGET_G:184), tot=logTotals();
+  const gap=Math.round(pt-tot.p), calLeft=dayTarget()-tot.c;
+  /* where protein "should" be by now, across an 8am–9pm eating day */
+  const pace=pt*Math.min(1,Math.max(0,(h-8)/13));
+  if(gap<25 || tot.p>pace-20 || calLeft<130) return null;
+  const today=(dayState.log||[]).map(function(i){ return i.rk; });
+  const picks=PRO_ADDS.map(function(a){ return {a:a, nu:proAddNut(a)}; })
+    .filter(function(x){ return proAddOk(x.a) && x.nu.c<=calLeft+40 && x.nu.p>=8; })
+    .sort(function(x,y){ const tx=today.indexOf(x.a.k)>=0, ty=today.indexOf(y.a.k)>=0;
+      if(tx!==ty) return tx?1:-1;                      /* something different from earlier first */
+      return (y.nu.p/y.nu.c)-(x.nu.p/x.nu.c); })
+    .slice(0,2);
+  if(!picks.length) return null;
+  return {gap:gap, calLeft:calLeft, picks:picks};
+}
+function renderProNudge(){
+  const host=$("t-pro"); if(!host) return;
+  const st=proNudgeState(); if(!st){ host.innerHTML=''; return; }
+  host.innerHTML='<div class="v3-fresh pro"><div class="v3-fresh-h"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4v16M4 12h16"/></svg>Room for protein \u00b7 about '+st.gap+' g to go</div>'+
+    st.picks.map(function(x){
+      return '<div class="v3-fresh-row"><span><b>'+esc(x.a.n)+'</b> \u2014 +'+x.nu.p+' g, '+x.nu.c+' cal<small>'+esc(x.a.how)+'</small></span>'+
+        '<button type="button" onclick="logProAdd(\''+x.a.k+'\')">Add</button></div>'; }).join('')+
+    '<p class="v3-fresh-note">Either one fits in the '+st.calLeft.toLocaleString("en-US")+' cal you have left.</p>'+
+    '<button type="button" class="v3-pro-skip" onclick="try{localStorage.setItem(\'proSkip_\'+todayStr,\'1\')}catch(e){};renderProNudge()">Not today</button></div>';
+}
+function logProAdd(k){
+  const a=PRO_ADDS.find(function(x){ return x.k===k; }); if(!a) return;
+  const nu=proAddNut(a), took=invConsume(a.parts);
+  dayState.log=dayState.log||[];
+  dayState.log.push({id:uid(), slot:rotSlot({slot:"snack"}), name:a.n, rk:a.k, cal:nu.c, pro:nu.p, carb:nu.cb, fat:nu.f, inv:took});
+  saveDay(todayStr,dayState);
+  renderToday();
+  if(typeof renderCalendar==="function") renderCalendar();
+  showToast("Logged \u2014 "+a.n+" (+"+nu.p+" g)");
+}
+
+/* ================= 2026.11.03 — RUNNING-OUT FORECAST =================
+   Every logged meal already records what it took from stock. Two weeks of
+   that is a usage rate, and a rate plus what's left is a run-out day.
+   Before the Friday shop (Thu and Fri), anything that would run out before
+   the FOLLOWING Friday goes on Running low by itself, so it's on the list
+   while you're still at the store. Any day, anything that would run out
+   before this Friday goes on too. Marked auto, so it never blocks a meal
+   while there's still enough, and a refill clears it. */
+const SHOP_DOW=5;   /* Friday */
+function invUsage(){
+  const use={}; let first=null;
+  for(let i=14;i>=1;i--){
+    const ds=isoAddDays(todayStr,-i), log=getDay(ds).log||[];
+    if(log.length && first==null) first=i;
+    log.forEach(function(x){ (x.inv||[]).forEach(function(t){ use[t[0]]=(use[t[0]]||0)+t[1]; }); });
+  }
+  const span=Math.max(5, first||0);           /* at least 5 days, so one big day isn't a "rate" */
+  const rate={}; Object.keys(use).forEach(function(k){ rate[k]=use[k]/span; });
+  return rate;
+}
+function invDaysLeft(k, rate){
+  const e=loadInv()[k], r=(rate||invUsage())[k]; if(!e || !r) return null;
+  return e.left/r;
+}
+function daysToShop(){ const d=(SHOP_DOW-todayDate.getDay()+7)%7; return d; }
+function invForecastFlag(){
+  if(todayStr!==isoToday()) return;
+  const rate=invUsage(), inv=loadInv(), low=loadLow(), dts=daysToShop();
+  const preShop=(dts<=1);
+  const horizon=preShop ? dts+7 : dts;        /* Thu/Fri: cover next week too */
+  const added=[];
+  Object.keys(inv).forEach(function(k){
+    if(low[k] || !INGR[k] || !rate[k]) return;
+    const dl=inv[k].left/rate[k];
+    if(dl<horizon){ low[k]={n:INGR[k].n, at:Date.now(), auto:true, fc:Math.max(0,Math.round(dl))}; added.push(k); }
+  });
+  if(!added.length) return;
+  saveLow(low);
+  const names=added.map(function(k){ return INGR[k].n; });
+  showToast((names.length>2? names.slice(0,2).join(", ")+" + "+(names.length-2)+" more" : names.join(" and "))+
+    " will run out before "+(preShop?"next week's shop":"Friday")+" \u2014 added to your grocery list");
+}
+function invEtaText(k, rate){
+  const dl=invDaysLeft(k, rate); if(dl==null) return "";
+  const d=Math.floor(dl);
+  if(d<=0) return "Runs out today at your pace";
+  if(d>=21) return "Lasts 3+ weeks at your pace";
+  const dn=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+  const day=new Date(todayDate.getTime()+d*864e5);
+  return "Runs out around "+(d<7?dn[day.getDay()]:dn[day.getDay()]+" "+(day.getMonth()+1)+"/"+day.getDate())+" at your pace";
+}
+invForecastFlag();
+document.addEventListener("visibilitychange", function(){ if(document.visibilityState==="visible"){ reconcileInv(); invForecastFlag(); renderFresh(); renderProNudge(); } });
 
 /* ---- "Pick for me": choosing is the hard part, so let the app choose ----
    Skips anything you're out of and anything you had yesterday. On campus
@@ -6827,6 +6954,9 @@ function renderWeek(){
   const avgC=logged.length?Math.round(logged.reduce(function(a,d){ return a+d.cal; },0)/logged.length):0;
   const avgP=logged.length?Math.round(logged.reduce(function(a,d){ return a+d.pro; },0)/logged.length):0;
   const tr=weightTrend();
+  const past=logged.filter(function(d){ return d.ds<todayStr; });
+  const floorF=(typeof CAL_FLOOR!=="undefined"?CAL_FLOOR:1900);
+  const atFloor=past.filter(function(d){ return d.cal>=floorF; }).length;
   let head;
   if(!logged.length) head="Nothing logged this week yet. One tap on a meal starts it.";
   else if(full>=5) head=full+" of 7 days with all three meals. That's the habit working.";
@@ -6845,6 +6975,7 @@ function renderWeek(){
     '<div class="v3-stats">'+
       '<div class="v3-stat"><b>'+(logged.length?avgC.toLocaleString("en-US"):"\u2014")+'</b><span>avg calories<br>target '+ct.toLocaleString("en-US")+'</span></div>'+
       '<div class="v3-stat"><b>'+(logged.length?avgP+' g':"\u2014")+'</b><span>avg protein<br>target '+pt+' g</span></div>'+
+      '<div class="v3-stat"><b>'+(past.length?atFloor+' of '+past.length:"\u2014")+'</b><span>days at '+floorF.toLocaleString("en-US")+'+<br>finished days</span></div>'+
       '<div class="v3-stat"><b>'+(tr?((tr.to.w-tr.from.w>0?"+":"")+(tr.to.w-tr.from.w).toFixed(1)):"\u2014")+'</b><span>'+(tr?'lbs over '+tr.n+' weigh-ins':'weight trend')+'</span></div>'+
     '</div>'+
     '<p class="foot">'+(tr?'Weight moves around day to day; the trend over a few weeks is what counts.':'Log your weight two or three times a week and a trend will show up here.')+
@@ -8280,7 +8411,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.11.02-b";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.11.03-a";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
