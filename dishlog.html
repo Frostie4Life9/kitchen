@@ -1149,6 +1149,41 @@ body,button,.dl-search input{font-family:'Libre Franklin',system-ui,sans-serif!i
 @media (prefers-color-scheme:dark){
   .bp,.bk,.bx,.bem,.bai,.bca,.cc.chosen{color:#1A1316!important}
 }
+
+/* v19 — log a dish */
+.dl-logbar{display:flex;gap:8px;padding:14px 12px 0}
+.dl-log-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;background:var(--accent);color:#fff;border:none;border-radius:999px;padding:12px 16px;font:700 14px inherit;font-family:inherit;cursor:pointer}
+.dl-new-btn{flex:0 0 auto;background:transparent;color:var(--ink);border:1px solid var(--border2);border-radius:999px;padding:12px 15px;font:600 13px inherit;font-family:inherit;cursor:pointer}
+.lk-search{display:flex;gap:8px;align-items:stretch;margin-top:4px}
+.lk-search .field-input{margin:0;flex:1;min-width:0;font-size:16px}
+.lk-search .bp{flex:0 0 auto}
+.lk-status{font-size:12px;color:var(--ink2);margin:8px 2px 0;min-height:16px;line-height:1.45}
+.lk-label{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);padding:10px 2px 6px}
+.lk-card{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid var(--border);border-radius:14px;padding:11px 12px;margin-bottom:7px}
+.lk-main{flex:1;min-width:0}
+.lk-name{font-weight:700;font-size:14px;color:var(--ink);line-height:1.3}
+.lk-desc{font-size:12.5px;color:var(--ink2);line-height:1.4;margin-top:2px}
+.lk-meta{font-size:11.5px;color:var(--ink3);margin-top:4px}
+.lk-meta a{color:inherit;text-decoration:underline;text-underline-offset:2px}
+.lk-acts{display:flex;flex-direction:column;gap:5px;flex:0 0 auto}
+.lk-acts .bp,.lk-acts .bs{padding:7px 12px;font-size:12px;white-space:nowrap}
+.lk-web{width:100%;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;background:var(--accent-light);color:var(--accent);border:1px dashed var(--accent);border-radius:14px;padding:11px 13px;margin:4px 0 8px;font:700 13.5px inherit;font-family:inherit;cursor:pointer}
+.lk-web-sub{font-weight:500;font-size:11.5px;opacity:.8}
+#full-menu-btn{white-space:nowrap}
+.lk-none{font-size:12.5px;color:var(--ink3);padding:10px 2px}
+.lk-keybox{background:var(--surface);border-radius:12px;padding:11px 12px;margin:6px 0 8px}
+.lk-keytxt{font-size:12px;color:var(--ink2);line-height:1.45;margin-bottom:6px}
+.lk-manual{margin:10px 0 6px;border-top:1px solid var(--border);padding-top:10px}
+.lk-manual>summary{font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer;padding:4px 0}
+.lk-settings{margin-bottom:12px}
+.tag-try{background:var(--green-light,#E6F0E4);color:var(--green,#3F6B3A)}
+.tag-kcal{font-size:10.5px;color:var(--ink3);align-self:center}
+.dl-try-link{display:block;margin:6px 0 0;background:none;border:none;padding:4px 0;color:var(--accent);font:600 12.5px inherit;font-family:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.dl-empty-menu{display:flex;flex-direction:column;align-items:center;gap:8px}
+.dl-em-t{font-family:'Fraunces',serif;font-size:18px;color:var(--ink)}
+.dl-em-s{max-width:300px;line-height:1.5}
+@media (prefers-color-scheme:dark){.dl-log-btn{color:#1A1316}}
+
 </style>
 
 
@@ -1192,8 +1227,8 @@ body,button,.dl-search input{font-family:'Libre Franklin',system-ui,sans-serif!i
       <input class="field-input" id="qa-name" type="text" placeholder="Restaurant name" autocomplete="off" onkeydown="if(event.key==='Enter')dlQuickAdd(false)">
       <input class="field-input" id="qa-cuisine" type="text" placeholder="Type of food (optional)" autocomplete="off">
       <input class="field-input" id="qa-loc" type="text" placeholder="Location (optional) — e.g. Provo, UT" autocomplete="off">
-      <div class="btn-row"><button class="bp" onclick="dlQuickAdd(false)">Add &amp; log a dish</button><button class="bs" id="qa-auto" onclick="dlQuickAdd(true)">Add + import menu</button></div>
-      <div class="qa-hint">“Import menu” uses your API key and web search — a one-time cost of a few cents to tens of cents per restaurant.</div>
+      <div class="btn-row"><button class="bp" onclick="dlQuickAdd(false)">Add &amp; log a dish</button><button class="bs" id="qa-auto" onclick="dlQuickAdd(true)">Add + import full menu</button></div>
+      <div class="qa-hint">You don't need a full menu — dishes get looked up as you log them. “Import full menu” is a one-time snapshot for browsing a place you're exploring (uses your API key, a few cents to tens of cents). It never re-syncs.</div>
       <div class="sync-status" id="qa-status"></div>
     </div>
     <div class="qa-or">or build the full menu for free, manually</div>
@@ -1281,14 +1316,19 @@ body,button,.dl-search input{font-family:'Libre Franklin',system-ui,sans-serif!i
     <div class="stats-grp" id="rh-stats"></div>
     <div class="stats-btns">
       <button class="bf" id="rated-filter-btn" onclick="toggleRatedFilter()">Rated items</button>
+      <button class="bf" id="full-menu-btn" onclick="dlToggleFullMenu()" style="display:none">Full menu</button>
       <button class="bem" onclick="showEditRest()">Edit menu</button>
     </div>
   </div>
   <div class="scrollable" id="rest-scroll">
+    <div class="dl-logbar">
+      <button class="dl-log-btn" onclick="dlOpenLog()"><span aria-hidden="true">＋</span> Log a dish</button>
+      <button class="dl-new-btn" onclick="dlOpenLog('new')" title="Ask Claude what's new or limited-time here">What's new?</button>
+    </div>
     <div id="hist-area"></div>
     <div class="sug-area" id="sug-area"></div>
     <div id="menu-list"></div>
-    <div class="add-item-row"><button class="bai" onclick="openSheet('sheet-add-item')">+ Add item</button></div>
+    <div class="add-item-row"><button class="bai" onclick="dlOpenLog()">+ Log a dish</button></div>
   </div>
 </div>
 
@@ -1333,10 +1373,23 @@ body,button,.dl-search input{font-family:'Libre Franklin',system-ui,sans-serif!i
   <div class="sheet" id="sheet-add-item-panel">
     <div class="sheet-drag" id="drag-add-item"><div class="sheet-handle"></div></div>
     <div class="sheet-head">
-      <div><div class="sheet-title">Add menu item</div><div class="sheet-sub" id="additem-rest-name"></div></div>
+      <div><div class="sheet-title" id="additem-title">Log a dish</div><div class="sheet-sub" id="additem-rest-name"></div></div>
       <button class="bx" onclick="closeSheet('sheet-add-item')">✕</button>
     </div>
     <div class="sheet-body">
+      <div class="lk-search">
+        <input class="field-input" id="lk-q" type="search" placeholder="What are you eating?" autocomplete="off" enterkeyhint="search"
+          oninput="dlLocalMatches()" onkeydown="if(event.key==='Enter'){event.preventDefault();dlLookup();}">
+        <button class="bp" id="lk-go" onclick="dlLookup()">Look up</button>
+      </div>
+      <div class="lk-status" id="lk-status"></div>
+      <div id="lk-results"></div>
+      <div id="lk-keybox" class="lk-keybox" style="display:none">
+        <div class="lk-keytxt">Looking dishes up uses your own Claude API key (a cent or two per search). Without one you can still add a dish as typed below.</div>
+        <div class="api-key-row"><input type="password" id="lk-key-in" placeholder="sk-ant-… (Claude API key)" autocomplete="off" spellcheck="false"><button class="bs" onclick="dlSaveLookupKey()" style="flex:0 0 auto">Save</button></div>
+      </div>
+      <details class="lk-manual" id="lk-manual" ontoggle="if(this.open)dlOfferManual()">
+      <summary>Not listed? Add it as typed</summary>
       <div class="field-label">Item name</div>
       <input class="field-input" id="inp-item-name" type="text" placeholder="e.g. Green chile cheeseburger" />
       <div class="field-label">Category</div>
@@ -1360,10 +1413,18 @@ body,button,.dl-search input{font-family:'Libre Franklin',system-ui,sans-serif!i
           <div id="spec-custom-wrap" style="display:none"><div class="field-label" style="margin-top:0">Ends on</div><input type="date" class="spec-date-input" id="inp-spec-end" /></div>
         </div>
       </div>
-    </div>
-    <div class="sheet-actions">
-      <button class="bp" style="flex:1" onclick="saveNewItem()">Add item</button>
-      <button class="bs" onclick="closeSheet('sheet-add-item')">Cancel</button>
+      <div class="btn-row" style="margin-top:10px"><button class="bp" style="flex:1" onclick="saveNewItem(true)">Add &amp; rate</button><button class="bs" onclick="saveNewItem(false)">Add to try list</button></div>
+      </details>
+      <details class="lk-manual lk-settings">
+        <summary>Lookup sources</summary>
+        <div class="lk-keytxt" id="lk-src-note"></div>
+        <div class="field-label">Claude API key</div>
+        <div class="api-key-row"><input type="password" id="lk-key-in2" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"><button class="bs" onclick="dlSaveLookupKey(2)" style="flex:0 0 auto">Save</button><button class="bs" onclick="clearApiKey();dlPaintLookupSources()" style="flex:0 0 auto">Clear</button></div>
+        <div class="field-label">Nutritionix (optional, for chains)</div>
+        <div class="lk-keytxt">If you have a Nutritionix developer account, chain lookups try it first (instant, with official nutrition) and fall back to Claude.</div>
+        <div class="api-key-row"><input type="text" id="lk-nix-id" placeholder="App ID" autocomplete="off" spellcheck="false"><input type="password" id="lk-nix-key" placeholder="App key" autocomplete="off" spellcheck="false"></div>
+        <div class="btn-row" style="margin-top:0"><button class="bs" onclick="dlSaveNix()">Save Nutritionix</button><button class="bs" onclick="dlClearNix()">Clear</button></div>
+      </details>
     </div>
   </div>
 </div>
@@ -1690,6 +1751,9 @@ let db=JSON.parse(localStorage.getItem('dishlog_v15')||'{"restaurants":[],"items
 // then remap ratings' itemId to the new stable ID.
 (function stableIdMigration(){
   if(localStorage.getItem('dishlog_v15_stableid'))return;
+  // v19: with no seed menus to rebuild items from, remapping would orphan ratings. Every live
+  // install is past this migration, so a fresh browser just marks it done.
+  localStorage.setItem('dishlog_v15_stableid','1');return;
   let byOldId={};
   db.items.forEach(i=>{byOldId[i.id]={restId:i.restId,category:i.category,name:i.name};});
   db.ratings.forEach(r=>{
@@ -1705,8 +1769,7 @@ let db=JSON.parse(localStorage.getItem('dishlog_v15')||'{"restaurants":[],"items
   db.ratings.forEach(r=>{
     if(oldRestToName[r.restId])r.restId=stableRestId(oldRestToName[r.restId]);
   });
-  // Wipe items and restaurants — seedAll() will recreate them with stable IDs
-  db.items=[];db.restaurants=[];
+  // (v19: items are no longer wiped here — there are no seed menus left to rebuild them from)
   localStorage.setItem('dishlog_v15_stableid','1');
 })();
 
@@ -2042,7 +2105,7 @@ function getSuggestions(rid){
   let drk=new Set(['drinks']);
   let onlyDrinks=[...favGrps].every(g=>drk.has(g));
   function score(item){
-    let s=0,grp=catGroup(item.category);
+    let s=item.wantTry?50:0,grp=catGroup(item.category);
     if(onlyDrinks){if(drk.has(grp))s+=10;}
     else{if(drk.has(grp))return -999;if(favCats.has(item.category))s+=20;else if(favGrps.has(grp))s+=10;}
     let txt=(item.name+' '+(item.desc||'')).toLowerCase();
@@ -2057,7 +2120,7 @@ function getSuggestions(rid){
     let grp=catGroup(item.category);
     if(!seen.has(grp)){
       let topItem=db.items.find(i=>(i.ratingKey||stableRatingKey(i.restId,i.name))===top[0].ratingKey);
-      let reason=item.category===topItem?.category?`Similar to your ${fmtScore(top[0].rating)}/10 rated ${topItem.name}`:`Based on your ratings here`;
+      let reason=item.wantTry?'On your try list':item.category===topItem?.category?`Similar to your ${fmtScore(top[0].rating)}/10 rated ${topItem.name}`:`Based on your ratings here`;
       results.push({item,reason});seen.add(grp);
     }
   });
@@ -2699,7 +2762,7 @@ function updateStats(rid){
 }
 
 function openRest(id){
-  processExpiry();ratedFilter=false;currentRestId=id;
+  processExpiry();ratedFilter=false;dlFullMenu=false;currentRestId=id;
   let r=db.restaurants.find(x=>x.id===id);if(!r)return;
   let sw=getRS(r);
   let hero=document.getElementById('rh-hero');
@@ -2748,6 +2811,13 @@ function isSpecCat(cat){
 function renderMenu(rid){
   processExpiry();
   let items=db.items.filter(i=>i.restId===rid);
+  // v19 "My menu": by default only what you've rated, logged or saved to try is drawn, each
+  // dish once. The rest of an imported menu stays stored and shows with "Full menu".
+  let hiddenCount=0;
+  if(!dlFullMenu){
+    let mine=dlMineFilter(items);hiddenCount=dlHiddenCount(items,mine);items=mine;
+  }
+  dlPaintMenuToggle(hiddenCount);
   let regular=items.filter(i=>!i.expired);
   let expired=items.filter(i=>i.expired);
 
@@ -2844,7 +2914,7 @@ function renderMenu(rid){
   Object.keys(cats).forEach(c=>cats[c].sort(itemOrder));
   let sortedCats=Object.keys(cats).sort((a,b)=>catPriority(a,false,rid)-catPriority(b,false,rid));
   let el=document.getElementById('menu-list');el.innerHTML='';
-  if(!items.length){el.innerHTML='<div class="empty">No items yet.</div>';return;}
+  if(!items.length){el.innerHTML=dlEmptyMenuHtml(hiddenCount);return;}
   // Track which rows in the synthetic sections should animate in (newly-tagged duplicates).
   let hoistAnimateTargets=[];
   if(specItems.length){
@@ -3032,6 +3102,9 @@ function buildRow(item,isExpired,nameTags){
     if(nt.oe){
       tags.push(`<span class="tag tag-oe">Online Exclusive</span>`);
     }
+    if(item.wantTry&&!currentRat)tags.push(`<span class="tag tag-try">To try</span>`);
+    let kc=item.nutrition&&item.nutrition.calories;
+    if(kc)tags.push(`<span class="tag-kcal">${Math.round(kc)} cal</span>`);
   }else{
     tags.push(`<span class="tag-unavail">No longer available</span>`);
   }
@@ -3556,12 +3629,10 @@ function toggleCustomDate(){
   let sel=document.getElementById('inp-spec-rotation'),wrap=document.getElementById('spec-custom-wrap');
   if(wrap)wrap.style.display=sel&&sel.value==='custom'?'block':'none';
 }
-function saveNewItem(){
+function saveNewItem(rateNow){
   let name=document.getElementById('inp-item-name').value.trim();if(!name)return;
-  let cat=document.getElementById('inp-item-cat').value.trim()||'Other';
+  let cat=document.getElementById('inp-item-cat').value.trim()||'My dishes';
   let desc=document.getElementById('inp-item-desc').value.trim();
-  let k=name.toLowerCase();
-  if(db.items.find(i=>i.restId===currentRestId&&i.name.trim().toLowerCase()===k)){closeSheet('sheet-add-item');return;}
   let specialty=null;
   let chk=document.getElementById('chk-specialty');
   if(chk&&chk.checked){
@@ -3570,8 +3641,7 @@ function saveNewItem(){
     let endDate=rotation==='custom'?document.getElementById('inp-spec-end').value:null;
     specialty={label,rotation,addedAt:NOW,endDate};
   }
-  db.items.push({id:uid(),ratingKey:stableRatingKey(currentRestId,name),restId:currentRestId,name,desc,category:cat,choices:[],modifications:[],addedAt:specialty?NOW:FAR_PAST,isNew:false,specialty,expired:false});
-  save();closeSheet('sheet-add-item');setTimeout(()=>{renderMenu(currentRestId);updateStats(currentRestId);},280);
+  dlKeepDish({name,description:desc,category:cat,specialty},rateNow!==false?'rate':'try');
 }
 
 // ── BADGE EDITOR ──
@@ -3753,762 +3823,9 @@ function saveBadgeEdit(){
   setTimeout(()=>{renderMenu(currentRestId);},SHEET_CLOSE_MS+ANIM_LEN_MS);
 }
 
-// ── SEED ──
-function eR(name,cuisine,address,flavorLibrary,ltoSourceUrls){
-  let r=db.restaurants.find(x=>x.name===name);
-  if(r){
-    if(flavorLibrary)r.flavorLibrary=flavorLibrary;
-    if(ltoSourceUrls)r.ltoSourceUrls=ltoSourceUrls;
-    return r.id;
-  }
-  let id=stableRestId(name);db.restaurants.push({id,name,cuisine,address,flavorLibrary:flavorLibrary||[],ltoSourceUrls:ltoSourceUrls||[],addedAt:NOW});return id;
-}
-function eI(rid,name,desc,cat,choices,mods,addedAt,spec){
-  let k=name.trim().toLowerCase(),ck=(cat||'').toLowerCase();
-  if(db.items.find(i=>i.restId===rid&&(i.category||'').toLowerCase()===ck&&i.name.trim().toLowerCase()===k))return;
-  db.items.push({id:stableItemId(rid,cat,name),ratingKey:stableRatingKey(rid,name),restId:rid,name,desc:desc||'',category:cat,choices:choices||[],modifications:mods||[],addedAt:addedAt||FAR_PAST,isNew:false,specialty:spec||null,expired:false});
-}
-
-// ── MANIFEST RECONCILIATION ──
-// Each restaurant declares a `seedVersion` in its seed function. When the code's seedVersion
-// is greater than the restaurant's stored seedVersion, applySeedManifest() will reconcile
-// db.items against the manifest:
-//   - Items in the manifest are added (or refreshed if their fields changed)
-//   - Items in db.items NOT in the manifest get one of two treatments:
-//       * If the item has any rating (matched by ratingKey): it becomes `expired=true` so it
-//         is preserved under "No longer available" with the rating intact
-//       * If unrated: it is deleted outright
-// This is the single mechanism that keeps the menu in sync with the canonical seed across
-// every menu rewrite — no more orphan items piling up across iterations.
-function applySeedManifest(rid, currentVersion, manifest, opts){
-  let rest=db.restaurants.find(r=>r.id===rid);
-  if(!rest)return;
-  opts=opts||{};
-  let storedVersion=rest.seedVersion||0;
-  let isUpgrade=currentVersion>storedVersion;
-  // Build lookup maps:
-  //   manifestKeys: (category, name) — full match means "same item, same section"
-  //   manifestNames: just the name — match means "this item is somewhere in the menu"
-  // Distinction: if item moves categories, the old (cat, name) row is stale (delete it,
-  // don't keep as expired). If the item is gone entirely, expire-if-rated, delete-if-not.
-  let manifestKeys=new Set();
-  let manifestNames=new Set();
-  manifest.forEach((m,idx)=>{
-    let key=(m.category||'').toLowerCase()+'|||'+m.name.trim().toLowerCase();
-    manifestKeys.add(key);
-    manifestNames.add(m.name.trim().toLowerCase());
-    m._seedOrder=idx;
-  });
-  let existingForRest=db.items.filter(i=>i.restId===rid);
-  // PASS 0 — RATINGKEY NORMALIZATION
-  // Ensure every existing row uses the canonical key for its name. Older rows may have
-  // synthetic or pre-stable keys; if so, migrate ratings onto the canonical key. Must
-  // happen before reconciliation so cross-listed rows don't drift apart.
-  existingForRest.forEach(i=>{
-    let canonical=stableRatingKey(i.restId,i.name);
-    if(i.ratingKey!==canonical){
-      let oldKey=i.ratingKey;
-      i.ratingKey=canonical;
-      if(oldKey){
-        db.ratings.forEach(r=>{if(r.ratingKey===oldKey)r.ratingKey=canonical;});
-      }
-    }
-  });
-  // PASS 1 — RECONCILE on version upgrade.
-  // ALSO runs on every load (not just upgrades) to deal with "ghost revival": expired rows
-  // whose item is back on the menu under a new category. This is cheap and idempotent.
-  let staleIds=new Set();
-  existingForRest.forEach(i=>{
-    let key=(i.category||'').toLowerCase()+'|||'+i.name.trim().toLowerCase();
-    let nameKey=i.name.trim().toLowerCase();
-    let nameStillOnMenu=manifestNames.has(nameKey);
-    if(manifestKeys.has(key)){
-      // EXACT match — this row is canonical. Keep it. If it was expired, pass 2 will revive.
-      return;
-    }
-    // Row is in db but its (category,name) is NOT in the new manifest.
-    if(nameStillOnMenu){
-      // Item still exists under a different category in the manifest. The new category's
-      // row will be added in pass 2 and rating connects via ratingKey, so this old row
-      // should be DELETED (not expired). Otherwise we'd have a ghost copy alongside the
-      // correct one. This applies whether i.expired is true or false.
-      staleIds.add(i.id);
-      return;
-    }
-    // Item is genuinely off the menu now.
-    if(i.expired){
-      // Already expired — leave alone (preserves the user's history).
-      return;
-    }
-    if(!isUpgrade){
-      // Don't touch unrelated stale items on non-upgrade loads. This protects items the
-      // user added manually via the "Add Item" UI, which won't be in the manifest.
-      return;
-    }
-    // Upgrade-time reconciliation: preserve if rated, delete if not.
-    let rk=i.ratingKey||stableRatingKey(i.restId,i.name);
-    let hasRating=db.ratings.some(r=>(r.ratingKey===rk||r.itemId===i.id)&&r.rating!==null);
-    if(hasRating){
-      i.expired=true;
-      i.specialty=null;
-      i.pageTags=[];
-    }else{
-      staleIds.add(i.id);
-    }
-  });
-  if(staleIds.size>0){
-    db.items=db.items.filter(i=>!staleIds.has(i.id));
-  }
-  // PASS 2 — UPSERT every manifest entry
-  manifest.forEach(m=>{
-    let existing=db.items.find(i=>i.restId===rid&&(i.category||'').toLowerCase()===(m.category||'').toLowerCase()&&i.name.trim().toLowerCase()===m.name.trim().toLowerCase());
-    if(existing){
-      if(existing.expired)existing.expired=false;
-      existing.desc=m.desc||'';
-      existing.choices=m.choices||[];
-      existing.modifications=m.mods||[];
-      if(m.spec!==undefined)existing.specialty=m.spec||null;
-      existing.pageTags=m.pageTags||[];
-      existing.ltoOrder=m.ltoOrder;
-      existing.ratingKey=stableRatingKey(rid,m.name);
-      existing.seedOrder=m._seedOrder;
-      if(m.addedAt!==undefined)existing.addedAt=m.addedAt;
-      return;
-    }
-    db.items.push({
-      id:stableItemId(rid,m.category,m.name),
-      ratingKey:stableRatingKey(rid,m.name),
-      restId:rid,
-      name:m.name,
-      desc:m.desc||'',
-      category:m.category,
-      choices:m.choices||[],
-      modifications:m.mods||[],
-      addedAt:m.addedAt||FAR_PAST,
-      isNew:m.isNew||false,
-      specialty:m.spec||null,
-      pageTags:m.pageTags||[],
-      ltoOrder:m.ltoOrder,
-      expired:false,
-      seedOrder:m._seedOrder
-    });
-  });
-  // PASS 3 — record version + category order
-  if(isUpgrade){rest.seedVersion=currentVersion;}
-  if(opts.categoryOrder)rest.categoryOrder=opts.categoryOrder;
-}
-
-// Convenience builder so seed code stays readable.
-//   name, desc, category — required
-//   choices, mods         — option arrays
-//   addedAt               — timestamp (drives "New" tag)
-//   spec                  — legacy specialty object {label, rotation, addedAt} for one-off
-//                           specialties like Burger of the Month. Most modern menus should
-//                           prefer pageTags below; spec is kept for restaurants whose specialty
-//                           is intrinsic to a category like a "Specialty / Limited Time" section.
-//   pageTags              — array of cross-list tag codes that apply to ANY row of this item
-//                           regardless of which category it lives in. Currently supported:
-//                             'lto' — Limited Time (hoists item to ✦ bucket; tag shows everywhere)
-//                             'oe'  — Online Exclusive (tag shows on every row)
-//   ltoOrder              — sort index for the ✦ Specialty & Limited Time bucket. Items with
-//                           lto pageTag are rendered in this order in the ✦ bucket. Should be
-//                           the item's position on the source-of-truth Limited Time page (e.g.
-//                           tacobell.com/food/new). Items without ltoOrder fall to the end.
-function mItem(name,desc,category,choices,mods,addedAt,spec,pageTags,ltoOrder){
-  return {name,desc:desc||'',category,choices:choices||[],mods:mods||[],addedAt,spec,
-          pageTags:pageTags||[],ltoOrder:ltoOrder};
-}
-
-function seedAll(){
-  // ══ CHERRY CRICKET ══
-  let ccId=eR('Cherry Cricket','American Burgers & Bar','Denver, CO');
-
-  eI(ccId,'The Ciao Bella','1/2 lb Cricket Burger with fig jam, pesto aioli, goat cheese, arugula, tomato, parmesan, crispy onions, balsamic drizzle on garlic butter ciabatta bun.','Specialty / Limited Time',[],['No goat cheese','No arugula','No crispy onions','No balsamic drizzle','No fig jam','Add: Bacon','Add: Extra goat cheese'],APRIL_1_2026,{label:'Burger of the Month',rotation:'monthly',addedAt:APRIL_1_2026});
-
-  // BYO Burgers — BUN: prefix (not Cone:)
-  const byoC=['Bun: Brioche (default)','Bun: Pretzel','Bun: Gluten-free'];
-  const byoM=['No lettuce','No tomato','No pickles','Add: Bacon','Add: American cheese','Add: Cheddar','Add: Swiss','Add: Pepper jack','Add: Smoked cheddar','Add: Provolone','Add: Pimento cheese','Add: White cheddar','Add: Blue cheese','Add: Egg any style','Add: Pork belly','Add: Corned beef','Add: Crispy onion strings','Add: Crispy poblano','Add: Cheetos','Add: Bacon jalapeño jam','Add: Chipotle aioli','Add: Garlic aioli','Add: Guacamole','Add: Avocado','Add: Caramelized onions','Add: Green chili','Add: Jalapeños','Add: Pico de gallo','Add: Sautéed mushrooms','Add: Mac & cheese scoop','Add: Grilled pineapple','Add: Peanut butter','Add: Queso','Add: Sour cream'];
-  eI(ccId,'Cricket Burger','1/2 pound beef patty, lettuce, tomato, pickles, brioche bun.','Build Your Own Burgers',byoC,byoM);
-  eI(ccId,'Little Cricket Burger','1/4 pound beef patty, lettuce, tomato, pickles, brioche bun.','Build Your Own Burgers',byoC,['No lettuce','No tomato','No pickles','Add: Bacon','Add: American cheese','Add: Cheddar','Add: Swiss','Add: Pepper jack','Add: Guacamole','Add: Jalapeños','Add: Green chili']);
-  eI(ccId,'Colorado Bison Burger','1/3 pound bison patty, lettuce, tomato, pickles, brioche bun.','Build Your Own Burgers',byoC,['No lettuce','No tomato','No pickles','Add: Swiss','Add: White cheddar','Add: Bacon','Add: Avocado','Add: Jalapeños']);
-  eI(ccId,'Impossible Burger','1/4 pound Impossible patty, lettuce, tomato, pickles, brioche bun.','Build Your Own Burgers',byoC,['No lettuce','No tomato','No pickles','Add: Cheddar','Add: Guacamole','Add: Avocado','Add: Jalapeños']);
-  eI(ccId,'Charbroiled Chicken Breast','Grilled chicken breast, lettuce, tomato, pickles, brioche bun.','Build Your Own Burgers',byoC,['No lettuce','No tomato','No pickles','Add: Bacon','Add: Swiss','Add: Avocado','Add: Jalapeños']);
-  eI(ccId,'All-Beef Hot Dog','1/4 pound all-beef hot dog on a bun.','Build Your Own Burgers',[],['Add: American cheese','Add: Green chili','Add: Jalapeños','Add: Queso','Add: Sauerkraut','Add: Crispy onion strings']);
-
-  // Winning Burgers
-  eI(ccId,'The Cry Baby',"2024 People's Choice — swiss, caramelized onions, cheese frico, crispy onion strings, french onion schmear.",'Winning Burgers',[],['No caramelized onions','No crispy onion strings','No swiss','Add: Bacon','Add: Jalapeños']);
-  eI(ccId,'The Cricket Royale',"2023 People's Choice — swiss, duxelles, caramelized onions, garlic aioli, crispy onion strings, pretzel bun.",'Winning Burgers',[],['No swiss','No duxelles','No caramelized onions','No garlic aioli','Swap pretzel bun for brioche','Add: Bacon']);
-  eI(ccId,'983 Big Cheesy',"2022 People's Choice — bacon jalapeño jam, american cheese, crispy poblano, mac & cheese, cheddar jalapeño Cheetos.",'Winning Burgers',[],['No bacon jalapeño jam','No american cheese','No crispy poblano','No mac & cheese']);
-  eI(ccId,'720 Jammin Poblano',"2021 People's Choice — pimento cheese, pork belly, crispy poblano, cherry pepper raspberry sauce.",'Winning Burgers',[],['No pimento cheese','No pork belly','No crispy poblano']);
-  eI(ccId,'303 Green Chile Relleno',"2019 Judge's Choice — white cheddar, chile relleno, pork green chili.",'Winning Burgers',[],['No white cheddar','No chile relleno','No pork green chili','Add: Extra green chili']);
-  eI(ccId,'Vera Cruz',"2016 People's Choice — pepper jack, bacon jalapeño jam, crispy onion strings, chipotle aioli.",'Winning Burgers',[],['No pepper jack','No bacon jalapeño jam','No crispy onion strings','No chipotle aioli']);
-  eI(ccId,'Cricket Burger Bowl','1/2 lb cricket burger on romaine with tomato, red onion, pickles, steak fries, cricket sauce.','Winning Burgers',[],['No tomato','No red onion','No pickles','No steak fries','Extra cricket sauce','Add: Cheese','Add: Avocado']);
-
-  // Sandwiches & Wraps
-  eI(ccId,'Blackened Chicken Caesar Wrap','Blackened chicken breast, caesar salad, pico de gallo, avocado, red chili flour tortilla.','Sandwiches & Wraps',[],['No pico de gallo','No avocado','No caesar dressing','Add: Jalapeños','Add: Bacon']);
-  eI(ccId,'Crispy Chicken Bacon Ranch Wrap','Crispy chicken, bacon, lettuce, tomato, pepper jack, cheddar, ranch, flour tortilla.','Sandwiches & Wraps',[],['No bacon','No lettuce','No tomato','No pepper jack','No ranch','Add: Extra bacon','Add: Avocado']);
-  eI(ccId,'All-American Chicken','Crispy chicken breast, american cheese, lettuce, tomato, onion, 1000 island, brioche bun.','Sandwiches & Wraps',[],['No american cheese','No lettuce','No tomato','No onion','No 1000 island','Add: Bacon','Add: Avocado']);
-  eI(ccId,'Fish Sandwich','Beer-battered cod, lettuce, tomato, tartar sauce, brioche bun.','Sandwiches & Wraps',[],['No lettuce','No tomato','No tartar sauce','Add: American cheese']);
-  eI(ccId,'Cricket Reuben','Corned beef, swiss, sauerkraut, 1000 island, marble rye bread.','Sandwiches & Wraps',[],['No swiss','No sauerkraut','No 1000 island']);
-
-  // Appetizers
-  eI(ccId,'Queso & Salsa','Tortilla chips with queso and salsa.','Appetizers',[],['Add: Green chili','Add: Guacamole','Add: Jalapeños','Add: Carnitas','Add: Chicken']);
-  eI(ccId,'Crispy Mac & Cheese Bites','Fried mac & cheese bites with ranch dressing.','Appetizers',[],['Extra ranch','Add: Jalapeños']);
-  eI(ccId,'Veggie Basket','Cucumber, carrots, bell pepper, snap peas, broccoli, celery, ranch.','Appetizers',[],['No cucumber','No carrots','No bell pepper','Extra ranch']);
-  eI(ccId,'Pretzel Sticks & Queso','Soft pretzel sticks with spicy bacon queso.','Appetizers',[],['Extra queso','Add: Green chili','Add: Jalapeños']);
-  eI(ccId,'Chili Cheese Fries','Fries topped with queso, pork green chili, tomato, green onion.','Appetizers',[],['No queso','No pork green chili','No tomato','No green onion','Add: Extra queso','Add: Sour cream','Add: Jalapeños']);
-  eI(ccId,'Hand-Breaded Chicken Tenders',"Hand-breaded chicken tenders with Cricket's special sauce.",'Appetizers',[],['Extra cricket sauce','Add: Ranch','Add: BBQ sauce','Add: Honey mustard']);
-  eI(ccId,'Nachos','Tortilla chips, black beans, queso, tomato, pickled jalapeños, green onion, salsa, sour cream.','Appetizers',[],['No black beans','No queso','No tomato','No pickled jalapeños','No salsa','No sour cream','Add: Guacamole','Add: Carnitas','Add: Chicken','Add: Extra queso']);
-  eI(ccId,'Wings','Jumbo wings. Choose sauce and dipping.','Appetizers',['Sauce: Gold n tangy','Sauce: Louisiana','Sauce: BBQ','Sauce: Atomic','Sauce: Teriyaki','Dipping: Ranch','Dipping: Blue cheese'],['No carrots','No celery','Add: Extra sauce']);
-  eI(ccId,'Cherry Bombs','Crispy three-pepper colby-jack cheese sticks with raspberry pepper jam.','Appetizers',[],['Extra raspberry pepper jam','Add: Ranch']);
-
-  // Salads
-  eI(ccId,'The Farmers','Egg, tomato, bell pepper, snap peas, cucumber, avocado, carrots, onion, white cheddar, garlic croutons.','Salads',['Sauce: Ranch','Sauce: 1000 island','Sauce: Blue cheese','Sauce: Herb vinaigrette','Sauce: Honey dijon','Sauce: Caesar','Sauce: Balsamic vinaigrette','Sauce: Poblano vinaigrette'],['No egg','No tomato','No avocado','No white cheddar','No garlic croutons','Add: Carnitas','Add: Chicken']);
-  eI(ccId,'The Cobb','Chicken, bacon, egg, avocado, tomato, blue cheese crumbles.','Salads',['Sauce: Ranch','Sauce: Blue cheese','Sauce: Balsamic vinaigrette'],['No bacon','No egg','No avocado','No tomato','No blue cheese']);
-  eI(ccId,'Southwest Chicken','Adobo chicken, black beans, cheddar, pepper jack, avocado, pico de gallo, salsa fresca, tortilla chips, poblano vinaigrette.','Salads',[],['No black beans','No cheddar','No pepper jack','No avocado','No pico de gallo','No tortilla chips','Add: Jalapeños']);
-  eI(ccId,'Caesar','Romaine, garlic croutons, parmesan, caesar dressing.','Salads',[],['No garlic croutons','No parmesan','Dressing on side','Add: Carnitas','Add: Chicken','Add: Bacon','Add: Avocado']);
-  eI(ccId,'Nice Little Salad','Carrots, cucumber, onion, tomato.','Salads',['Sauce: Ranch','Sauce: 1000 island','Sauce: Honey dijon','Sauce: Herb vinaigrette','Sauce: Balsamic vinaigrette'],['No carrots','No cucumber','No onion','No tomato']);
-
-  // Chilis & Soups
-  eI(ccId,'R&C Pork Green Chili',"Chef Ronaldo's award-winning Denver pork green chili, served with tortillas.",'Chilis & Soups',[],['Extra tortillas','Add: Sour cream','Add: Cheese','Add: Jalapeños']);
-  eI(ccId,'Veggie Green Chili','Spicy Pueblo style vegetarian green chili.','Chilis & Soups',[],['Extra tortillas','Add: Sour cream','Add: Cheese','Add: Jalapeños']);
-  eI(ccId,'French Onion Soup','Classic french onion soup.','Chilis & Soups',['Size: Cup','Size: Bowl'],['Add: Extra cheese']);
-
-  // Comida
-  eI(ccId,'Grande Burrito','Spanish rice, black beans, pork green chili, lettuce, tomato, white cheddar.','Comida',['Protein: Carnitas','Protein: Chicken','Protein: Seasoned ground beef'],['No pork green chili','No lettuce','No tomato','Add: Sour cream','Add: Guacamole','Add: Jalapeños']);
-  eI(ccId,'Tacos','Guacamole, pico de gallo, sour cream, lettuce, white cheddar, salsa, flour tortillas, spanish rice, black beans.','Comida',['Protein: Carnitas','Protein: Chicken','Protein: Seasoned ground beef'],['No guacamole','No pico de gallo','No sour cream','Add: Jalapeños','Add: Extra guacamole']);
-  eI(ccId,'Fish Tacos','Beer-battered cod, citrus aioli, chipotle slaw, avocado, tomato, whole wheat tortillas.','Comida',[],['No citrus aioli','No chipotle slaw','No avocado','No tomato','Add: Jalapeños','Add: Sour cream']);
-  eI(ccId,'Enchiladas','Choice of protein, smothered in red sauce, lettuce, tomato, white cheddar.','Comida',['Protein: Carnitas','Protein: Chicken','Protein: Seasoned ground beef','Protein: Cheese & onion'],['No red sauce','No lettuce','No tomato','Add: Sour cream','Add: Extra red sauce']);
-  eI(ccId,'Combo Plate','Cheese & onion enchilada, black bean & cheese burrito, chile relleno, pork green chili, spanish rice, black beans.','Comida',[],['No pork green chili','No lettuce','No tomato','Add: Sour cream','Add: Extra red sauce']);
-
-  // Sides
-  eI(ccId,'Fries','Award-winning seasoned fries.','Sides',['Size: Single','Size: Shared'],['Add: Queso','Add: Green chili','Add: Ranch','Add: Jalapeños']);
-  eI(ccId,'Steak Fries','Thick cut steak fries.','Sides',['Size: Single','Size: Shared'],['Add: Queso','Add: Ranch']);
-  eI(ccId,'Onion Rings','Crispy battered onion rings.','Sides',['Size: Single','Size: Shared'],['Add: Ranch']);
-  eI(ccId,'Tater Tots','Crispy tater tots.','Sides',['Size: Single','Size: Shared'],['Add: Ranch','Add: Queso','Add: Jalapeños']);
-  eI(ccId,'Frings','Half fries, half onion rings.','Sides',[],['Add: Ranch','Add: Queso']);
-  eI(ccId,'Potato Chips','House potato chips.','Sides',[],['Add: Queso','Add: Ranch']);
-  eI(ccId,'Coleslaw','House coleslaw.','Sides',[],['Dressing on side']);
-  eI(ccId,'Black Beans','Seasoned black beans.','Sides',[],['Add: Cheese','Add: Sour cream']);
-  eI(ccId,'Spanish Rice','Seasoned spanish rice.','Sides',[],['Add: Cheese']);
-  eI(ccId,'Angry Mac & Cheese','Spiced mac and cheese.','Sides',[],['Add: Green chili','Add: Jalapeños','Add: Extra cheese']);
-
-  // Shakes
-  const shakeC=['Size: Regular','Size: Large'];
-  const shakeT=["Topping: Reese's Cups","Topping: Vanilla wafers","Topping: Peanut butter","Topping: Butterscotch","Topping: Rainbow sprinkles","Topping: Heath Bar crunch","Topping: Graham cracker crumbles","Topping: Oreos","Topping: Caramel","Topping: Malt","Topping: Toasted coconut",'Spike it: Vodka','Spike it: Gin','Spike it: Rum','Spike it: Tequila','Spike it: Whiskey'];
-  eI(ccId,'Chocolate Shake','Rich chocolate milkshake.','Shakes & Desserts',shakeC,shakeT);
-  eI(ccId,'Vanilla Shake','Classic vanilla milkshake.','Shakes & Desserts',shakeC,shakeT);
-  eI(ccId,'Strawberry Shake','Fresh strawberry milkshake.','Shakes & Desserts',shakeC,shakeT);
-  eI(ccId,'Dessert of the Day','Ask your server.','Shakes & Desserts',[],[]);
-
-  // Boozy
-  eI(ccId,'Georgia on My Mind','Peach vodka, fresh peaches, graham cracker.','Boozy Shakes',[],['Extra graham cracker','Extra peach']);
-  eI(ccId,'Lebowski','Coffee liqueur, vanilla vodka, Oreo.','Boozy Shakes',[],['Extra Oreo','Extra coffee liqueur']);
-  eI(ccId,'Fosters Force','Rum, banana liqueur, caramel, wafer cookie.','Boozy Shakes',[],['Extra caramel']);
-  eI(ccId,"Grasshoppah'",'Chocolate vodka, crème de menthe, Ghirardelli chocolate.','Boozy Shakes',[],['Extra chocolate','Add: Whipped cream']);
-  eI(ccId,'Samoa','Coconut rum, caramel, Ghirardelli chocolate, toasted coconut.','Boozy Shakes',[],['Extra caramel','Extra toasted coconut']);
-  eI(ccId,'Strawberry Shortcake','Vanilla vodka, amaretto, strawberry, graham cracker.','Boozy Shakes',[],['Extra graham cracker','Extra strawberry']);
-  eI(ccId,'Sweet Surrender','Chocolate vodka, peanut butter whiskey, chocolate sauce, peanut butter cups.','Boozy Shakes',[],['Extra peanut butter cups','Extra chocolate sauce']);
-
-  // Cocktails
-  eI(ccId,'Cosmic Rewind','Mezcal, guava, agave, fresh lime, tajín.','Cricket Cocktails',[],['No tajín rim','Make it a double']);
-  eI(ccId,'Cricket Margarita','Blanco tequila, agave, fresh lime, salt rim.','Cricket Cocktails',[],['No salt rim','Make it spicy','Make it a double','Add: Tajín rim']);
-  eI(ccId,'Hopped Up Old Fashioned','Bourbon, house-hopped bitters, orange, cherry.','Cricket Cocktails',[],['Make it a double','No cherry','Extra bitters']);
-  eI(ccId,'Espresso Martini','Vodka, espresso liqueur, simple syrup.','Cricket Cocktails',[],['Make it a double','Less sweet','Extra espresso']);
-  eI(ccId,'Rebel Smash','Bourbon, blackberry, fresh lemon.','Cricket Cocktails',[],['Make it a double','Extra blackberry']);
-  eI(ccId,'Wildest Dreams','Vodka, raspberry, ginger, fresh lemon.','Cricket Cocktails',[],['Make it a double','Extra ginger']);
-  eI(ccId,'The Elderwand',"Tito's vodka, elderflower liqueur, fresh lemon, simple syrup.",'Cricket Cocktails',[],['Make it a double','Less sweet']);
-
-  // Zero Proof
-  eI(ccId,'Feliz Fizz','Gruvi bubbly rosé, strawberry shrub, basil.','Zero Proof Cocktails',[],['No basil','Add: Extra strawberry']);
-  eI(ccId,'Invisible String','Seedlip, fresh grapefruit, fresh lime, soda.','Zero Proof Cocktails',[],['Add: Extra lime','Less soda']);
-
-  // Rocky Mountain Sodas
-  eI(ccId,'Rocky Mountain Soda','House craft sodas: black cherry, prickly pear, or rootbeer.','Rocky Mountain Sodas',['Flavor: Black cherry','Flavor: Prickly pear','Flavor: Rootbeer'],['Spike it: Vodka','Spike it: Gin','Spike it: Rum','Spike it: Tequila','Spike it: Whiskey','Float it: Vanilla soft serve']);
-
-  // Wine
-  const wineC=['Size: 6oz glass','Size: 9oz glass','Size: Full bottle'];
-  eI(ccId,'House Chardonnay','Available by glass or bottle.','Wine',wineC,[]);
-  eI(ccId,'Sonoma Cutrer Chardonnay','California.','Wine',wineC,[]);
-  eI(ccId,'House Cabernet Sauvignon','Available by glass or bottle.','Wine',wineC,[]);
-  eI(ccId,'Decoy Red Blend','California.','Wine',wineC,[]);
-  eI(ccId,'Mionetto Prosecco','Italy.','Wine',wineC,[]);
-  eI(ccId,'Aix Still Rosé','France.','Wine',wineC,[]);
-
-  // Beer
-  eI(ccId,'Budweiser','16oz can.','Canned & Bottled Beer',[],[]);
-  eI(ccId,'Coors Original','16oz can.','Canned & Bottled Beer',[],[]);
-  eI(ccId,'Corona','Bottle.','Canned & Bottled Beer',[],[]);
-  eI(ccId,'Montucky Cold Snack','16oz can.','Canned & Bottled Beer',[],[]);
-  eI(ccId,'High Noon Seltzer','Hard seltzer can.','Canned & Bottled Beer',['Flavor: Ask server for current flavors'],[]);
-  eI(ccId,'Rationale Mexican Lager N.A.','Non-alcoholic Mexican lager.','Canned & Bottled Beer',[],[]);
-  eI(ccId,'Rationale Hazy IPA N.A.','Non-alcoholic hazy IPA.','Canned & Bottled Beer',[],[]);
-  eI(ccId,'Draft Beer','32 rotating Colorado craft taps.','Draft Beer',['Size: Pint','Size: Half pint'],[]);
-
-  // Happy Hour
-  eI(ccId,'Well Liquor (Happy Hour)','Happy hour well drinks — 2-5PM and 10PM-12AM daily.','Happy Hour Specials',[],[]);
-  eI(ccId,'Select Domestic Drafts (Happy Hour)','Happy hour domestic draft beer — 2-5PM and 10PM-12AM daily.','Happy Hour Specials',[],[]);
-  eI(ccId,'House Wine (Happy Hour)','Happy hour house wine — 2-5PM and 10PM-12AM daily.','Happy Hour Specials',[],[]);
-  eI(ccId,'Chips and Salsa (Happy Hour)','Happy hour chips and salsa — 2-5PM and 10PM-12AM daily.','Happy Hour Specials',[],['Add: Green chili','Add: Guacamole']);
-  eI(ccId,'Chili Cheese Fries (Happy Hour)','Happy hour chili cheese fries — 2-5PM and 10PM-12AM.','Happy Hour Specials',[],['Add: Extra green chili','Add: Sour cream']);
-  eI(ccId,'Pretzel Bites & Queso (Happy Hour)','Happy hour pretzel bites with queso — 2-5PM and 10PM-12AM.','Happy Hour Specials',[],['Add: Green chili','Add: Jalapeños']);
-  eI(ccId,'Chicken Wings (Happy Hour)','Happy hour chicken wings — 2-5PM and 10PM-12AM daily.','Happy Hour Specials',['Sauce: Gold n tangy','Sauce: Louisiana','Sauce: BBQ','Sauce: Atomic','Sauce: Teriyaki','Dipping: Ranch','Dipping: Blue cheese'],[]);
-
-  // Kids
-  const kidsC=['Side: Fries','Side: Fresh veggies','Drink: Water','Drink: Milk'];
-  eI(ccId,'Little Cricket Burger (Kids)','Kids burger with fries or veggies, water or milk.','Kids Menu',kidsC,['Add: Cheese','No lettuce','No tomato','No pickles']);
-  eI(ccId,'Chicken Tenders (Kids)','Kids tenders with fries or veggies, water or milk.','Kids Menu',kidsC,['Add: Ranch']);
-  eI(ccId,'PB&J (Kids)','Kids PB&J with fries or veggies, water or milk.','Kids Menu',kidsC,[]);
-  eI(ccId,'Grilled Cheese (Kids)','Kids grilled cheese with fries or veggies, water or milk.','Kids Menu',kidsC,['Add: Bacon','Add: Tomato']);
-  eI(ccId,'Hot Dog (Kids)','Kids hot dog with fries or veggies, water or milk.','Kids Menu',kidsC,['Add: Cheese']);
-  eI(ccId,'Mac & Cheese (Kids)','Kids mac & cheese with fries or veggies, water or milk.','Kids Menu',kidsC,['Add: Extra cheese']);
-  eI(ccId,'Cheese Quesadilla (Kids)','Kids quesadilla with fries or veggies, water or milk.','Kids Menu',kidsC,['Add: Sour cream','Add: Salsa','Add: Guacamole']);
-  eI(ccId,'Charbroiled Chicken Sandwich (Kids)','Kids grilled chicken sandwich with fries or veggies, water or milk.','Kids Menu',kidsC,['No lettuce','No tomato','Add: Cheese']);
-
-  // ══ BASKIN-ROBBINS ══
-  // flavorLibrary lives on the restaurant record. Menu items now just list SIZES.
-  const brFlavors=['Vanilla','Chocolate','Strawberry','Mint Chocolate Chip','Rocky Road',"Cookies 'n Cream","Pralines 'n Cream",'Chocolate Chip Cookie Dough','Very Berry Strawberry','Jamoca Almond Fudge','Rainbow Sherbet',"Reese's Peanut Butter Cup",'Gold Medal Ribbon','Pistachio Almond','Baseball Nut','French Vanilla','Peanut Butter Chocolate','World Class Chocolate','Twix Caramel Crunch','Chocolate Chip Cheesecake','Nutty Coconut','Chocolate Chip',"Non-Dairy Cookies 'n Crème",'Non-Dairy Mint Chocochunk','Daiquiri Ice','Lemon Sorbet'];
-  let brId=eR('Baskin-Robbins','Ice Cream & Frozen Desserts','Centennial, CO',brFlavors);
-
-  // April FOTM
-  eI(brId,'Pistachio Chocolate Bar','April Flavor of the Month — pistachio & chocolate flavored ice creams with pistachio pieces & chocolate crunch swirls.','Specialty / Limited Time',['Size: 2.5oz scoop','Size: 4oz scoop','Cone: Waffle cone','Cone: Sugar cone','Cone: Cake cone','Cone: Cup'],['Add: Hot fudge','Add: Whipped cream','Add: Cherry'],APRIL_1_2026,{label:'Flavor of the Month',rotation:'monthly',addedAt:APRIL_1_2026});
-
-  // SIZE-BASED SCOOP ITEMS (no individual flavors on menu anymore)
-  const coneOpts=['Cone: Waffle cone','Cone: Sugar cone','Cone: Cake cone','Cone: Cup'];
-  const scoopM=['Add: Hot fudge','Add: Caramel sauce','Add: Strawberry sauce','Add: Sprinkles','Add: Whipped cream','Add: Cherry','Add: Nuts'];
-  eI(brId,'Single Scoop','One scoop of any Baskin-Robbins flavor.','Scoops',coneOpts,scoopM);
-  eI(brId,'Double Scoop','Two scoops of your choice of flavors.','Scoops',coneOpts,scoopM);
-  eI(brId,'Triple Scoop','Three scoops of your choice of flavors.','Scoops',coneOpts,scoopM);
-  eI(brId,'Kids Scoop','Smaller scoop perfect for kids.','Scoops',['Cone: Sugar cone','Cone: Cake cone','Cone: Cup'],['Add: Sprinkles','Add: Whipped cream','Add: Cherry']);
-
-  // Sundaes
-  const sundT=['Add: Extra hot fudge','Add: Extra caramel','Add: Whipped cream','Add: Cherry','Add: Extra nuts'];
-  eI(brId,'2 Scoop Sundae','Two scoops of ice cream with toppings.','Sundaes',['Topping: Hot fudge','Topping: Caramel sauce','Topping: Strawberry sauce','Topping: Pineapple sauce','Topping: Butterscotch'],sundT);
-  eI(brId,'3 Scoop Sundae','Three scoops of ice cream with toppings.','Sundaes',['Topping: Hot fudge','Topping: Caramel sauce','Topping: Strawberry sauce','Topping: Pineapple sauce','Topping: Butterscotch'],sundT);
-  eI(brId,'Banana Split','Three scoops on a split banana with hot fudge, strawberry, pineapple, whipped cream, nuts, and cherries.','Sundaes',[],['No nuts','No hot fudge','No strawberry sauce','No pineapple sauce','Add: Extra whipped cream','Extra cherries']);
-  eI(brId,'OREO Layered Sundae','Oreo cookie pieces layered throughout ice cream with hot fudge and whipped cream.','Sundaes',['Topping: Extra Oreos','Topping: Extra hot fudge'],['Add: Whipped cream','Add: Cherry']);
-  eI(brId,"REESE'S PB Cup Layered Sundae","Reese's cups layered throughout ice cream with caramel and hot fudge.",'Sundaes',[],['Add: Extra Reeses','Add: Extra caramel','Add: Hot fudge','Add: Whipped cream']);
-
-  // Beverages
-  const bevC=['Size: Small','Size: Medium','Size: Large'];
-  eI(brId,'Milkshake','Any flavor blended with milk.','Frozen Beverages',bevC,['Add: Whipped cream','Add: Cherry','Add: Extra flavoring']);
-  eI(brId,'Cappuccino Blast','Espresso blended with vanilla ice cream.','Frozen Beverages',bevC,['Add: Extra espresso','Add: Whipped cream','Add: Caramel drizzle','Add: Chocolate drizzle']);
-  eI(brId,'Mango Smoothie','Real mango blended into a refreshing smoothie.','Frozen Beverages',bevC,['Add: Whipped cream']);
-  eI(brId,'Strawberry Smoothie','Real strawberries blended into a refreshing smoothie.','Frozen Beverages',bevC,['Add: Whipped cream']);
-  eI(brId,'Paloma Paradise Fizz','Paloma Paradise ice cream blended with STARRY lemon-lime soda, topped with Tajín.','Frozen Beverages',bevC,['No Tajín','Add: Extra Tajín','Add: Whipped cream']);
-
-  // Cakes
-  eI(brId,'Celebration Round Cake (9")','Custom ice cream cake. Serves 12-14.','Ice Cream Cakes & Pies',['Frosting: Whipped cream','Frosting: Buttercream'],['Add: Custom message']);
-  eI(brId,'OREO Cookie Ice Cream Sandwich Cake','Oreo cookie crust with ice cream layers.','Ice Cream Cakes & Pies',[],['Add: Custom message']);
-  eI(brId,'Ice Cream Pie','Cookie or brownie crust filled with your choice of ice cream.','Ice Cream Cakes & Pies',['Crust: Cookie','Crust: Brownie'],['Add: Custom message']);
-  eI(brId,'Polar Pizza Ice Cream Treat','Shareable ice cream treat on a brownie or cookie crust.','Ice Cream Cakes & Pies',['Base: Brownie','Base: Cookie chip','Topping: M&Ms','Topping: Reeses','Topping: Oreos','Topping: Sprinkles','Topping: Hot fudge','Topping: Caramel'],[]);
-  eI(brId,'Dubai Chocolate Inspired Cake in a Box','Pistachio and chocolate inspired cake in a shareable box format.','Ice Cream Cakes & Pies',[],['Add: Custom message']);
-
-  // Take-Home
-  eI(brId,'Pre-Packed Pint','Take-home pint of your favorite flavor.','Take-Home Pints & Quarts',[],[]);
-  eI(brId,'Pre-Packed Quart','Take-home quart of your favorite flavor.','Take-Home Pints & Quarts',[],[]);
-  eI(brId,'2 Pre-Packed Quart Bundle','Two quarts of your favorite flavors.','Take-Home Pints & Quarts',[],[]);
-  eI(brId,'Flavor Flights','Four 2.5oz scoops topped with waffle cone chips.','Take-Home Pints & Quarts',[],[]);
-
-  // Novelties
-  eI(brId,'Ice Cream Sandwich','Vanilla ice cream between two chocolate wafers.','Novelties',[],['Add: Sprinkles dipped edge']);
-
-  // ══ TACO BELL ══
-  // Verified DIRECTLY against tacobell.com pages and visual inspection of section screenshots.
-  //
-  // ── DOCTRINE ──
-  // Items are declared in the EXACT order tacobell.com renders them. applySeedManifest treats
-  // this as canonical: anything in db that isn't in the manifest is expired (if rated) or
-  // deleted (if unrated); anything in the manifest is upserted. seedOrder drives in-section
-  // sorting in the renderer.
-  //
-  // ── LTO POLICY ──
-  // tacobell.com/food/new claims "all new menu items are available for a limited time" but the
-  // visible LIMITED TIME BADGES on the page contradict this — some /food/new items have the
-  // badge, others don't. The visible badge is the source of truth, not the marketing copy.
-  // I cannot read images in real time, so each item's LTO status is encoded explicitly here
-  // based on the most recent screenshot evidence. Use LT() to mark a row LTO; LT_OE() for items
-  // that are simultaneously Online Exclusive AND Limited Time. Use OE() for plain OE items.
-  //
-  // ── CROSS-LISTING POLICY ──
-  // The same item can appear in multiple categories (e.g. Crunchwrap Supreme in Best Sellers
-  // AND Specialties). All rows of an item share the same ratingKey so a single rating shows
-  // everywhere. Tags (LTO, OE) come from pageTags and propagate to ALL cross-listed rows of
-  // that item via name lookup in renderMenu — set them on ANY row of the item and they'll
-  // show on all of them. By convention we set them on the row in the item's primary section.
-  //
-  // ── ltoOrder ──
-  // For LTO items, ltoOrder = the item's position on tacobell.com/food/new (1-21). The ✦
-  // Specialty & Limited Time bucket sorts by this so it mirrors the source page.
-  let tbId=eR('Taco Bell','Mexican-Inspired Fast Food','Centennial, CO',null,[
-    'https://www.tacobell.com/food/new',
-    'https://www.tacobell.com/food/online-exclusives',
-    'https://www.tacobell.com/newsroom'
-  ]);
-  const TB_SEED_VERSION=6; // v6: corrected badge mistakes (Avocado Ranch Stacker is LT;
-                          //     three Dirty Sodas are permanent; Blue Raspberry & Confetti
-                          //     Cookie Freezes are LT). Added safety: auto-sync no longer
-                          //     flips badges (badges are now manually edited inline).
-                          // v5: ltoSourceUrls registered for auto-sync via Anthropic API.
-                          // v4: pageTags-based LTO/OE, badge-accurate from screenshots,
-                          // restored Crunchwrap Sliders, expanded combo customization
-
-  // Section order matches tacobell.com nav exactly.
-  const TB_CATEGORY_ORDER=[
-    'Best Sellers','New','Online Exclusives','Luxe Value Menu','Cantina Chicken Menu',
-    'Combos & Boxes','Tacos','Burritos','Specialties','Sides & Sweets','Quesadillas',
-    'Drinks','Nachos','Groups','Veggie Cravings','Bowls','Breakfast'
-  ];
-
-  // Tag helpers for the pageTags field. Each returns the string array; mix-and-match as needed.
-  const LT=['lto'];      // Limited Time only
-  const OE=['oe'];       // Online Exclusive only
-  const LT_OE=['lto','oe']; // Both badges (e.g. 10 Piece Crispy Chicken Nuggets Combo)
-
-  // Choice/mod libraries — reused across many items.
-  const dipSauces=['Dipping: Jalapeño ranch','Dipping: Nacho cheese','Dipping: Avocado ranch','Dipping: Chipotle sauce'];
-  const drinkS=['Size: Small','Size: Medium','Size: Large'];
-  const freezeS=['Size: Regular','Size: Large'];
-  const drinkChoice=['Size: Small drink','Size: Medium drink','Size: Large drink'];
-
-  // Combo customization — a Luxe Box has 4 required choices: a chalupa or specialty entrée,
-  // a Luxe Value entrée, a side, and a drink. We surface these as separate prefixed groups so
-  // the rating sheet can present each as a required pick.
-  const luxeBoxChoices=[
-    'Specialty entrée: Chalupa Supreme','Specialty entrée: Crunchwrap Supreme','Specialty entrée: Cheesy Gordita Crunch','Specialty entrée: Mexican Pizza','Specialty entrée: Triple Double Crunchwrap',
-    'Luxe Value entrée: Spicy Potato Soft Taco','Luxe Value entrée: Cheesy Bean and Rice Burrito','Luxe Value entrée: Cheesy Roll Up','Luxe Value entrée: Mini Taco Salad','Luxe Value entrée: Beefy Potato Loaded Griller','Luxe Value entrée: Avocado Ranch Chicken Stacker',
-    'Side: Cinnamon Twists','Side: Nacho Fries','Side: Cheesy Fiesta Potatoes','Side: Chips & Nacho Cheese',
-    'Drink: Pepsi','Drink: Diet Pepsi','Drink: Mountain Dew','Drink: Mountain Dew Baja Blast','Drink: Mountain Dew Baja Midnight','Drink: Brisk Mango Fiesta','Drink: Sierra Mist','Drink: Tropicana Lemonade','Drink: Bottled Water',
-    'Drink size: Small','Drink size: Medium','Drink size: Large'
-  ];
-  // Nuggets Deluxe Combo: nuggets + side + drink + dipping sauce
-  const nuggetsDeluxeChoices=[
-    'Nuggets size: 5 piece','Nuggets size: 10 piece',
-    'Side: Nacho Fries','Side: Cinnamon Twists','Side: Cheesy Fiesta Potatoes','Side: Chips & Nacho Cheese',
-    'Dipping: Jalapeño ranch','Dipping: Nacho cheese','Dipping: Avocado ranch','Dipping: Chipotle sauce',
-    'Drink: Pepsi','Drink: Diet Pepsi','Drink: Mountain Dew','Drink: Mountain Dew Baja Blast','Drink: Brisk Mango Fiesta','Drink: Sierra Mist','Drink: Tropicana Lemonade',
-    'Drink size: Small','Drink size: Medium','Drink size: Large'
-  ];
-  // Standard combo: entrée's already fixed, just need side + drink + drink size
-  const stdComboChoices=[
-    'Side: Nacho Fries','Side: Cinnamon Twists','Side: Cheesy Fiesta Potatoes','Side: Chips & Nacho Cheese',
-    'Drink: Pepsi','Drink: Diet Pepsi','Drink: Mountain Dew','Drink: Mountain Dew Baja Blast','Drink: Brisk Mango Fiesta','Drink: Sierra Mist','Drink: Tropicana Lemonade',
-    'Drink size: Small','Drink size: Medium','Drink size: Large'
-  ];
-  // Universal protein swap and add-on mods for tacos/burritos/quesadillas
-  const proteinMods=['Swap to: Chicken','Swap to: Steak (+$1)','Swap to: Slow-roasted chicken','Swap to: Black beans (vegetarian)','Swap to: Refried beans (vegetarian)','Swap to: Crispy potatoes (vegetarian)'];
-  const addonMods=['Add: Sour cream','Add: Guacamole (+)','Add: Avocado ranch','Add: Bacon (+)','Add: Jalapeños','Add: Pico de gallo','Add: Tomato','Add: Onion','Add: Three-cheese blend','Add: Nacho cheese','Add: Red sauce','Add: Chipotle sauce','Add: Creamy jalapeño'];
-
-  const tbManifest=[
-    // ── BEST SELLERS (tacobell.com/food/best-sellers, exact order) ──
-    mItem('Build Your Own Luxe Cravings Box','Pick a chalupa or specialty entrée, a Luxe Value entrée, a side, and a drink. Available online or in the app.','Best Sellers',luxeBoxChoices,[]),
-    mItem('Large Nacho Fries','Larger order of seasoned crispy fries with warm nacho cheese dipping sauce.','Best Sellers',[],['Extra nacho cheese','Add: Jalapeños','No nacho cheese']),
-    mItem('Nacho Fries','Seasoned crispy fries with warm nacho cheese dipping sauce.','Best Sellers',[],['Extra nacho cheese','Add: Jalapeños','No nacho cheese']),
-    mItem('Soft Taco','Seasoned beef, cheddar, and lettuce in a warm flour tortilla.','Best Sellers',[],['No cheddar','No lettuce','Add: Sour cream','Add: Tomato','Add: Guacamole','Add: Jalapeños']),
-    mItem('Crunchy Taco','Seasoned beef, cheddar, and lettuce in a crunchy corn shell.','Best Sellers',[],['No cheddar','No lettuce','Add: Sour cream','Add: Tomato','Add: Guacamole','Add: Jalapeños']),
-    mItem('Cheesy Gordita Crunch','Seasoned beef, pepper jack, three-cheese, chipotle, and lettuce in a pita-flatbread wrapped around a crunchy taco shell.','Best Sellers',[],['No chipotle','No lettuce','No pepper jack','Add: Sour cream']),
-    mItem('Chalupa Supreme','Seasoned beef, sour cream, tomato, lettuce, and cheddar in a fried chalupa shell.','Best Sellers',[],['No sour cream','No tomato','No lettuce','No cheddar','Add: Guacamole']),
-    mItem('Cheesy Bean and Rice Burrito','Refried beans, seasoned rice, nacho cheese, and chipotle sauce in a flour tortilla. Vegetarian.','Best Sellers',[],['No nacho cheese','No chipotle sauce']),
-    mItem('Chicken Quesadilla','Grilled chicken with three-cheese and creamy jalapeño sauce in a grilled flour tortilla.','Best Sellers',[],['No jalapeño sauce','Extra cheese']),
-    mItem('Spicy Potato Soft Taco','Crispy potato bites, chipotle sauce, lettuce, and cheddar in a soft flour tortilla. Vegetarian.','Best Sellers',[],['No chipotle sauce','No lettuce','No cheddar','Add: Sour cream']),
-    mItem('Crunchwrap Supreme','Seasoned beef, nacho cheese, tostada shell, sour cream, tomato, lettuce, and cheddar wrapped and grilled.','Best Sellers',[],['No nacho cheese','No sour cream','No tomato','No lettuce','No cheddar','Add: Jalapeños','Add: Guacamole']),
-    mItem('Beefy 5-Layer Burrito','Seasoned beef, nacho cheese, sour cream, refried beans, and cheddar in a flour tortilla.','Best Sellers',[],['No nacho cheese','No sour cream','No refried beans','No cheddar']),
-    mItem('Nachos BellGrande','Tortilla chips, seasoned beef, nacho cheese, refried beans, sour cream, and tomato.','Best Sellers',[],['No refried beans','No sour cream','No tomato','Add: Guacamole','Add: Jalapeños','Extra nacho cheese']),
-    mItem('Cinnamon Twists','Light, crispy corn-puffed twists with cinnamon sugar.','Best Sellers',[],[]),
-
-    // ── NEW (tacobell.com/food/new — exact order, badges encoded per visual inspection) ──
-    // Per screenshots: NOT every /food/new item has a LIMITED TIME badge. Encoding is explicit:
-    //   pageTags: LT  → has Limited Time badge (will appear in ✦ bucket and tag everywhere)
-    //   pageTags: LT_OE → has both LIMITED TIME and ONLINE EXCLUSIVE badges
-    //   no pageTags  → permanent (just newly launched)
-    // ltoOrder = position on /food/new (1-21) for ✦ bucket sort.
-    mItem('Triple Double Crunchwrap','Crunchwrap with double layers of seasoned beef, nacho cheese, and two tostada shells. Finished with sour cream, lettuce, tomatoes.','New',[],['No nacho cheese','No sour cream','No lettuce','No tomatoes','Add: Jalapeños','Add: Guacamole'],APRIL_16_2026,null,LT,1),
-    mItem("Zab's Chicken Ranch Nacho Fries","Seasoned Nacho Fries with slow-roasted chicken, Zab's Datil Pepper Ranch, warm nacho cheese, three-cheese blend, pico de gallo.",'New',[],["No Zab's ranch","No nacho cheese","No three-cheese","No pico","Extra Zab's ranch"],APRIL_16_2026,null,LT,2),
-    mItem('Diablo Dusted Crispy Chicken Nuggets Deluxe Combo','Diablo Dusted Crispy Chicken Nuggets Deluxe Combo with sides and a drink.','New',nuggetsDeluxeChoices,['No dipping sauce'],APRIL_16_2026,null,LT,3),
-    mItem('Crispy Chicken Nuggets Deluxe Combo','Crispy chicken nuggets with sides and a drink.','New',nuggetsDeluxeChoices,['No dipping sauce'],APRIL_16_2026,null,LT,4),
-    mItem('10 Piece Diablo Dusted Crispy Chicken Nuggets','Ten crispy all-white-meat chicken nuggets coated in fiery Diablo Dust. Served with dipping sauce.','New',dipSauces,['No dipping sauce','Add: Extra dipping sauce'],APRIL_16_2026,null,LT,5),
-    mItem('10 Piece Crispy Chicken Nuggets','Ten crispy all-white-meat chicken nuggets with dipping sauce.','New',dipSauces,['No dipping sauce','Add: Extra dipping sauce'],APRIL_16_2026,null,LT,6),
-    mItem('5 Piece Diablo Dusted Crispy Chicken Nuggets','Five crispy all-white-meat chicken nuggets coated in fiery Diablo Dust. Served with dipping sauce.','New',dipSauces,['No dipping sauce','Add: Extra dipping sauce'],APRIL_16_2026,null,LT,7),
-    mItem('5 Piece Crispy Chicken Nuggets','Five all-white-meat crispy chicken nuggets with dipping sauce.','New',dipSauces,['No dipping sauce','Add: Extra dipping sauce'],APRIL_16_2026,null,LT,8),
-    // The two Crunchwrap Sliders appear between nuggets and Cantina Chicken Rolled Quesadilla
-    // on the live /food/new page. Both have LIMITED TIME badges in screenshots.
-    mItem('Jalapeno Honey Mustard Crispy Chicken Crunchwrap Slider','Crispy chicken, three-cheese blend (mozzarella/pepperjack/cheddar), pico de gallo, and jalapeño honey mustard sauce in a mini grilled crunchwrap.','New',[],['No jalapeño honey mustard','No pico de gallo','No three-cheese','Extra sauce','Add: Lettuce','Add: Tomato','Add: Jalapeños'],APRIL_16_2026,null,LT,9),
-    mItem('Creamy Chipotle Crispy Chicken Crunchwrap Slider','Crispy chicken, three-cheese blend (mozzarella/pepperjack/cheddar), pico de gallo, and creamy chipotle sauce in a mini grilled crunchwrap.','New',[],['No creamy chipotle','No pico de gallo','No three-cheese','Extra sauce','Add: Lettuce','Add: Tomato','Add: Jalapeños'],APRIL_16_2026,null,LT,10),
-    // Cantina Chicken Rolled Quesadilla: NO LIMITED TIME badge per screenshot — permanent.
-    mItem('Cantina Chicken Rolled Quesadilla','Rolled flour tortillas filled with slow-roasted chicken, three-cheese blend and creamy chipotle sauce, served with avocado verde salsa for dipping.','New',[],['No chipotle','No three-cheese','Extra cheese','Add: Jalapeños','Side: Extra avocado verde salsa'],APRIL_16_2026,null,[],11),
-    mItem('Chocolate Fudge & Caramel Empanadas','Golden empanadas filled with chocolate fudge and caramel.','New',[],[],APRIL_16_2026,null,LT,12),
-    mItem('Discovery Luxe Box','Pick a chalupa or specialty entrée, a Luxe Value entrée, a side, and a drink.','New',luxeBoxChoices,[],APRIL_16_2026,null,LT,13),
-    // Beefy Potato Loaded Griller / Mini Taco Salad / Chips and Nacho Supreme Dip:
-    // NO LIMITED TIME badges — permanent (recently launched).
-    mItem('Beefy Potato Loaded Griller','Seasoned beef, crispy potato bites, nacho cheese, chipotle, and sour cream in a grilled flour tortilla.','New',[],['No nacho cheese','No chipotle','No sour cream','Add: Jalapeños','Add: Guacamole','Swap beef: Slow-roasted chicken','Swap beef: Black beans (vegetarian)'],APRIL_16_2026,null,[],14),
-    mItem('Mini Taco Salad','Seasoned beef, chipotle, cheddar, lettuce, tomatoes, and refried beans in a crispy tortilla bowl.','New',[],['No chipotle','No cheddar','No lettuce','No tomatoes','No refried beans','Add: Sour cream','Add: Guacamole','Add: Jalapeños','Swap beef: Chicken','Swap beef: Black beans'],APRIL_16_2026,null,[],15),
-    mItem('Chips and Nacho Supreme Dip','Tortilla chips with layered seasoned beef, refried beans, nacho cheese, sour cream, pico de gallo, and three-cheese.','New',[],['No sour cream','No pico de gallo','No three-cheese','Add: Jalapeños','Add: Guacamole','Swap beef: Chicken','Swap beef: Black beans (vegetarian)'],APRIL_16_2026,null,[],16),
-    // Avocado Ranch Chicken Stacker: HAS Limited Time badge per screenshot (corrected v6).
-    mItem('Avocado Ranch Chicken Stacker','Grilled chicken, avocado ranch, three-cheese, lettuce, and tomatoes folded and grilled.','New',[],['No avocado ranch','No three-cheese','No lettuce','No tomatoes','Add: Bacon','Add: Jalapeños','Extra avocado ranch'],APRIL_16_2026,null,LT,17),
-    // 10 Piece Crispy Chicken Nuggets Combo: BOTH Limited Time AND Online Exclusive badges per screenshot.
-    mItem('10 Piece Crispy Chicken Nuggets Combo','Ten crispy chicken nuggets, fries, and a drink. Available online or in the app.','New',nuggetsDeluxeChoices,['No dipping sauce','Add: Extra dipping sauce'],APRIL_16_2026,null,LT_OE,18),
-    mItem('Cantina Chicken Rolled Quesadilla Combo','Cantina Chicken Rolled Quesadilla, side, and a drink.','New',stdComboChoices,['No chipotle','No three-cheese','Extra cheese'],APRIL_16_2026,null,[],19),
-    mItem('Pink Passionfruit Refresca Freeze','Frozen passionfruit refresca slushy with a tropical kick.','New',freezeS,[],APRIL_16_2026,null,LT,20),
-    // The three Dirty Soda drinks have NO Limited Time badge per screenshot — permanent additions
-    // (corrected v6). They were incorrectly marked LT in v4.
-    mItem('MOUNTAIN DEW BAJA MIDNIGHT Dirty Soda','MOUNTAIN DEW BAJA MIDNIGHT layered over half-and-half cream and coconut.','New',drinkS,['No coconut','No cream','Extra cream'],APRIL_16_2026,null,[],21),
-    mItem('PEPSI Dirty Soda','PEPSI layered with half-and-half cream and vanilla, served over ice.','New',drinkS,['No cream','No vanilla','Extra cream'],APRIL_16_2026,null,[],22),
-    mItem('TROPICANA Original Dirty Lemonade','Tropicana lemonade layered with half-and-half cream and coconut.','New',drinkS,['No coconut','No cream','Extra cream'],APRIL_16_2026,null,[],23),
-
-    // ── ONLINE EXCLUSIVES (tacobell.com/food/online-exclusives, exact order) ──
-    // Per screenshot: 6+ items. The 10 Piece Crispy Chicken Nuggets Combo also has a LIMITED
-    // TIME badge here (LT_OE applied above on its New row); other OE items are permanent.
-    // Meal for 2 / Meal for 4 / Veggie Meal for 2 ALSO live in Groups/Veggie Cravings — those
-    // rows below get the same OE pageTag so the badge propagates everywhere.
-    mItem('10 Piece Crispy Chicken Nuggets Combo','Ten crispy chicken nuggets, fries, and a drink. Available online or in the app.','Online Exclusives',nuggetsDeluxeChoices,['No dipping sauce','Add: Extra dipping sauce'],APRIL_16_2026,null,LT_OE),
-    mItem('Build Your Own Luxe Cravings Box','Pick a chalupa or specialty entrée, a Luxe Value entrée, a side, and a drink. Available online or in the app.','Online Exclusives',luxeBoxChoices,[],FAR_PAST,null,OE),
-    mItem('Meal for 2','Two Crunchwrap Supremes, two Bean Burritos, two Soft Tacos, and two Chips and Nacho Cheese Sauces. Available online or in the app.','Online Exclusives',['Drink option: 2 medium fountain drinks','Drink option: No drinks (food only)'],['Swap Crunchwraps: Chicken','Swap Soft Tacos: Crunchy Tacos','No sour cream','No tomatoes','Add: Jalapeños on tacos'],FAR_PAST,null,OE),
-    mItem('Meal for 4','Two Crunchwrap Supremes, two Chicken Quesadillas, four Soft Tacos, and two Chips and Nacho Cheese Sauces. Available online or in the app.','Online Exclusives',['Drink option: 4 medium fountain drinks','Drink option: No drinks (food only)'],['Swap Crunchwraps: Chicken','Swap Soft Tacos: Crunchy Tacos','No sour cream','Add: Jalapeños on tacos','Add: Sides of guacamole'],FAR_PAST,null,OE),
-    mItem('Veggie Meal for 2','Two Cheese Quesadillas, two Bean Burritos, two Spicy Potato Soft Tacos, and two Chips and Nacho Cheese Sauces. Vegetarian. Available online or in the app.','Online Exclusives',['Drink option: 2 medium fountain drinks','Drink option: No drinks (food only)'],['No nacho cheese','No chipotle','Add: Sour cream','Add: Jalapeños','Add: Sides of guacamole'],FAR_PAST,null,OE),
-    mItem('Drinks Party Pack','Four medium fountain drinks. Available online or in the app.','Online Exclusives',['Drink 1: Pepsi','Drink 1: Diet Pepsi','Drink 1: Mountain Dew','Drink 1: Mountain Dew Baja Blast','Drink 1: Brisk Mango Fiesta','Drink 1: Sierra Mist','Drink 1: Tropicana Lemonade','Drink 2: Pepsi','Drink 2: Diet Pepsi','Drink 2: Mountain Dew','Drink 2: Mountain Dew Baja Blast','Drink 2: Brisk Mango Fiesta','Drink 2: Sierra Mist','Drink 2: Tropicana Lemonade','Drink 3: Pepsi','Drink 3: Diet Pepsi','Drink 3: Mountain Dew','Drink 3: Mountain Dew Baja Blast','Drink 3: Brisk Mango Fiesta','Drink 3: Sierra Mist','Drink 3: Tropicana Lemonade','Drink 4: Pepsi','Drink 4: Diet Pepsi','Drink 4: Mountain Dew','Drink 4: Mountain Dew Baja Blast','Drink 4: Brisk Mango Fiesta','Drink 4: Sierra Mist','Drink 4: Tropicana Lemonade'],[],FAR_PAST,null,OE),
-
-    // ── LUXE VALUE MENU (tacobell.com/food/luxe-value-menu, exact order, 10 items) ──
-    mItem('Beefy Potato Loaded Griller','Seasoned beef, crispy potato bites, nacho cheese, chipotle, and sour cream in a grilled flour tortilla.','Luxe Value Menu',[],['No nacho cheese','No chipotle','No sour cream','Add: Jalapeños']),
-    mItem('Mini Taco Salad','Seasoned beef, chipotle, cheddar, lettuce, tomatoes, and refried beans in a crispy tortilla bowl.','Luxe Value Menu',[],['No chipotle','No cheddar','No lettuce','No tomatoes','No refried beans']),
-    mItem('Chips and Nacho Supreme Dip','Tortilla chips with layered seasoned beef, refried beans, nacho cheese, sour cream, pico de gallo, and three-cheese.','Luxe Value Menu',[],['No sour cream','No pico de gallo','Add: Jalapeños']),
-    mItem('Avocado Ranch Chicken Stacker','Grilled chicken, avocado ranch, three-cheese, lettuce, and tomatoes folded and grilled.','Luxe Value Menu',[],['No avocado ranch','No three-cheese','No lettuce','No tomatoes']),
-    mItem('Cheesy Roll Up','Warm flour tortilla filled with melted three-cheese blend. Vegetarian.','Luxe Value Menu',[],[]),
-    mItem('Spicy Potato Soft Taco','Crispy potato bites, chipotle sauce, lettuce, and cheddar in a soft flour tortilla. Vegetarian.','Luxe Value Menu',[],['No chipotle sauce','No lettuce','No cheddar','Add: Sour cream']),
-    mItem('Cheesy Bean and Rice Burrito','Refried beans, seasoned rice, nacho cheese, and chipotle sauce in a flour tortilla. Vegetarian.','Luxe Value Menu',[],['No nacho cheese','No chipotle sauce']),
-    mItem('3 Cheese Chicken Flatbread Melt','Grilled chicken and three-cheese on a warm flatbread.','Luxe Value Menu',[],['No three-cheese','Extra cheese']),
-    mItem('Cheesy Fiesta Potatoes','Crispy potato bites with nacho cheese and reduced-fat sour cream. Vegetarian.','Luxe Value Menu',[],['No nacho cheese','No sour cream','Add: Jalapeños','Add: Bacon bits']),
-    mItem('Cheesy Double Beef Burrito','Double seasoned beef, nacho cheese, seasoned rice, sour cream, and chipotle sauce in a flour tortilla.','Luxe Value Menu',[],['No nacho cheese','No sour cream','No chipotle','Add: Jalapeños']),
-
-    // ── CANTINA CHICKEN MENU (tacobell.com/food/cantina-chicken-menu, exact order, 9 items) ──
-    mItem('Cantina Chicken Rolled Quesadilla','Rolled flour tortillas filled with slow-roasted chicken, three-cheese blend and creamy chipotle sauce, served with avocado verde salsa for dipping.','Cantina Chicken Menu',[],['No chipotle','No three-cheese','Extra cheese','Add: Jalapeños','Side: Extra avocado verde salsa']),
-    mItem('Cantina Chicken Burrito','Slow-roasted cantina chicken with seasoned rice, black beans, avocado ranch, three-cheese, lettuce, pico de gallo, and chipotle in a flour tortilla.','Cantina Chicken Menu',[],['No avocado ranch','No chipotle','No three-cheese','No lettuce','No pico','No black beans','Add: Jalapeños','Add: Sour cream','Add: Guacamole']),
-    mItem('Cantina Chicken Soft Taco','Slow-roasted cantina chicken with avocado ranch sauce, lettuce, shredded purple cabbage, pico de gallo, and cheddar in a soft flour tortilla.','Cantina Chicken Menu',[],['No avocado ranch','No cabbage','No pico','No cheddar','No lettuce','Add: Sour cream','Add: Jalapeños','Add: Guacamole']),
-    mItem('Cantina Chicken Crispy Taco','Slow-roasted cantina chicken with creamy jalapeño sauce and three-cheese blend, plus grilled cheese on the outside, in a crispy white-corn shell.','Cantina Chicken Menu',[],['No jalapeño sauce','No three-cheese','Extra cheese','Add: Lettuce','Add: Sour cream']),
-    mItem('Cantina Chicken Bowl','Slow-roasted chicken, seasoned rice, black beans, avocado ranch, reduced-fat sour cream, lettuce, purple cabbage, pico de gallo, guacamole, and cheddar.','Cantina Chicken Menu',[],['No avocado ranch','No sour cream','No cheddar','No pico','No cabbage','No guacamole','Add: Jalapeños','Add: Three-cheese','Swap rice: Cilantro lime rice']),
-    mItem('Cantina Chicken Rolled Quesadilla Combo','Cantina Chicken Rolled Quesadilla, side, and a drink.','Cantina Chicken Menu',stdComboChoices,['No chipotle','No three-cheese','Extra cheese','Side: Extra avocado verde salsa']),
-    mItem('Cantina Chicken Crispy Taco Combo','Cantina Chicken Crispy Taco, side, and a drink.','Cantina Chicken Menu',stdComboChoices,['No jalapeño sauce','No three-cheese','Extra cheese','Add: Lettuce']),
-    mItem('Cantina Chicken Burrito Combo','Cantina Chicken Burrito, side, and a drink.','Cantina Chicken Menu',stdComboChoices,['No avocado ranch','No chipotle','No three-cheese','No lettuce','No pico','No black beans']),
-    mItem('Avocado Verde Salsa Sauce Packet','Creamy avocado verde salsa.','Cantina Chicken Menu',[],[]),
-
-    // ── COMBOS & BOXES (tacobell.com/food/deals-and-combos, exact order, 16 items) ──
-    // Each combo has multiple required choices (side + drink + drink size). Luxe Boxes also
-    // require entrée and Luxe Value entrée picks. The cross-listed rows in /New get LTO tags
-    // propagated to here automatically via the name lookup.
-    mItem('Discovery Luxe Box','Pick a chalupa or specialty entrée, a Luxe Value entrée, a side, and a drink.','Combos & Boxes',luxeBoxChoices,[]),
-    mItem('10 Piece Crispy Chicken Nuggets Combo','Ten crispy chicken nuggets, fries, and a drink. Available online or in the app.','Combos & Boxes',nuggetsDeluxeChoices,['No dipping sauce','Add: Extra dipping sauce']),
-    mItem('Crispy Chicken Nuggets Deluxe Combo','Crispy chicken nuggets with sides and a drink.','Combos & Boxes',nuggetsDeluxeChoices,['No dipping sauce','Add: Extra dipping sauce']),
-    mItem('Diablo Dusted Crispy Chicken Nuggets Deluxe Combo','Diablo Dusted Crispy Chicken Nuggets Deluxe Combo with sides and a drink.','Combos & Boxes',nuggetsDeluxeChoices,['No dipping sauce','Add: Extra dipping sauce']),
-    mItem('Cantina Chicken Crispy Taco Combo','Cantina Chicken Crispy Taco, side, and a drink.','Combos & Boxes',stdComboChoices,['No jalapeño sauce','No three-cheese','Extra cheese']),
-    mItem('Cantina Chicken Burrito Combo','Cantina Chicken Burrito, side, and a drink.','Combos & Boxes',stdComboChoices,['No avocado ranch','No chipotle','No three-cheese','No lettuce','No pico','No black beans']),
-    mItem('Cantina Chicken Rolled Quesadilla Combo','Cantina Chicken Rolled Quesadilla, side, and a drink.','Combos & Boxes',stdComboChoices,['No chipotle','No three-cheese','Extra cheese']),
-    mItem('Mexican Pizza Combo','Mexican Pizza, a taco, and a drink.','Combos & Boxes',['Taco: Crunchy Taco','Taco: Soft Taco','Taco: Crunchy Taco Supreme','Taco: Soft Taco Supreme','Taco: Doritos Locos Taco','Drink: Pepsi','Drink: Diet Pepsi','Drink: Mountain Dew','Drink: Mountain Dew Baja Blast','Drink: Brisk Mango Fiesta','Drink: Sierra Mist','Drink: Tropicana Lemonade','Drink size: Small','Drink size: Medium','Drink size: Large'],['No tomato on pizza','No sour cream on pizza','Add: Jalapeños on pizza','Add: Guacamole on pizza']),
-    mItem('Chicken Quesadilla Combo','Chicken Quesadilla, a taco, and a drink.','Combos & Boxes',['Taco: Crunchy Taco','Taco: Soft Taco','Taco: Crunchy Taco Supreme','Taco: Soft Taco Supreme','Taco: Doritos Locos Taco','Drink: Pepsi','Drink: Diet Pepsi','Drink: Mountain Dew','Drink: Mountain Dew Baja Blast','Drink: Brisk Mango Fiesta','Drink: Sierra Mist','Drink: Tropicana Lemonade','Drink size: Small','Drink size: Medium','Drink size: Large'],['No jalapeño sauce','Extra cheese','Swap chicken: Steak (+$1)','Swap chicken: Cheese only (vegetarian)']),
-    mItem('2 Chicken Chalupas Supreme Combo','Two Chicken Chalupas Supreme and a drink.','Combos & Boxes',['Drink: Pepsi','Drink: Diet Pepsi','Drink: Mountain Dew','Drink: Mountain Dew Baja Blast','Drink: Brisk Mango Fiesta','Drink: Sierra Mist','Drink: Tropicana Lemonade','Drink size: Small','Drink size: Medium','Drink size: Large'],['No sour cream','No tomato','No lettuce','No cheddar','Add: Jalapeños','Add: Guacamole']),
-    mItem('Crunchwrap Supreme Combo','Crunchwrap Supreme, a side, and a drink.','Combos & Boxes',stdComboChoices,['No nacho cheese','No sour cream','No tomato','No lettuce','No cheddar','Add: Jalapeños','Add: Guacamole']),
-    mItem('3 Crunchy Tacos Combo','Three crunchy tacos and a drink.','Combos & Boxes',['Drink: Pepsi','Drink: Diet Pepsi','Drink: Mountain Dew','Drink: Mountain Dew Baja Blast','Drink: Brisk Mango Fiesta','Drink: Sierra Mist','Drink: Tropicana Lemonade','Drink size: Small','Drink size: Medium','Drink size: Large'],['No cheddar','No lettuce','Add: Sour cream','Add: Tomato','Add: Guacamole','Add: Jalapeños']),
-    mItem('3 Crunchy Tacos Supreme Combo','Three Crunchy Tacos Supreme and a drink.','Combos & Boxes',['Drink: Pepsi','Drink: Diet Pepsi','Drink: Mountain Dew','Drink: Mountain Dew Baja Blast','Drink: Brisk Mango Fiesta','Drink: Sierra Mist','Drink: Tropicana Lemonade','Drink size: Small','Drink size: Medium','Drink size: Large'],['No sour cream','No tomato','No cheddar','No lettuce','Add: Guacamole','Add: Jalapeños']),
-    mItem('3 Doritos Locos Tacos Combo','Three Nacho Cheese Doritos Locos Tacos and a drink.','Combos & Boxes',['Shell: Nacho Cheese (default)','Shell: Cool Ranch','Shell: Fiery','Drink: Pepsi','Drink: Diet Pepsi','Drink: Mountain Dew','Drink: Mountain Dew Baja Blast','Drink: Brisk Mango Fiesta','Drink: Sierra Mist','Drink: Tropicana Lemonade','Drink size: Small','Drink size: Medium','Drink size: Large'],['No cheddar','No lettuce','Add: Sour cream','Add: Tomato','Add: Guacamole','Add: Jalapeños']),
-    mItem('3 Doritos Locos Tacos Supreme Combo','Three Nacho Cheese Doritos Locos Tacos Supreme and a drink.','Combos & Boxes',['Shell: Nacho Cheese (default)','Shell: Cool Ranch','Shell: Fiery','Drink: Pepsi','Drink: Diet Pepsi','Drink: Mountain Dew','Drink: Mountain Dew Baja Blast','Drink: Brisk Mango Fiesta','Drink: Sierra Mist','Drink: Tropicana Lemonade','Drink size: Small','Drink size: Medium','Drink size: Large'],['No sour cream','No tomato','No cheddar','No lettuce','Add: Guacamole','Add: Jalapeños']),
-    mItem('Supreme Luxe Box','Chalupa Supreme, Beefy 5-Layer Burrito, Crunchy Taco, Cinnamon Twists, and a drink.','Combos & Boxes',['Drink: Pepsi','Drink: Diet Pepsi','Drink: Mountain Dew','Drink: Mountain Dew Baja Blast','Drink: Brisk Mango Fiesta','Drink: Sierra Mist','Drink: Tropicana Lemonade','Drink size: Small','Drink size: Medium','Drink size: Large'],['No sour cream on chalupa','No tomato on chalupa','Add: Guacamole on chalupa','Add: Jalapeños on burrito']),
-    mItem('Classic Luxe Box','Beefy 5-Layer Burrito, Crunchy Taco, Cinnamon Twists, and a drink.','Combos & Boxes',['Drink: Pepsi','Drink: Diet Pepsi','Drink: Mountain Dew','Drink: Mountain Dew Baja Blast','Drink: Brisk Mango Fiesta','Drink: Sierra Mist','Drink: Tropicana Lemonade','Drink size: Small','Drink size: Medium','Drink size: Large'],['No nacho cheese on burrito','No sour cream on burrito','Add: Jalapeños on taco','Add: Guacamole on taco']),
-
-    // ── TACOS (tacobell.com/food/tacos, exact order, 13 items) ──
-    mItem('Cantina Chicken Crispy Taco','Slow-roasted cantina chicken with creamy jalapeño sauce and three-cheese blend, plus grilled cheese on the outside, in a crispy white-corn shell.','Tacos',[],['No jalapeño sauce','No three-cheese','Extra cheese']),
-    mItem('Cantina Chicken Soft Taco','Slow-roasted cantina chicken with avocado ranch sauce, lettuce, shredded purple cabbage, pico de gallo, and cheddar in a soft flour tortilla.','Tacos',[],['No avocado ranch','No cabbage','No pico','No cheddar','No lettuce']),
-    mItem('Soft Taco','Seasoned beef, cheddar, and lettuce in a warm flour tortilla.','Tacos',[],['No cheddar','No lettuce','Add: Sour cream','Add: Tomato','Add: Guacamole','Add: Jalapeños']),
-    mItem('Soft Taco Supreme','Seasoned beef, sour cream, tomato, cheddar, and lettuce in a flour tortilla.','Tacos',[],['No sour cream','No tomato','No cheddar','No lettuce','Add: Guacamole']),
-    mItem('Spicy Potato Soft Taco','Crispy potato bites, chipotle sauce, lettuce, and cheddar in a soft flour tortilla. Vegetarian.','Tacos',[],['No chipotle sauce','No lettuce','No cheddar','Add: Sour cream']),
-    mItem('Crunchy Taco','Seasoned beef, cheddar, and lettuce in a crunchy corn shell.','Tacos',[],['No cheddar','No lettuce','Add: Sour cream','Add: Tomato','Add: Guacamole','Add: Jalapeños']),
-    mItem('Crunchy Taco Supreme','Seasoned beef, sour cream, tomato, lettuce, and cheddar in a crunchy shell.','Tacos',[],['No sour cream','No tomato','No cheddar','No lettuce','Add: Guacamole','Add: Jalapeños']),
-    mItem('Nacho Cheese Doritos Locos Tacos','Seasoned beef, cheddar, and lettuce in a Nacho Cheese Doritos shell.','Tacos',[],['No cheddar','No lettuce','Add: Sour cream','Add: Tomato']),
-    mItem('Nacho Cheese Doritos Locos Tacos Supreme','Seasoned beef, sour cream, tomato, lettuce, and cheddar in a Nacho Cheese Doritos shell.','Tacos',[],['No sour cream','No tomato','No cheddar','No lettuce']),
-    mItem('Chalupa Supreme','Seasoned beef, sour cream, tomato, lettuce, and cheddar in a fried chalupa shell.','Tacos',[],['No sour cream','No tomato','No lettuce','No cheddar','Add: Guacamole']),
-    mItem('Black Bean Chalupa Supreme','Black beans, sour cream, tomato, lettuce, and cheddar in a fried chalupa shell. Vegetarian.','Tacos',[],['No sour cream','No tomato','No lettuce','No cheddar']),
-    mItem('Cheesy Gordita Crunch','Seasoned beef, pepper jack, three-cheese, chipotle, and lettuce in a pita-flatbread wrapped around a crunchy taco shell.','Tacos',[],['No chipotle','No lettuce','No pepper jack','Add: Sour cream']),
-    mItem('Doritos Cheesy Gordita Crunch - Nacho Cheese','Beef, three-cheese, chipotle, and lettuce in a Nacho Cheese Doritos shell wrapped around a flatbread.','Tacos',[],['No chipotle','No lettuce','No three-cheese','Add: Sour cream']),
-
-    // ── BURRITOS (tacobell.com/food/burritos, exact order, 7 items) ──
-    mItem('Cantina Chicken Burrito','Slow-roasted cantina chicken with seasoned rice, black beans, avocado ranch, three-cheese, lettuce, pico de gallo, and chipotle in a flour tortilla.','Burritos',[],['No avocado ranch','No chipotle','No three-cheese','No lettuce','No pico','No black beans']),
-    mItem('Cheesy Double Beef Burrito','Double seasoned beef, nacho cheese, seasoned rice, sour cream, and chipotle sauce in a flour tortilla.','Burritos',[],['No nacho cheese','No sour cream','No chipotle','Add: Jalapeños']),
-    mItem('Black Bean Grilled Cheese Burrito - Black Beans','Black beans, seasoned rice, three-cheese, and avocado ranch grilled into a flour tortilla. Vegetarian.','Burritos',[],['No three-cheese','Add: Guacamole','Add: Sour cream']),
-    mItem('Bean Burrito','Refried beans, red sauce, onions, and cheddar in a flour tortilla. Vegetarian.','Burritos',[],['No red sauce','No onions','No cheddar','Add: Sour cream','Add: Guacamole']),
-    mItem('Beefy 5-Layer Burrito','Seasoned beef, nacho cheese, sour cream, refried beans, and cheddar in a flour tortilla.','Burritos',[],['No nacho cheese','No sour cream','No refried beans','No cheddar']),
-    mItem('Burrito Supreme','Seasoned beef, sour cream, tomatoes, lettuce, cheddar, and refried beans in a flour tortilla.','Burritos',[],['No sour cream','No tomatoes','No lettuce','No cheddar','No refried beans','Add: Guacamole']),
-    mItem('Cheesy Bean and Rice Burrito','Refried beans, seasoned rice, nacho cheese, and chipotle sauce in a flour tortilla. Vegetarian.','Burritos',[],['No nacho cheese','No chipotle sauce']),
-
-    // ── SPECIALTIES (tacobell.com/food/specialties, exact order, with the 2 Crunchwrap Sliders) ──
-    // LTO badges propagate from the New rows above via pageTags+name lookup, so the legacy
-    // LTO() specialty objects on these rows are NOT needed. Just declare the rows in their
-    // proper category; the renderer will tag them automatically.
-    mItem('Triple Double Crunchwrap','Crunchwrap with double layers of seasoned beef, nacho cheese, and two tostada shells. Finished with sour cream, lettuce, tomatoes.','Specialties',[],['No nacho cheese','No sour cream','No lettuce','No tomatoes','Add: Jalapeños','Add: Guacamole']),
-    mItem('10 Piece Diablo Dusted Crispy Chicken Nuggets','Ten crispy all-white-meat chicken nuggets coated in fiery Diablo Dust. Served with dipping sauce.','Specialties',dipSauces,['No dipping sauce','Add: Extra dipping sauce']),
-    mItem('10 Piece Crispy Chicken Nuggets','Ten crispy all-white-meat chicken nuggets with dipping sauce.','Specialties',dipSauces,['No dipping sauce','Add: Extra dipping sauce']),
-    mItem('5 Piece Diablo Dusted Crispy Chicken Nuggets','Five crispy all-white-meat chicken nuggets coated in fiery Diablo Dust. Served with dipping sauce.','Specialties',dipSauces,['No dipping sauce','Add: Extra dipping sauce']),
-    mItem('5 Piece Crispy Chicken Nuggets','Five all-white-meat crispy chicken nuggets with dipping sauce.','Specialties',dipSauces,['No dipping sauce','Add: Extra dipping sauce']),
-    mItem('Jalapeno Honey Mustard Crispy Chicken Crunchwrap Slider','Crispy chicken, three-cheese blend (mozzarella/pepperjack/cheddar), pico de gallo, and jalapeño honey mustard sauce in a mini grilled crunchwrap.','Specialties',[],['No jalapeño honey mustard','No pico de gallo','No three-cheese','Extra sauce','Add: Lettuce','Add: Tomato','Add: Jalapeños']),
-    mItem('Creamy Chipotle Crispy Chicken Crunchwrap Slider','Crispy chicken, three-cheese blend (mozzarella/pepperjack/cheddar), pico de gallo, and creamy chipotle sauce in a mini grilled crunchwrap.','Specialties',[],['No creamy chipotle','No pico de gallo','No three-cheese','Extra sauce','Add: Lettuce','Add: Tomato','Add: Jalapeños']),
-    mItem("Zab's Chicken Ranch Nacho Fries","Seasoned Nacho Fries with slow-roasted chicken, Zab's Datil Pepper Ranch, warm nacho cheese, three-cheese blend, pico de gallo.",'Specialties',[],["No Zab's ranch","No nacho cheese","No three-cheese","No pico","Extra Zab's ranch"]),
-    mItem('Beefy Potato Loaded Griller','Seasoned beef, crispy potato bites, nacho cheese, chipotle, and sour cream in a grilled flour tortilla.','Specialties',[],['No nacho cheese','No chipotle','No sour cream','Add: Jalapeños','Add: Guacamole','Swap beef: Slow-roasted chicken','Swap beef: Black beans (vegetarian)']),
-    mItem('Mini Taco Salad','Seasoned beef, chipotle, cheddar, lettuce, tomatoes, and refried beans in a crispy tortilla bowl.','Specialties',[],['No chipotle','No cheddar','No lettuce','No tomatoes','No refried beans','Add: Sour cream','Add: Guacamole','Add: Jalapeños','Swap beef: Chicken','Swap beef: Black beans']),
-    mItem('Avocado Ranch Chicken Stacker','Grilled chicken, avocado ranch, three-cheese, lettuce, and tomatoes folded and grilled.','Specialties',[],['No avocado ranch','No three-cheese','No lettuce','No tomatoes','Add: Bacon','Add: Jalapeños','Extra avocado ranch']),
-    mItem('Large Nacho Fries','Larger order of seasoned crispy fries with warm nacho cheese dipping sauce. Vegetarian.','Specialties',[],['Extra nacho cheese','Add: Jalapeños','No nacho cheese','Add: Sour cream','Add: Guacamole']),
-    mItem('Nacho Fries','Seasoned crispy fries with warm nacho cheese dipping sauce. Vegetarian.','Specialties',[],['Extra nacho cheese','Add: Jalapeños','No nacho cheese','Add: Sour cream','Add: Guacamole']),
-    mItem('3 Cheese Chicken Flatbread Melt','Grilled chicken and three-cheese on a warm flatbread.','Specialties',[],['No three-cheese','Extra cheese','Add: Jalapeños','Add: Bacon','Swap chicken: Steak (+$1)']),
-    mItem('Mexican Pizza','Two crunchy shells with seasoned beef, refried beans, tomatoes, three-cheese, and pizza sauce.','Specialties',[],['No tomatoes','No three-cheese','Add: Jalapeños','Add: Sour cream','Add: Guacamole','Swap beef: Chicken','Swap beef: Black beans (vegetarian)']),
-    mItem('Veggie Mexican Pizza','Two crunchy shells with refried beans, tomatoes, three-cheese, and pizza sauce. Vegetarian.','Specialties',[],['No tomatoes','No three-cheese','Add: Jalapeños','Add: Sour cream','Add: Guacamole']),
-    mItem('Crunchwrap Supreme','Seasoned beef, nacho cheese, tostada shell, sour cream, tomato, lettuce, and cheddar wrapped and grilled.','Specialties',[],['No nacho cheese','No sour cream','No tomato','No lettuce','No cheddar','Add: Jalapeños','Add: Guacamole','Swap beef: Chicken','Swap beef: Steak (+$1)','Swap beef: Black beans (vegetarian)']),
-    mItem('Black Bean Crunchwrap Supreme','Crunchwrap Supreme made with black beans instead of beef. Vegetarian.','Specialties',[],['No nacho cheese','No sour cream','No tomato','No lettuce','No cheddar','Add: Guacamole','Add: Jalapeños']),
-    mItem('Cheesy Roll Up','Warm flour tortilla filled with melted three-cheese blend. Vegetarian.','Specialties',[],['Add: Bacon','Add: Jalapeños','Add: Sour cream']),
-
-    // ── SIDES & SWEETS (tacobell.com/food/sides-sweets, exact order, 26 items) ──
-    mItem('Large Nacho Fries','Larger order of seasoned crispy fries with warm nacho cheese dipping sauce. Vegetarian.','Sides & Sweets',[],['Extra nacho cheese','Add: Jalapeños','No nacho cheese']),
-    mItem('Nacho Fries','Seasoned crispy fries with warm nacho cheese dipping sauce. Vegetarian.','Sides & Sweets',[],['Extra nacho cheese','Add: Jalapeños','No nacho cheese']),
-    mItem('Cheesy Fiesta Potatoes','Crispy potato bites with nacho cheese and reduced-fat sour cream. Vegetarian.','Sides & Sweets',[],['No nacho cheese','No sour cream','Add: Jalapeños','Add: Bacon bits']),
-    mItem('Chips and Guacamole','Tortilla chips with guacamole. Vegetarian.','Sides & Sweets',[],[]),
-    mItem('Chips and Nacho Cheese Sauce','Tortilla chips with nacho cheese dipping sauce. Vegetarian.','Sides & Sweets',[],['Add: Jalapeños','Extra nacho cheese']),
-    mItem('Black Beans','Seasoned black beans. Vegetarian.','Sides & Sweets',[],[]),
-    mItem('Black Beans and Rice','Seasoned black beans and rice. Vegetarian.','Sides & Sweets',[],[]),
-    mItem('Pintos N Cheese','Pinto beans topped with nacho cheese. Vegetarian.','Sides & Sweets',[],['No nacho cheese']),
-    mItem('Cinnamon Twists','Light, crispy corn-puffed twists with cinnamon sugar.','Sides & Sweets',[],[]),
-    mItem('Cinnabon Delights 2 Pack','Bite-sized pastries filled with Cinnabon filling and topped with icing.','Sides & Sweets',[],[]),
-    mItem('Cinnabon Delights 12 Pack','12-pack of Cinnabon Delights — bite-sized pastries with icing.','Sides & Sweets',[],[]),
-    mItem('Avocado Verde Salsa Sauce Packet','Creamy avocado verde salsa.','Sides & Sweets',[],[]),
-    mItem('Mild Sauce Packet','Mild red sauce.','Sides & Sweets',[],[]),
-    mItem('Hot Sauce Packet','Hot red sauce.','Sides & Sweets',[],[]),
-    mItem('Fire Sauce Packet','Fiery red sauce.','Sides & Sweets',[],[]),
-    mItem('Diablo Sauce Packet','Fiery red sauce — the hottest in the lineup.','Sides & Sweets',[],[]),
-    mItem('Jalapeño Peppers','Pickled jalapeño slices on the side.','Sides & Sweets',[],[]),
-    mItem('Nacho Cheese Sauce','Warm nacho cheese dipping sauce.','Sides & Sweets',[],[]),
-    mItem('Reduced-Fat Sour Cream','Sour cream on the side.','Sides & Sweets',[],[]),
-    mItem('Creamy Jalapeño Sauce','Creamy jalapeño dipping sauce.','Sides & Sweets',[],[]),
-    mItem('Guacamole','Guacamole on the side.','Sides & Sweets',[],[]),
-    mItem('Chipotle Sauce','Creamy chipotle sauce.','Sides & Sweets',[],[]),
-    mItem('Avocado Ranch Sauce','Avocado ranch dipping sauce.','Sides & Sweets',[],[]),
-    mItem('Spicy Ranch','Spicy ranch dipping sauce.','Sides & Sweets',[],[]),
-    mItem('Red Sauce','Classic red sauce.','Sides & Sweets',[],[]),
-    mItem('Mexican Pizza Sauce','The signature sauce on the Mexican Pizza, available as a side.','Sides & Sweets',[],[]),
-
-    // ── QUESADILLAS (tacobell.com/food/quesadillas, exact order, 4 items) ──
-    mItem('Cantina Chicken Rolled Quesadilla','Rolled flour tortillas filled with slow-roasted chicken, three-cheese blend and creamy chipotle sauce, served with avocado verde salsa for dipping.','Quesadillas',[],['No chipotle','No three-cheese','Extra cheese']),
-    mItem('Chicken Quesadilla','Grilled chicken with three-cheese and creamy jalapeño sauce in a grilled flour tortilla.','Quesadillas',[],['No jalapeño sauce','Extra cheese']),
-    mItem('Steak Quesadilla','Grilled steak with three-cheese and creamy jalapeño sauce in a grilled flour tortilla.','Quesadillas',[],['No jalapeño sauce','Extra cheese']),
-    mItem('Cheese Quesadilla','Three-cheese blend and creamy jalapeño sauce in a grilled flour tortilla. Vegetarian.','Quesadillas',[],['No jalapeño sauce','Extra cheese']),
-
-    // ── DRINKS (tacobell.com/food/drinks, exact order, 30 items including Drinks Party Pack) ──
-    // Confetti Cookie Freeze and Blue Raspberry Freeze: HAVE Limited Time badges per their
-    // launch press release (Dec 2025) and are still on /food/drinks (not /food/new — Limited
-    // Time badges can appear on items outside /food/new).
-    mItem('Confetti Cookie Freeze','Confetti cookie flavored slushy.','Drinks',freezeS,[],undefined,null,LT,30),
-    mItem('Blue Raspberry Freeze','Blue raspberry flavored slushy.','Drinks',freezeS,[],undefined,null,LT,31),
-    mItem('Mountain Dew Baja Midnight','Mountain Dew Baja Midnight — sweet berry-citrus flavor.','Drinks',drinkS,[]),
-    mItem('Strawberry Passionfruit Agua Refresca','Light and refreshing agua fresca.','Drinks',[],[]),
-    mItem('Mango Peach Agua Refresca','Light and refreshing agua fresca.','Drinks',[],[]),
-    mItem('Dragonfruit Berry Agua Refresca','Light and refreshing agua fresca.','Drinks',[],[]),
-    mItem('Tropical Punch Rockstar Energy Refresca','Tropical punch Rockstar Energy drink.','Drinks',[],[]),
-    mItem('Pineapple Lime Rockstar Energy Refresca','Pineapple lime Rockstar Energy drink.','Drinks',[],[]),
-    mItem('MTN DEW Baja Blast Freeze','Frozen Taco Bell exclusive Baja Blast slushy.','Drinks',freezeS,[]),
-    mItem('Pepsi','Pepsi fountain drink.','Drinks',drinkS,[]),
-    mItem('Diet Pepsi','Diet Pepsi.','Drinks',drinkS,[]),
-    mItem('Pepsi Zero Sugar','Pepsi Zero Sugar.','Drinks',drinkS,[]),
-    mItem('Cherry Pepsi','Cherry Pepsi.','Drinks',drinkS,[]),
-    mItem('MTN DEW','Mountain Dew.','Drinks',drinkS,[]),
-    mItem('MTN DEW Zero','Mountain Dew Zero.','Drinks',drinkS,[]),
-    mItem('MTN DEW Baja Blast','Taco Bell exclusive. Tropical lime citrus flavor.','Drinks',drinkS,[]),
-    mItem('MTN DEW Baja Blast Zero Sugar','Zero-sugar version of MTN DEW Baja Blast.','Drinks',drinkS,[]),
-    mItem('Mug Root Beer','Mug Root Beer.','Drinks',drinkS,[]),
-    mItem('Starry','Starry lemon-lime soda.','Drinks',drinkS,[]),
-    mItem('G2 Gatorade Fruit Punch','G2 Gatorade.','Drinks',drinkS,[]),
-    mItem('Tropicana Original Lemonade','Tropicana lemonade.','Drinks',drinkS,[]),
-    mItem('Brisk Mango Fiesta','Brisk Mango Fiesta iced tea.','Drinks',drinkS,[]),
-    mItem('Lipton Unsweetened Iced Tea','Unsweetened iced tea.','Drinks',drinkS,[]),
-    mItem('Lipton Sweet Tea','Sweet tea.','Drinks',drinkS,[]),
-    mItem('Tropicana Orange Juice','Bottled orange juice.','Drinks',[],[]),
-    mItem('Premium Hot Coffee','Freshly brewed hot coffee.','Drinks',[],[]),
-    mItem('Hot Cinnabon Delights Coffee','Hot coffee inspired by Cinnabon.','Drinks',[],[]),
-    mItem('Regular Iced Coffee','Iced coffee.','Drinks',[],[]),
-    mItem('Iced Cinnabon Delights Coffee','Iced coffee inspired by Cinnabon.','Drinks',[],[]),
-    mItem('Drinks Party Pack','Four medium fountain drinks. Available online or in the app.','Drinks',['Drink 1: Pepsi','Drink 1: Diet Pepsi','Drink 1: Mountain Dew','Drink 1: Mountain Dew Baja Blast','Drink 1: Brisk Mango Fiesta','Drink 1: Sierra Mist','Drink 1: Tropicana Lemonade','Drink 2: Pepsi','Drink 2: Diet Pepsi','Drink 2: Mountain Dew','Drink 2: Mountain Dew Baja Blast','Drink 2: Brisk Mango Fiesta','Drink 2: Sierra Mist','Drink 2: Tropicana Lemonade','Drink 3: Pepsi','Drink 3: Diet Pepsi','Drink 3: Mountain Dew','Drink 3: Mountain Dew Baja Blast','Drink 3: Brisk Mango Fiesta','Drink 3: Sierra Mist','Drink 3: Tropicana Lemonade','Drink 4: Pepsi','Drink 4: Diet Pepsi','Drink 4: Mountain Dew','Drink 4: Mountain Dew Baja Blast','Drink 4: Brisk Mango Fiesta','Drink 4: Sierra Mist','Drink 4: Tropicana Lemonade'],[]),
-
-    // ── NACHOS (tacobell.com/food/nachos, exact order, 4 items) ──
-    mItem('Nachos BellGrande','Tortilla chips, seasoned beef, nacho cheese, refried beans, sour cream, and tomato.','Nachos',[],['No refried beans','No sour cream','No tomato','Add: Guacamole','Add: Jalapeños','Extra nacho cheese']),
-    mItem('Chips and Nacho Supreme Dip','Tortilla chips with layered seasoned beef, refried beans, nacho cheese, sour cream, pico de gallo, and three-cheese.','Nachos',[],['No sour cream','No pico de gallo','Add: Jalapeños']),
-    mItem('Chips and Guacamole','Tortilla chips with guacamole. Vegetarian.','Nachos',[],[]),
-    mItem('Chips and Nacho Cheese Sauce','Tortilla chips with nacho cheese dipping sauce. Vegetarian.','Nachos',[],['Add: Jalapeños','Extra nacho cheese']),
-
-    // ── GROUPS (tacobell.com/food/party-packs, exact order, 10 items) ──
-    // Group meals come pre-built but can be customized — each item in the bundle has its own
-    // mod options. We surface common ones; users can add notes for granular tweaks.
-    // Note: Veggie Meal for 2 lives at /party-packs/ but is NOT on the live Groups page —
-    // it appears only in Veggie Cravings. Don't include it here.
-    mItem('Meal for 2','Two Crunchwrap Supremes, two Bean Burritos, two Soft Tacos, and two Chips and Nacho Cheese Sauces. Available online or in the app.','Groups',['Drink option: 2 medium fountain drinks','Drink option: No drinks (food only)'],['Swap Crunchwraps: Chicken','Swap Crunchwraps: Steak (+)','Swap Soft Tacos: Crunchy Tacos','No sour cream','No tomatoes','Add: Jalapeños on tacos','Add: Sides of guacamole']),
-    mItem('Meal for 4','Two Crunchwrap Supremes, two Chicken Quesadillas, four Soft Tacos, and two Chips and Nacho Cheese Sauces. Available online or in the app.','Groups',['Drink option: 4 medium fountain drinks','Drink option: No drinks (food only)'],['Swap Crunchwraps: Chicken','Swap Crunchwraps: Steak (+)','Swap Soft Tacos: Crunchy Tacos','No sour cream','Add: Jalapeños on tacos','Add: Sides of guacamole']),
-    mItem('Taco & Burrito Cravings Pack','Four Crunchy Tacos and four Beefy 5-Layer Burritos.','Groups',[],['No nacho cheese on burritos','No sour cream on burritos','No cheddar on tacos','No lettuce on tacos','Add: Jalapeños','Add: Sides of guacamole']),
-    mItem('Taco Party Pack','12 Crunchy Tacos to share.','Groups',[],['No cheddar','No lettuce','Add: Sour cream','Add: Tomato','Add: Jalapeños','Swap to: All Soft Tacos','Swap to: Mixed shells']),
-    mItem('Supreme Taco Party Pack','12 Crunchy Tacos Supreme to share.','Groups',[],['No sour cream','No tomato','No cheddar','No lettuce','Add: Jalapeños','Swap to: All Soft Tacos Supreme']),
-    mItem('Soft Taco Party Pack','12 Soft Tacos to share.','Groups',[],['No cheddar','No lettuce','Add: Sour cream','Add: Tomato','Add: Jalapeños','Swap to: All Crunchy Tacos']),
-    mItem('Supreme Soft Taco Party Pack','12 Soft Tacos Supreme to share.','Groups',[],['No sour cream','No tomato','No cheddar','No lettuce','Add: Jalapeños']),
-    mItem('Variety Taco Party Pack','6 Crunchy Tacos and 6 Nacho Cheese Doritos Locos Tacos.','Groups',['Doritos shell: Nacho Cheese (default)','Doritos shell: Cool Ranch','Doritos shell: Fiery'],['No cheddar','No lettuce','Add: Sour cream','Add: Tomato','Add: Jalapeños']),
-    mItem('Supreme Variety Taco Party Pack','6 Crunchy Tacos Supreme and 6 Nacho Cheese Doritos Locos Tacos Supreme.','Groups',['Doritos shell: Nacho Cheese (default)','Doritos shell: Cool Ranch','Doritos shell: Fiery'],['No sour cream','No tomato','No cheddar','No lettuce','Add: Jalapeños']),
-    mItem('Drinks Party Pack','Four medium fountain drinks. Available online or in the app.','Groups',['Drink 1: Pepsi','Drink 1: Diet Pepsi','Drink 1: Mountain Dew','Drink 1: Mountain Dew Baja Blast','Drink 1: Brisk Mango Fiesta','Drink 1: Sierra Mist','Drink 1: Tropicana Lemonade','Drink 2: Pepsi','Drink 2: Diet Pepsi','Drink 2: Mountain Dew','Drink 2: Mountain Dew Baja Blast','Drink 2: Brisk Mango Fiesta','Drink 2: Sierra Mist','Drink 2: Tropicana Lemonade','Drink 3: Pepsi','Drink 3: Diet Pepsi','Drink 3: Mountain Dew','Drink 3: Mountain Dew Baja Blast','Drink 3: Brisk Mango Fiesta','Drink 3: Sierra Mist','Drink 3: Tropicana Lemonade','Drink 4: Pepsi','Drink 4: Diet Pepsi','Drink 4: Mountain Dew','Drink 4: Mountain Dew Baja Blast','Drink 4: Brisk Mango Fiesta','Drink 4: Sierra Mist','Drink 4: Tropicana Lemonade'],[]),
-
-    // ── VEGGIE CRAVINGS (tacobell.com/food/vegetarian, exact order, 19 items) ──
-    mItem('Veggie Meal for 2','Two Cheese Quesadillas, two Bean Burritos, two Spicy Potato Soft Tacos, and two Chips and Nacho Cheese Sauces. Vegetarian. Available online or in the app.','Veggie Cravings',['Drink option: 2 medium fountain drinks','Drink option: No drinks (food only)'],['No nacho cheese','No chipotle','Add: Sour cream','Add: Jalapeños','Add: Sides of guacamole']),
-    mItem('Veggie Bowl','Seasoned rice, black beans, guacamole, reduced-fat sour cream, lettuce, three-cheese, and pico de gallo. Vegetarian.','Veggie Cravings',[],['No sour cream','No three-cheese','No pico','Add: Jalapeños','Add: Avocado ranch']),
-    mItem('Bean Burrito','Refried beans, red sauce, onions, and cheddar in a flour tortilla. Vegetarian.','Veggie Cravings',[],['No red sauce','No onions','No cheddar','Add: Sour cream','Add: Guacamole']),
-    mItem('Cheesy Bean and Rice Burrito','Refried beans, seasoned rice, nacho cheese, and chipotle sauce in a flour tortilla. Vegetarian.','Veggie Cravings',[],['No nacho cheese','No chipotle sauce']),
-    mItem('Spicy Potato Soft Taco','Crispy potato bites, chipotle sauce, lettuce, and cheddar in a soft flour tortilla. Vegetarian.','Veggie Cravings',[],['No chipotle sauce','No lettuce','No cheddar','Add: Sour cream']),
-    mItem('Black Bean Chalupa Supreme','Black beans, sour cream, tomato, lettuce, and cheddar in a fried chalupa shell. Vegetarian.','Veggie Cravings',[],['No sour cream','No tomato','No lettuce','No cheddar']),
-    mItem('Black Bean Crunchwrap Supreme','Crunchwrap Supreme made with black beans instead of beef. Vegetarian.','Veggie Cravings',[],['No nacho cheese','No sour cream','No tomato','No lettuce','No cheddar','Add: Guacamole']),
-    mItem('Veggie Mexican Pizza','Two crunchy shells with refried beans, tomatoes, three-cheese, and pizza sauce. Vegetarian.','Veggie Cravings',[],['No tomatoes','No three-cheese','Add: Jalapeños','Add: Sour cream']),
-    mItem('Cheese Quesadilla','Three-cheese blend and creamy jalapeño sauce in a grilled flour tortilla. Vegetarian.','Veggie Cravings',[],['No jalapeño sauce','Extra cheese']),
-    mItem('Cheesy Roll Up','Warm flour tortilla filled with melted three-cheese blend. Vegetarian.','Veggie Cravings',[],[]),
-    mItem('Cheesy Fiesta Potatoes','Crispy potato bites with nacho cheese and reduced-fat sour cream. Vegetarian.','Veggie Cravings',[],['No nacho cheese','No sour cream','Add: Jalapeños','Add: Bacon bits']),
-    mItem('Chips and Guacamole','Tortilla chips with guacamole. Vegetarian.','Veggie Cravings',[],[]),
-    mItem('Chips and Nacho Cheese Sauce','Tortilla chips with nacho cheese dipping sauce. Vegetarian.','Veggie Cravings',[],['Add: Jalapeños','Extra nacho cheese']),
-    mItem('Black Beans','Seasoned black beans. Vegetarian.','Veggie Cravings',[],[]),
-    mItem('Black Beans and Rice','Seasoned black beans and rice. Vegetarian.','Veggie Cravings',[],[]),
-    mItem('Pintos N Cheese','Pinto beans topped with nacho cheese. Vegetarian.','Veggie Cravings',[],['No nacho cheese']),
-    mItem('Cinnamon Twists','Light, crispy corn-puffed twists with cinnamon sugar.','Veggie Cravings',[],[]),
-    mItem('Cinnabon Delights 2 Pack','Bite-sized pastries filled with Cinnabon filling and topped with icing.','Veggie Cravings',[],[]),
-    mItem('Cinnabon Delights 12 Pack','12-pack of Cinnabon Delights — bite-sized pastries with icing.','Veggie Cravings',[],[]),
-
-    // ── BOWLS (tacobell.com/food/bowls, exact order, 2 items) ──
-    mItem('Cantina Chicken Bowl','Slow-roasted chicken, seasoned rice, black beans, avocado ranch, reduced-fat sour cream, lettuce, purple cabbage, pico de gallo, guacamole, and cheddar.','Bowls',[],['No avocado ranch','No sour cream','No cheddar','No pico','No cabbage','Add: Jalapeños']),
-    mItem('Veggie Bowl','Seasoned rice, black beans, guacamole, reduced-fat sour cream, lettuce, three-cheese, and pico de gallo. Vegetarian.','Bowls',[],['No sour cream','No three-cheese','No pico','Add: Jalapeños','Add: Avocado ranch']),
-
-    // ── BREAKFAST (tacobell.com/food/breakfast, exact order, 21 items) ──
-    mItem('Cheesy Toasted Breakfast Burrito Bacon','Scrambled eggs, bacon, and three-cheese in a toasted flour tortilla.','Breakfast',[],['No three-cheese','Add: Salsa','Add: Jalapeños']),
-    mItem('Cheesy Toasted Breakfast Burrito Sausage','Scrambled eggs, sausage crumbles, and three-cheese in a toasted flour tortilla.','Breakfast',[],['No three-cheese','Add: Salsa','Add: Jalapeños']),
-    mItem('Cheesy Toasted Breakfast Burrito Potato','Scrambled eggs, crispy potato bites, and three-cheese in a toasted flour tortilla. Vegetarian.','Breakfast',[],['No three-cheese','Add: Salsa','Add: Jalapeños']),
-    mItem('Grande Toasted Breakfast Burrito Steak','Scrambled eggs, steak, crispy potato bites, three-cheese, and creamy jalapeño in a toasted flour tortilla.','Breakfast',[],['No jalapeño sauce','No three-cheese','Add: Sour cream']),
-    mItem('Grande Toasted Breakfast Burrito Sausage','Scrambled eggs, sausage, crispy potato bites, three-cheese, and creamy jalapeño in a toasted flour tortilla.','Breakfast',[],['No jalapeño sauce','No three-cheese','Add: Sour cream']),
-    mItem('Grande Toasted Breakfast Burrito Bacon','Scrambled eggs, bacon, crispy potato bites, three-cheese, and creamy jalapeño in a toasted flour tortilla.','Breakfast',[],['No jalapeño sauce','No three-cheese','Add: Sour cream']),
-    mItem('Grande Toasted Breakfast Burrito Combo','Grande Toasted Breakfast Burrito, hash brown, and a drink.','Breakfast',['Protein: Bacon','Protein: Sausage','Protein: Steak','Size: Small drink','Size: Medium drink','Size: Large drink'],[]),
-    mItem('Breakfast Quesadilla Bacon','Scrambled eggs, bacon, three-cheese, and creamy jalapeño in a grilled flour tortilla.','Breakfast',[],['No jalapeño sauce','No three-cheese']),
-    mItem('Breakfast Quesadilla Steak','Scrambled eggs, steak, three-cheese, and creamy jalapeño in a grilled flour tortilla.','Breakfast',[],['No jalapeño sauce','No three-cheese']),
-    mItem('Breakfast California Crunchwrap','Scrambled eggs, bacon or sausage, hash brown, three-cheese, pico de gallo, and creamy jalapeño wrapped and grilled.','Breakfast',['Protein: Bacon','Protein: Sausage'],['No hash brown','No jalapeño sauce','No pico','Add: Sour cream']),
-    mItem('Breakfast Crunchwrap Bacon','Scrambled eggs, bacon, hash brown, three-cheese, and creamy jalapeño wrapped and grilled.','Breakfast',[],['No hash brown','No jalapeño sauce','Add: Sour cream']),
-    mItem('Breakfast Crunchwrap Sausage','Scrambled eggs, sausage, hash brown, three-cheese, and creamy jalapeño wrapped and grilled.','Breakfast',[],['No hash brown','No jalapeño sauce','Add: Sour cream']),
-    mItem('Breakfast Crunchwrap Combo','Breakfast Crunchwrap, hash brown, and a drink.','Breakfast',['Protein: Bacon','Protein: Sausage','Size: Small drink','Size: Medium drink','Size: Large drink'],[]),
-    mItem('Hash Brown','Crispy potato hash brown. Vegetarian.','Breakfast',[],[]),
-    mItem('Cinnabon Delights 2 Pack','Bite-sized pastries filled with Cinnabon filling and topped with icing.','Breakfast',[],[]),
-    mItem('Cinnabon Delights 12 Pack','12-pack of Cinnabon Delights — bite-sized pastries with icing.','Breakfast',[],[]),
-    mItem('Premium Hot Coffee','Freshly brewed hot coffee.','Breakfast',[],[]),
-    mItem('Hot Cinnabon Delights Coffee','Hot coffee inspired by Cinnabon.','Breakfast',[],[]),
-    mItem('Regular Iced Coffee','Iced coffee.','Breakfast',[],[]),
-    mItem('Iced Cinnabon Delights Coffee','Iced coffee inspired by Cinnabon.','Breakfast',[],[]),
-    mItem('Breakfast Salsa','Mild breakfast salsa packet.','Breakfast',[],[])
-  ];
-
-  applySeedManifest(tbId, TB_SEED_VERSION, tbManifest, {categoryOrder:TB_CATEGORY_ORDER});
-  save();
-}
-
 // ── MAIN ──
-// Stable IDs mean re-seeding is safe — items keep their IDs across reloads, so ratings stay linked.
-// We DO NOT wipe restaurants/items here; the eR/eI helpers are idempotent.
-// For users coming from a pre-stableID build, purgeOrphanRatings() will drop any ratings with non-matching itemIds.
-seedAll();
+// v19: no more built-in seed menus. Items exist because you logged them (or imported a menu
+// once). Everything already in your browser stays exactly as it is.
 // Backfill ratingKey on legacy ratings now that items exist with known names.
 migrateRatingsToRatingKey();
 dedup();purgeGhosts();processExpiry();save();renderHome();
@@ -4595,11 +3912,12 @@ function dlApplySame(rid){
 }
 
 /* 4 — quick add (name only), with optional one-time menu import */
-async function dlAskClaudeJSON(prompt,maxTok){
+async function dlAskClaudeJSON(prompt,maxTok,opts){
+  opts=opts||{};
   let res;
   try{res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",
     headers:{"Content-Type":"application/json","x-api-key":getApiKey(),"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},
-    body:JSON.stringify({model:DL_SYNC_MODEL,max_tokens:maxTok,messages:[{role:"user",content:prompt}],tools:[{type:"web_search_20250305",name:"web_search",max_uses:5}]})});}
+    body:JSON.stringify({model:opts.model||DL_SYNC_MODEL,max_tokens:maxTok,messages:[{role:"user",content:prompt}],tools:[{type:"web_search_20250305",name:"web_search",max_uses:opts.uses||5}]})});}
   catch(e){throw new Error('Network error — check your connection, or use the free manual steps below.');}
   if(!res.ok){
     if(res.status===401)throw new Error('API key was rejected. Re-save it under Edit menu → Sync LTOs.');
@@ -4666,6 +3984,331 @@ function dlRestore(){
 const _dlRH2=renderHome;
 renderHome=function(){let r=_dlRH2.apply(this,arguments);let q=document.getElementById('dl-q');if(q&&q.value.trim())dlSearch();dlPaintBackup();return r;};
 dlPaintBackup();
+
+/* ════════════ v19 — look dishes up when you log them ════════════
+   A restaurant's list is YOUR menu: what you've rated, logged or saved to try. Typing a dish
+   searches the restaurant right then — Nutritionix first for chains (if you've added an app
+   ID/key), otherwise Claude with web search — and saves just the dish you pick, with its
+   description and nutrition. Nothing is synced, so nothing goes stale or vanishes.
+   Imported full menus still live in the data; "Full menu" shows them. */
+const DL_LOOKUP_MODEL="claude-haiku-5-5";  // fast + cheap for at-the-table lookups; falls back to DL_SYNC_MODEL
+const DL_NIX_SLOT="dishlog_nutritionix";
+let dlFullMenu=false,dlLkResults=[],dlLkBusy=false;
+const dlLkCache={};
+
+function dlNorm(s){return String(s||'').toLowerCase().replace(/[’']/g,'').replace(/[^a-z0-9]+/g,' ').trim();}
+function dlRk(i){return i.ratingKey||stableRatingKey(i.restId,i.name);}
+function dlRatedKeys(){return new Set(db.ratings.filter(r=>r.rating!=null).map(r=>r.ratingKey).filter(Boolean));}
+
+/* ── My menu ── */
+function dlMineFilter(items){
+  let rated=dlRatedKeys(),ratedIds=new Set(db.ratings.filter(r=>r.rating!=null).map(r=>r.itemId)),pick={};
+  items.forEach(i=>{
+    let rk=dlRk(i);
+    if(!(i.mine||i.wantTry||rated.has(rk)))return;
+    // one row per dish: the row you rated, else a logged row, else a real (non-✦) category
+    let sc=(ratedIds.has(i.id)?4:0)+(i.mine?2:0)-(isSpecCat(i.category)?1:0)-(i.expired?8:0);
+    if(!pick[rk]||sc>pick[rk].s)pick[rk]={i,s:sc};
+  });
+  return Object.values(pick).map(x=>x.i);
+}
+function dlHiddenCount(all,mine){
+  let shown=new Set(mine.map(dlRk)),rest=new Set();
+  all.forEach(i=>{if(!i.expired&&!shown.has(dlRk(i)))rest.add(dlRk(i));});
+  return rest.size;
+}
+function dlPaintMenuToggle(hidden){
+  let b=document.getElementById('full-menu-btn');if(!b)return;
+  b.style.display=(hidden>0||dlFullMenu)?'':'none';
+  b.textContent=dlFullMenu?'My menu':'+'+hidden+' more';
+  b.title=dlFullMenu?'Show only what you’ve logged':'Show the rest of the imported menu';
+  b.classList.toggle('active',dlFullMenu);
+}
+function dlToggleFullMenu(){
+  dlFullMenu=!dlFullMenu;renderMenu(currentRestId);
+  let sc=document.getElementById('rest-scroll'),ml=document.getElementById('menu-list');
+  if(dlFullMenu&&sc&&ml)sc.scrollTo({top:Math.max(0,ml.offsetTop-12),behavior:DL_STILL()?'auto':'smooth'});
+}
+function dlEmptyMenuHtml(hidden){
+  return '<div class="empty dl-empty-menu"><div class="dl-em-t">Nothing logged here yet</div>'
+    +'<div class="dl-em-s">Tap <b>Log a dish</b> and type what you’re eating. DishLog looks it up and saves just that dish.</div>'
+    +(hidden?'<button class="bs" onclick="dlToggleFullMenu()">Browse the imported menu ('+hidden+')</button>':'')+'</div>';
+}
+
+/* ── keep a dish (from a lookup, a local match, or typed by hand) ── */
+function dlKeepDish(r,mode){
+  let rid=currentRestId,name=String(r.name||'').trim();if(!rid||!name)return;
+  let k=name.toLowerCase();
+  let same=db.items.filter(i=>i.restId===rid&&i.name.trim().toLowerCase()===k);
+  let nut=null;
+  if(r.calories!=null||r.protein_g!=null||r.carbs_g!=null||r.fat_g!=null){
+    nut={calories:r.calories??null,protein:r.protein_g??null,carbs:r.carbs_g??null,fat:r.fat_g??null,
+      serving:r.serving||'',source:r.source||'claude',url:r.source_url||'',at:Date.now()};
+  }
+  let target;
+  if(same.length){
+    same.forEach(i=>{
+      if(mode==='rate')i.mine=true;
+      if(mode==='try'&&!getItemRatings(dlRk(i)).length)i.wantTry=true;
+      if(i.expired&&mode==='rate')i.expired=false;   // you're eating it, so it's back
+      if(!i.desc&&r.description)i.desc=r.description;
+      if(nut&&!i.nutrition)i.nutrition=nut;
+    });
+    target=same.find(i=>!i.expired)||same[0];
+  }else{
+    let cat=String(r.category||'').trim()||'My dishes';
+    target={id:stableItemId(rid,cat,name),ratingKey:stableRatingKey(rid,name),restId:rid,name,desc:r.description||'',
+      category:cat,choices:[],modifications:[],addedAt:r.specialty?NOW:FAR_PAST,loggedAt:Date.now(),isNew:false,
+      specialty:r.specialty||null,expired:false,mine:true,wantTry:mode==='try'};
+    if(r.limited&&!r.specialty)target.pageTags=['lto'];
+    if(nut)target.nutrition=nut;
+    if(r.source_url)target.sourceUrl=r.source_url;
+    db.items.push(target);
+  }
+  save();closeSheet('sheet-add-item');
+  let id=target.id;
+  setTimeout(()=>{
+    renderSugs(rid);renderMenu(rid);updateStats(rid);
+    if(mode==='rate')openRateNew(id);else showToast('Saved to your try list');
+  },300);
+}
+
+/* ── the Log a dish sheet ── */
+function dlOpenLog(mode){
+  openSheet('sheet-add-item');
+  let q=document.getElementById('lk-q');q.value='';
+  document.getElementById('lk-status').textContent='';
+  document.getElementById('lk-results').innerHTML='';
+  document.getElementById('lk-keybox').style.display='none';
+  document.getElementById('lk-manual').open=false;
+  dlLkResults=[];dlPaintLookupSources();
+  let rest=db.restaurants.find(r=>r.id===currentRestId);
+  document.getElementById('additem-title').textContent=mode==='new'?'What’s new here':'Log a dish';
+  if(mode==='new'){dlWhatsNew();return;}
+  dlLocalMatches();
+  if(!DL_WIDE.matches)return;   // on a phone, focusing would throw the keyboard over the sheet's slide-in
+  setTimeout(()=>q.focus(),360);
+}
+function dlLocalMatches(){
+  let q=dlNorm(document.getElementById('lk-q').value),box=document.getElementById('lk-results');
+  if(dlLkBusy)return;
+  let items=db.items.filter(i=>i.restId===currentRestId),seen=new Set(),out=[];
+  let rated=dlRatedKeys();
+  items.forEach(i=>{
+    let rk=dlRk(i);if(seen.has(rk))return;
+    let n=dlNorm(i.name);
+    let hit=q?q.split(' ').every(w=>n.includes(w)):(i.wantTry&&!rated.has(rk));
+    if(hit){seen.add(rk);out.push(i);}
+  });
+  out.sort((a,b)=>(rated.has(dlRk(b))-rated.has(dlRk(a)))||(!!b.mine-!!a.mine)||a.name.localeCompare(b.name));
+  out=out.slice(0,6);
+  let h='';
+  if(out.length){
+    h+='<div class="lk-label">'+(q?'Already here':'Your try list')+'</div>'+out.map(i=>{
+      let b=dlBestRating(i.id)||getItemRatings(dlRk(i)).slice(-1)[0];
+      let meta=[];if(b)meta.push('You gave it '+fmtScore(b.rating));else if(i.wantTry)meta.push('On your try list');else if(!i.mine)meta.push('From the imported menu');
+      if(i.nutrition&&i.nutrition.calories)meta.push(Math.round(i.nutrition.calories)+' cal');
+      return '<div class="lk-card"><div class="lk-main"><div class="lk-name">'+dlEsc(i.name)+'</div>'
+        +(i.desc?'<div class="lk-desc">'+dlEsc(i.desc)+'</div>':'')
+        +(meta.length?'<div class="lk-meta">'+dlEsc(meta.join(' · '))+'</div>':'')+'</div>'
+        +'<div class="lk-acts"><button class="bp" onclick="dlPickLocal(\''+i.id+'\',\'rate\')">Rate</button>'
+        +(b||i.wantTry?'':'<button class="bs" onclick="dlPickLocal(\''+i.id+'\',\'try\')">Try later</button>')+'</div></div>';
+    }).join('');
+  }
+  if(q)h+='<button class="lk-web" onclick="dlLookup()"><span>Look up “'+dlEsc(document.getElementById('lk-q').value.trim())+'”</span><span class="lk-web-sub">'+dlEsc(dlSourceLabel())+'</span></button>';
+  box.innerHTML=h;
+}
+function dlPickLocal(itemId,mode){
+  let it=db.items.find(i=>i.id===itemId);if(!it)return;
+  dlKeepDish({name:it.name,description:it.desc,category:it.category},mode);
+}
+function dlPick(idx,mode){let r=dlLkResults[idx];if(r)dlKeepDish(r,mode);}
+
+function dlRenderResults(list,label,emptyMsg){
+  dlLkResults=list;
+  let box=document.getElementById('lk-results');
+  if(!list.length){box.innerHTML='<div class="lk-none">'+dlEsc(emptyMsg)+'</div>';dlOfferManual();return;}
+  box.innerHTML='<div class="lk-label">'+dlEsc(label)+'</div>'+list.map((r,ix)=>{
+    let meta=[];
+    if(r.calories!=null)meta.push(Math.round(r.calories)+' cal');
+    if(r.protein_g!=null)meta.push(Math.round(r.protein_g)+'g protein');
+    if(r.serving)meta.push(r.serving);
+    if(r.limited)meta.push('Limited time');
+    let src=r.source==='nutritionix'?'Nutritionix':(r.source_url?dlHost(r.source_url):'');
+    let have=db.items.some(i=>i.restId===currentRestId&&i.name.trim().toLowerCase()===String(r.name).trim().toLowerCase());
+    return '<div class="lk-card"><div class="lk-main"><div class="lk-name">'+dlEsc(r.name)+'</div>'
+      +(r.description?'<div class="lk-desc">'+dlEsc(r.description)+'</div>':'')
+      +((meta.length||src)?'<div class="lk-meta">'+dlEsc(meta.join(' · '))+(src?(meta.length?' · ':'')+(r.source_url?'<a href="'+dlEsc(r.source_url)+'" target="_blank" rel="noopener">'+dlEsc(src)+'</a>':dlEsc(src)):'')+'</div>':'')
+      +(have?'<div class="lk-meta">Already on your list</div>':'')+'</div>'
+      +'<div class="lk-acts"><button class="bp" onclick="dlPick('+ix+',\'rate\')">Rate</button><button class="bs" onclick="dlPick('+ix+',\'try\')">Try later</button></div></div>';
+  }).join('');
+}
+function dlHost(u){try{return new URL(u).hostname.replace(/^www\./,'');}catch(_){return '';}}
+function dlOfferManual(open){
+  let q=document.getElementById('lk-q').value.trim(),n=document.getElementById('inp-item-name');
+  if(n&&q&&!n.value)n.value=q;
+  if(open){let d=document.getElementById('lk-manual');d.open=true;setTimeout(()=>d.scrollIntoView({block:'nearest',behavior:'smooth'}),40);}
+}
+
+/* ── sources ── */
+function dlNix(){try{let c=JSON.parse(localStorage.getItem(DL_NIX_SLOT)||'null');return c&&c.id&&c.key?c:null;}catch(_){return null;}}
+function dlSourceLabel(){
+  let k=!!getApiKey(),n=!!dlNix();
+  return n&&k?'Nutritionix, then Claude web search':n?'Nutritionix':k?'Claude web search · a cent or two':'needs a Claude API key';
+}
+function dlPaintLookupSources(){
+  let el=document.getElementById('lk-src-note');if(!el)return;
+  let k=getApiKey(),n=dlNix();
+  el.textContent='Claude: '+(k?'key saved (…'+k.slice(-4)+')':'no key yet')+' · Nutritionix: '+(n?'saved':'not set up')+'.';
+  ['lk-key-in','lk-key-in2','lk-nix-key'].forEach(id=>{let i=document.getElementById(id);if(i)i.value='';});
+  let ni=document.getElementById('lk-nix-id');if(ni)ni.value=n?n.id:'';
+}
+function dlSaveLookupKey(which){
+  let i=document.getElementById(which===2?'lk-key-in2':'lk-key-in'),v=(i&&i.value||'').trim();
+  let st=document.getElementById('lk-status');
+  if(!/^sk-ant-/.test(v)){st.textContent='That doesn’t look like a Claude API key (it starts with sk-ant-).';return;}
+  try{localStorage.setItem(DL_KEY_SLOT,v);}catch(_){}
+  document.getElementById('lk-keybox').style.display='none';
+  dlPaintLookupSources();paintApiKeyNote();st.textContent='Key saved.';
+  if(document.getElementById('lk-q').value.trim())dlLookup();
+}
+function dlSaveNix(){
+  let id=(document.getElementById('lk-nix-id').value||'').trim(),key=(document.getElementById('lk-nix-key').value||'').trim();
+  let st=document.getElementById('lk-status');
+  if(!id||!key){st.textContent='Add both the Nutritionix App ID and App key.';return;}
+  try{localStorage.setItem(DL_NIX_SLOT,JSON.stringify({id,key}));}catch(_){}
+  dlPaintLookupSources();st.textContent='Nutritionix saved — chain lookups try it first.';
+}
+function dlClearNix(){try{localStorage.removeItem(DL_NIX_SLOT);}catch(_){}dlPaintLookupSources();}
+
+async function dlNixLookup(rest,q){
+  let c=dlNix();if(!c)return [];
+  let qs=new URLSearchParams({query:rest.name+' '+q,branded:'true',common:'false',self:'false',detailed:'true'});
+  let res;
+  try{res=await fetch('https://trackapi.nutritionix.com/v2/search/instant?'+qs,{headers:{'x-app-id':c.id,'x-app-key':c.key}});}
+  catch(e){throw new Error('Couldn’t reach Nutritionix.');}
+  if(res.status===401||res.status===403)throw new Error('Nutritionix rejected the App ID/key.');
+  if(!res.ok)throw new Error('Nutritionix returned '+res.status+'.');
+  let d=await res.json(),rn=dlNorm(rest.name);
+  let br=(d.branded||[]).filter(b=>{let bn=dlNorm(b.brand_name);return bn&&(bn.includes(rn)||rn.includes(bn));});
+  return br.slice(0,6).map(b=>{
+    let fn=id=>{let x=(b.full_nutrients||[]).find(n=>n.attr_id===id);return x?x.value:null;};
+    return {name:b.food_name,description:'',category:'',calories:b.nf_calories!=null?b.nf_calories:fn(208),
+      protein_g:fn(203),carbs_g:fn(205),fat_g:fn(204),serving:(b.serving_qty&&b.serving_unit)?(b.serving_qty+' '+b.serving_unit):'',
+      source:'nutritionix',nix_item_id:b.nix_item_id};
+  });
+}
+function dlWhere(rest){return '"'+rest.name+'"'+(rest.address?' ('+rest.address+')':'')+(rest.cuisine?' — '+rest.cuisine:'');}
+const DL_JSON_SHAPE='{"results":[{"name":"official item name","description":"one short sentence: what is in it","category":"menu section","calories":number or null,"protein_g":number or null,"carbs_g":number or null,"fat_g":number or null,"limited":true or false,"source_url":"page you got it from"}]}';
+async function dlClaudeResults(prompt){
+  let data;
+  try{data=await dlAskClaudeJSON(prompt,2500,{model:DL_LOOKUP_MODEL,uses:3});}
+  catch(e){
+    if(!/returned (400|404)/.test(e.message||''))throw e;
+    data=await dlAskClaudeJSON(prompt,2500,{uses:3});   // lookup model unavailable on this key — use the sync model
+  }
+  let list=(data&&Array.isArray(data.results))?data.results:[];
+  return list.filter(r=>r&&typeof r.name==='string'&&r.name.trim()).slice(0,8).map(r=>({
+    name:r.name.trim(),description:typeof r.description==='string'?r.description.trim():'',category:typeof r.category==='string'?r.category.trim():'',
+    calories:Number.isFinite(+r.calories)&&r.calories!==null&&r.calories!==''?+r.calories:null,
+    protein_g:Number.isFinite(+r.protein_g)&&r.protein_g!==null&&r.protein_g!==''?+r.protein_g:null,
+    carbs_g:Number.isFinite(+r.carbs_g)&&r.carbs_g!==null&&r.carbs_g!==''?+r.carbs_g:null,
+    fat_g:Number.isFinite(+r.fat_g)&&r.fat_g!==null&&r.fat_g!==''?+r.fat_g:null,
+    limited:!!r.limited,source_url:/^https?:\/\//.test(r.source_url||'')?r.source_url:'',source:'claude'}));
+}
+function dlLookupPrompt(rest,q){
+  return 'You are looking up one dish for a personal food-rating app.\nRestaurant: '+dlWhere(rest)+'\nThe person typed: "'+q+'" (may be partial or misspelled).\nToday is '+new Date().toDateString()+'.\n\n'
+    +'Find the menu item(s) at THIS restaurant that best match. Search the restaurant\'s own menu or nutrition page first, then reputable sources.\n'
+    +'Reply with ONLY raw JSON, no markdown, in this shape:\n'+DL_JSON_SHAPE+'\n\n'
+    +'Rules: at most 5 results, best match first. Only items this restaurant actually serves (current or recent). '
+    +'Nutrition only when the restaurant publishes it or a source quotes the restaurant\'s figures; otherwise null. Never estimate. '
+    +'"limited" is true only if a source says it is limited-time or seasonal. If nothing matches, reply {"results":[]}.';
+}
+async function dlLookup(){
+  let q=document.getElementById('lk-q').value.trim(),st=document.getElementById('lk-status');
+  let rest=db.restaurants.find(r=>r.id===currentRestId);
+  if(!q){st.textContent='Type the dish first.';return;}
+  if(dlLkBusy||!rest)return;
+  let ck=rest.id+'|'+dlNorm(q);
+  if(dlLkCache[ck]){st.textContent='';dlRenderResults(dlLkCache[ck].list,dlLkCache[ck].label,'');return;}
+  let nix=dlNix(),key=getApiKey();
+  if(!nix&&!key){
+    st.textContent='';document.getElementById('lk-keybox').style.display='block';dlOfferManual(true);return;
+  }
+  dlLkBusy=true;let btn=document.getElementById('lk-go');btn.disabled=true;
+  let list=[],label='',err='';
+  try{
+    if(nix){
+      st.innerHTML='<span class="sync-spinner"></span>Checking Nutritionix…';
+      try{list=await dlNixLookup(rest,q);label='From Nutritionix';}catch(e){err=e.message;}
+    }
+    if(!list.length&&key){
+      st.innerHTML='<span class="sync-spinner"></span>Looking up “'+dlEsc(q)+'” at '+dlEsc(rest.name)+'… usually 10–30 seconds.';
+      list=await dlClaudeResults(dlLookupPrompt(rest,q));label='Found by Claude';err='';
+    }
+    st.textContent=err;
+    if(list.length)dlLkCache[ck]={list,label};
+    dlRenderResults(list,label,'Couldn’t find “'+q+'” at '+rest.name+'. Add it as typed below.');
+  }catch(e){
+    st.textContent=(e&&e.message)||'Lookup failed.';dlOfferManual(true);
+  }finally{dlLkBusy=false;btn.disabled=false;}
+}
+
+/* ── What's new? — asks once when you tap; no badges, no background sync ── */
+async function dlWhatsNew(){
+  let rest=db.restaurants.find(r=>r.id===currentRestId),st=document.getElementById('lk-status');
+  if(!rest||dlLkBusy)return;
+  if(!getApiKey()){st.textContent='“What’s new” asks Claude, so it needs your API key.';document.getElementById('lk-keybox').style.display='block';return;}
+  let ck=rest.id+'|__new__';
+  let fresh=dlLkCache[ck]&&(Date.now()-dlLkCache[ck].at<30*60*1000);
+  if(fresh){dlRenderResults(dlLkCache[ck].list,'New & limited-time','');return;}
+  dlLkBusy=true;
+  st.innerHTML='<span class="sync-spinner"></span>Checking what’s new at '+dlEsc(rest.name)+'… usually 20–40 seconds.';
+  try{
+    let prompt='You are helping a person decide what to try at a restaurant.\nRestaurant: '+dlWhere(rest)+'\nToday is '+new Date().toDateString()+'.\n\n'
+      +'What is currently new, seasonal or limited-time here? Use web search for the restaurant\'s own announcements and news from roughly the last 3 months.\n'
+      +'Reply with ONLY raw JSON, no markdown, in this shape:\n'+DL_JSON_SHAPE+'\n\n'
+      +'Rules: at most 8 items, newest first. Each needs a source_url from the last ~3 months and must plausibly still be available today. '
+      +'Nutrition only if published by the restaurant; otherwise null. If you find nothing reliable, reply {"results":[]}.';
+    let list=await dlClaudeResults(prompt);
+    dlLkCache[ck]={list,at:Date.now()};
+    st.textContent='';
+    dlRenderResults(list,'New & limited-time','Nothing new turned up for '+rest.name+' in the last few months.');
+  }catch(e){st.textContent=(e&&e.message)||'Couldn’t check right now.';}
+  finally{dlLkBusy=false;}
+}
+
+/* ── try list ── */
+const _dlPrep2=prepRateSheet;
+prepRateSheet=function(existing,mode){
+  let r=_dlPrep2.apply(this,arguments);
+  let box=document.getElementById('dl-same');if(!box||existing)return r;
+  let it=db.items.find(i=>i.id===currentItemId);
+  if(it&&!getItemRatings(dlRk(it)).length){
+    box.insertAdjacentHTML('beforeend',it.wantTry
+      ?'<button class="dl-try-link" onclick="dlSetTry(false)">Remove from try list</button>'
+      :'<button class="dl-try-link" onclick="dlSetTry(true)">Haven’t had it yet? Save to try list</button>');
+  }
+  return r;
+};
+function dlSetTry(on){
+  let it=db.items.find(i=>i.id===currentItemId);if(!it)return;
+  let rk=dlRk(it);
+  db.items.forEach(i=>{if(i.restId===it.restId&&dlRk(i)===rk)i.wantTry=on;});
+  save();closeSheet('sheet-rate');
+  setTimeout(()=>{renderSugs(it.restId);renderMenu(it.restId);},280);
+  showToast(on?'Saved to your try list':'Removed from your try list');
+}
+const _dlSaveRating=saveRating;
+saveRating=function(){
+  let id=currentItemId,r=_dlSaveRating.apply(this,arguments);
+  let it=db.items.find(i=>i.id===id);
+  if(it&&getItemRatings(dlRk(it)).length){
+    let rk=dlRk(it);db.items.forEach(i=>{if(i.restId===it.restId&&dlRk(i)===rk){i.wantTry=false;}});
+    it.mine=true;save();
+  }
+  return r;
+};
 </script>
 <script>
 /* offline support: lets the kitchen apps open with no signal (see sw.js) */
