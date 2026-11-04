@@ -595,7 +595,7 @@ def bar(here, repo):
                     % (key, href, label, attr, svg, label))
         cells.append('<a class="sx-cell" style="--c:var(--sx-%s)" href="%s"%s><img src="%s" alt="" width="54" height="54" decoding="async"><b>%s</b></a>'
                      % (key, href, attr, icon_src(key, repo), label))
-    extra = " sx-dark" if here in ("protocol", "gamelog") else ""
+    extra = " sx-dark" if here in ("protocol", "gamelog", "lift") else ""
     return ('<!-- suite:bar -->\n<nav class="sx-bar%(extra)s" style="--app:var(--sx-%(here)s)" data-app="%(here)s" aria-label="Your apps"><div class="sx-in">\n'
             '  <div class="sx-id"><img class="sx-tile" src="%(icon)s" alt="" width="32" height="32"><span class="sx-name">%(label)s</span></div>\n'
             '  <div class="sx-tabs">\n    %(tabs)s\n  </div>\n'

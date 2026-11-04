@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#FAF6F0" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#17140F" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#191714" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191714" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Lift">
@@ -346,10 +346,81 @@ dialog:not([open])::backdrop{background:rgba(23,20,15,0)}
 
 </style>
 <!-- /suite:css -->
+<!-- look: Lift's own feel — "the gym floor". Always dark warm graphite, condensed type, scoreboard numbers, sharp corners. -->
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style id="look">
+/* Lift is dark in light mode and dark mode alike — these come after both palettes, so they win in each */
+:root{
+  --bg:#191714; --card:#23201C; --ink:#F2EDE6; --mute:#B3AA9E; --line:#38332D; --line2:#2C2824;
+  --soft:#2E2A25; --soft2:#1F1C19; --onink:#191714; --ondark:#191714;
+  --accent:#F0803C; --green:#9BD18B; --greenbg:#2E3A28; --greenline:#4F6B45;
+  --amber:#F2C55C; --amberbg:#3A3018; --red:#FF8A70; --redbg:#40231C;
+  --core:#24301F; --cuetext:#D8D0C5; --dash:#1E1B18; --dashtext:#5E574E;
+  --shadow:none;
+  --cond:'Barlow Condensed','Arial Narrow',system-ui,sans-serif;
+  color-scheme:dark;
+}
+.sx-bar.sx-dark{--sx-paper:#191714; --sx-ink:#F2EDE6; --sx-dim:#B3AA9E; --sx-line:#38332D; --sx-hover:#26221E}
+
+body{font-family:'Barlow',system-ui,sans-serif}
+/* headline keeps the suite's italic serif; everything around it goes condensed */
+h1{font-weight:600}
+.eyebrow{font:700 13px var(--cond);letter-spacing:.16em}
+.sub{font-size:13px}
+
+.tabs,.wk,.toggle,.dateline input,.chips,.rst,.tools button,.sx-in{border-radius:4px}
+.tabs .sx-pill{background:var(--accent);border-radius:3px;box-shadow:none}
+.tab{font:700 15px var(--cond);letter-spacing:.08em;text-transform:uppercase}
+.tab .d{font:500 11px 'Barlow',sans-serif;letter-spacing:0;text-transform:none}
+.wk .lbl{font:700 16px var(--cond);letter-spacing:.06em;text-transform:uppercase}
+.wk .lbl small{font-family:'Barlow',sans-serif;letter-spacing:0;text-transform:none}
+.wk button{border-radius:3px;font-family:var(--cond)}
+.toggle{font:700 14px var(--cond);letter-spacing:.08em;text-transform:uppercase}
+.dateline input{font:600 14px 'Barlow',sans-serif}
+
+/* exercise blocks */
+.group{border-radius:4px}
+.group.core{box-shadow:0 0 0 1px var(--greenline)}
+.ghead{font:700 13px var(--cond);letter-spacing:.14em;background:#1E1B18}
+.badge{border-radius:2px;font-family:var(--cond);font-size:11px;font-weight:800;letter-spacing:.1em}
+.exn{font:700 19px/1.15 var(--cond);letter-spacing:.03em;text-transform:uppercase}
+.pill{font:700 12px var(--cond);letter-spacing:.06em;border-radius:2px}
+.meta,.nx{font-size:12.5px}
+.cues{border-radius:3px}
+
+/* scoreboard numbers: the weight is the loud block, reps are big digits */
+.wt{background:var(--accent);border-radius:3px;padding:4px 8px}
+.wt label{color:#191714;font:800 12px var(--cond);letter-spacing:.1em}
+.wt input{font:800 26px/1 var(--cond);color:#191714;width:62px}
+.sides{font-family:var(--cond);font-size:12px}
+.sets input{border-radius:3px;font:700 24px/1 var(--cond);padding:9px 2px;border-color:#4A443C}
+.sets input:focus{background:#2A2622}
+.sets input.hit{color:var(--ink)}
+
+/* status tags are stamped */
+.tag{font:800 12px var(--cond);letter-spacing:.12em;text-transform:uppercase;border-radius:2px;padding:3px 8px}
+.t-up{background:var(--green);color:#191714}
+.t-on{background:var(--amber);color:#191714}
+.t-hv{background:var(--red);color:#191714}
+
+/* rest timer */
+.chip{font:700 15px var(--cond);letter-spacing:.04em}
+.chips .sx-pill{border-radius:3px}
+.go{border-radius:4px;font:800 20px var(--cond);letter-spacing:.14em;text-transform:uppercase;background:var(--accent);color:#191714}
+.go.run{font:800 36px/1 var(--cond);letter-spacing:.02em;background:var(--ink);color:#191714}
+.go.done{background:var(--green);color:#191714}
+.tlbl{font:700 13px var(--cond);letter-spacing:.16em}
+.tools button{font:700 14px var(--cond);letter-spacing:.08em;text-transform:uppercase}
+
+.toast{font:700 14px var(--cond);letter-spacing:.06em;border-radius:3px}
+dialog{border-radius:6px}
+.dlg .acts button,.pri,.sec{border-radius:4px;font:700 15px var(--cond);letter-spacing:.08em;text-transform:uppercase}
+@media (min-width:900px){ .timer{border-radius:6px} }
+</style>
 </head>
 <body>
 <!-- suite:bar -->
-<nav class="sx-bar" style="--app:var(--sx-lift)" data-app="lift" aria-label="Your apps"><div class="sx-in">
+<nav class="sx-bar sx-dark" style="--app:var(--sx-lift)" data-app="lift" aria-label="Your apps"><div class="sx-in">
   <div class="sx-id"><img class="sx-tile" src="icons/lift-180.png?v=20261021b" alt="" width="32" height="32"><span class="sx-name">Lift</span></div>
   <div class="sx-tabs">
     <a class="sx-t" style="--c:var(--sx-kitchen)" href="index.html" title="Kitchen"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11h13v4a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M17 12.5h3M8 4.5c0 1.5 1.5 1.5 1.5 3M12 4.5c0 1.5 1.5 1.5 1.5 3"/></svg>Kitchen</a>
@@ -971,7 +1042,7 @@ const LIB={"Barbell Bench Press": {"equip": "Barbell \u2014 total incl. 45 lb ba
 const PROG={"A": {"dow": "Tuesday", "ex": [{"ex": "Chest Press Machine", "pair": "1a", "core": true}, {"ex": "Chest-Supported Row Machine", "pair": "1b", "core": true}, {"ex": "Hack Squat", "pair": "2a", "core": true}, {"ex": "Seated Leg Curl", "pair": "2b", "core": true}, {"ex": "Rope Overhead Triceps Extension", "pair": "3a", "core": false}, {"ex": "Machine Preacher Curl", "pair": "3b", "core": false}, {"ex": "Cable Crunch", "pair": "4a", "core": false}, {"ex": "Back Extension (45\u00b0)", "pair": "4b", "core": false}, {"ex": "Cable Wrist Curl", "pair": "5a", "core": false}, {"ex": "Cable Reverse Wrist Curl", "pair": "5b", "core": false}]}, "B": {"dow": "Thursday", "ex": [{"ex": "Shoulder Press Machine", "pair": "1a", "core": true}, {"ex": "Lat Pulldown", "pair": "1b", "core": true}, {"ex": "Leg Press", "pair": "2a", "core": true}, {"ex": "Seated Leg Curl", "pair": "2b", "core": true}, {"ex": "Lateral Raise Machine", "pair": "3a", "core": false}, {"ex": "Single-Arm Machine Row", "pair": "3b", "core": false}, {"ex": "Triceps Pressdown", "pair": "4a", "core": false}, {"ex": "Cable Rope Hammer Curl", "pair": "4b", "core": false}, {"ex": "Calf Raise Machine", "pair": "5", "core": false}]}, "C": {"dow": "Saturday", "ex": [{"ex": "Incline Chest Press Machine", "pair": "1a", "core": true}, {"ex": "Seated Cable Row", "pair": "1b", "core": true}, {"ex": "Leg Extension", "pair": "2a", "core": true}, {"ex": "Hip Thrust Machine", "pair": "2b", "core": true}, {"ex": "Pec Deck (Chest Fly Machine)", "pair": "3a", "core": false}, {"ex": "Rear Delt Machine", "pair": "3b", "core": false}, {"ex": "Cable Wrist Curl", "pair": "4a", "core": false}, {"ex": "Cable Reverse Wrist Curl", "pair": "4b", "core": false}, {"ex": "Calf Raise Machine", "pair": "5", "core": false}]}};
 const SEED={"A|1|Chest Press Machine": {"w": 100, "s": [7, 7, 3, 4]}, "A|1|Chest-Supported Row Machine": {"w": 85, "s": [12, 12, 12, 7]}, "A|1|Hack Squat": {"w": 90, "s": [null, null, null, null]}, "A|1|Seated Leg Curl": {"w": 90, "s": [12, 12, 12, null]}, "A|1|Rope Overhead Triceps Extension": {"w": 40, "s": [12, 10, 5, null]}, "A|1|Machine Preacher Curl": {"w": 50, "s": [12, 12, 10, null]}, "A|1|Cable Crunch": {"w": 60, "s": [null, null, null, null]}, "A|1|Back Extension (45\u00b0)": {"w": 10, "s": [null, null, null, null]}, "A|1|Cable Wrist Curl": {"w": 30, "s": [null, null, null, null]}, "A|1|Cable Reverse Wrist Curl": {"w": 20, "s": [null, null, null, null]}, "B|1|Shoulder Press Machine": {"w": 50, "s": [7, 7, 5, 5]}, "B|1|Lat Pulldown": {"w": 85, "s": [10, 10, 10, 10]}, "B|1|Leg Press": {"w": 145, "s": [15, 15, 13, null]}, "B|1|Seated Leg Curl": {"w": 80, "s": [12, 12, 12, null]}, "B|1|Lateral Raise Machine": {"w": 15, "s": [15, 15, 12, null]}, "B|1|Single-Arm Machine Row": {"w": 50, "L": [null, null, null, null], "R": [null, null, null, null]}, "B|1|Triceps Pressdown": {"w": 35, "s": [12, 6, 4, null]}, "B|1|Cable Rope Hammer Curl": {"w": 35, "s": [12, 12, 10, null]}, "B|1|Calf Raise Machine": {"w": 130, "s": [15, null, null, null]}, "C|1|Incline Chest Press Machine": {"w": 80, "s": [null, null, null, null]}, "C|1|Seated Cable Row": {"w": 80, "s": [null, null, null, null]}, "C|1|Leg Extension": {"w": 70, "s": [null, null, null, null]}, "C|1|Hip Thrust Machine": {"w": 90, "s": [null, null, null, null]}, "C|1|Pec Deck (Chest Fly Machine)": {"w": 70, "s": [null, null, null, null]}, "C|1|Rear Delt Machine": {"w": 40, "s": [null, null, null, null]}, "C|1|Cable Wrist Curl": {"w": 30, "s": [null, null, null, null]}, "C|1|Cable Reverse Wrist Curl": {"w": 20, "s": [null, null, null, null]}, "C|1|Calf Raise Machine": {"w": 100, "s": [null, null, null, null]}};
 const DATES={"A|1": "2026-09-15"};
-const APP_VERSION = "2026.11.02-a";
+const APP_VERSION = "2026.11.03-a";
 const K = "eos_lift_v1";          // this device only: which day/week is open, rest lengths
 const SK = "lift_s_v1_";          // one synced key per session: lift_s_v1_A|3 = {log:{exercise:{w,s|L,R,u}}, date, du}
 const BK = "eos_lift_v1_backup";  // the pre-sync copy, kept untouched on this device

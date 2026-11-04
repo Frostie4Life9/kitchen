@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
-<meta name="theme-color" content="#FAF6F0" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#17140F" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#EEF0EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#111510" media="(prefers-color-scheme: dark)">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/grocery-32.png">
 <link rel="apple-touch-icon" href="icons/grocery-180.png">
@@ -640,6 +640,66 @@ footer{font-size:12.5px;color:var(--ink-faded);margin:22px 2px 0;line-height:1.5
 
 </style>
 <!-- /suite:css -->
+<!-- look: Grocery's own feel — "the receipt". Cool white paper, monospace numbers, dashed tear lines, square corners. -->
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&family=Fraunces:ital,opsz,wght@1,9..144,600&display=swap" rel="stylesheet">
+<style id="look">
+:root{
+  --paper:#EEF0EA; --card:#FFFFFF; --ink:#1B1E1A; --ink-soft:#3F463D; --ink-faded:#5C6459;
+  --rule:#CDD2C6; --rule-soft:#E2E5DD; --today:#2D5840; --today-soft:#DCE8DF;
+  --green:#2D5840; --green-soft:#DCE8DF;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --paper:#111510; --card:#1A1F18; --ink:#ECF0E8; --ink-soft:#C3CBBE; --ink-faded:#949E8F;
+    --rule:#343D31; --rule-soft:#252C23; --today:#7CC39A; --today-soft:#1D3124;
+    --green:#7CC39A; --green-soft:#1D3124; color-scheme:dark;
+  }
+}
+.sx-bar{--sx-paper:#EEF0EA; --sx-ink:#1B1E1A; --sx-dim:#5C6459; --sx-line:#CDD2C6; --sx-hover:#E2E5DD}
+@media (prefers-color-scheme:dark){ .sx-bar:not(.sx-light){--sx-paper:#111510; --sx-ink:#ECF0E8; --sx-dim:#949E8F; --sx-line:#343D31; --sx-hover:#20261E} }
+
+body{font-family:'Archivo',system-ui,-apple-system,'Segoe UI',sans-serif}
+/* the one shared serif moment */
+.mast h1{font-weight:600}
+.eyebrow{font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:.08em;text-transform:uppercase}
+
+/* numbers read like a receipt */
+.big,.bar-row span:last-child,.store-count,.qty .qv,.ltot,.pchip,.price,.amt,.money b,
+.spend .sp-big,.spend .sp-hist small,.group-head span+span,.tag{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.big{font-weight:600;font-size:36px;letter-spacing:-.02em}
+.store-count{font-weight:600;border-radius:3px}
+.amt{font-size:12.5px}
+
+/* paper slips: square, flat, torn edges */
+.hero,ul.card,.spend,.gear,.picks,.flagged,.store-note{border-radius:4px}
+.hero{box-shadow:0 1px 0 var(--rule)}
+ul.card{border-top:1.5px dashed var(--rule);border-bottom:1.5px dashed var(--rule);box-shadow:none;padding:2px 14px}
+li.item{border-top:1px dotted var(--rule)}
+.track,.track span,.spend .sp-track,.spend .sp-track span{border-radius:1px}
+.spend .sp-hist i{border-radius:2px 2px 0 0}
+
+/* store headers set like a till heading */
+.store-head{border-bottom:1.5px dashed var(--rule);padding-bottom:8px}
+.store-head h2{font-family:var(--mono);font-weight:600;font-size:17px;letter-spacing:.1em;text-transform:uppercase}
+.store-loc{font-family:var(--mono);font-size:12px}
+.group-head{font-family:var(--mono);font-size:11.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+.notes-h{font-family:var(--mono);font-size:15px;font-weight:600;letter-spacing:.1em;text-transform:uppercase}
+
+/* checkboxes are square, like a stamp */
+.check{border-radius:4px;border-width:2px}
+
+/* controls: squarer, tighter */
+.seg{border-radius:6px}
+.seg button,.seg .sx-pill{border-radius:4px}
+.tag,.pchip,.qty,.ubtn,.swapbtn,.sortbtn,.aisle,.missbtn,.showall,.pick-chips button,.flagged .xchip,.costco-sw button,.spend .sp-row button,.flagged button.legacy{border-radius:4px}
+.xadd input,.xadd button,.aisle-input{border-radius:6px !important}
+.back{border-radius:6px}
+.primary,.secondary{border-radius:6px;letter-spacing:.02em}
+.secondary{border:1.5px solid var(--ink);background:transparent}
+.toast{border-radius:4px;font-family:var(--mono);font-weight:500}
+@media (min-width:900px){ .actionbar{border-radius:6px} }
+</style>
 </head>
 <body>
 <!-- suite:bar -->
@@ -1837,7 +1897,7 @@ document.getElementById("resetBtn").addEventListener("click", function(){
 });
 
 /* ---- start ---- */
-var BUILD="2026.11.02-b";   /* date + letter, like Daily Protocol */
+var BUILD="2026.11.03-a";   /* date + letter, like Daily Protocol */
 load();
 document.getElementById("weekLabel").textContent = WEEK_LABEL;
 document.title = "Grocery \u2014 " + WEEK_LABEL;

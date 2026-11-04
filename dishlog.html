@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="theme-color" content="#FAF6F0" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#17140F" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F2ECE3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1A1316" media="(prefers-color-scheme: dark)">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/dishlog-32.png">
 <link rel="apple-touch-icon" href="icons/dishlog-180.png">
@@ -1090,6 +1090,67 @@ body{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidd
 #s-home > .topbar{display:none}   /* the app bar already names the app */
 @media (min-width:900px){ .sx-bar{position:relative} }
 </style>
+<!-- look: DishLog's own feel — "the menu". Linen paper, plum, big editorial serif names, menu rules. -->
+<style id="look">
+@import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&display=swap');
+:root{
+  --cream:#F2ECE3; --surface:#EAE2D7; --card:#FAF6F0;
+  --ink:#241A1F; --ink2:#4A3D44; --ink3:#6B5C64;
+  --border:#DCCFC3; --border2:#C9B8AB; --rule-soft:#E4D9CE;
+  --accent:#6A2347; --accent-light:#F1E3EA;
+  --shadow:none;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --cream:#1A1316; --surface:#22191D; --card:#261C21;
+    --ink:#F3E9EC; --ink2:#D3C3CA; --ink3:#A9979F;
+    --border:#3E2F36; --border2:#55424B; --rule-soft:#30252A;
+    --accent:#DD8DB2; --accent-light:#3A2230;
+  }
+  html,body{background:#1A1316!important}
+}
+.sx-bar{--sx-paper:#F2ECE3; --sx-ink:#241A1F; --sx-dim:#6B5C64; --sx-line:#DCCFC3; --sx-hover:#E8DED3}
+@media (prefers-color-scheme:dark){ .sx-bar:not(.sx-light){--sx-paper:#1A1316; --sx-ink:#F3E9EC; --sx-dim:#A9979F; --sx-line:#3E2F36; --sx-hover:#2A1F24} }
+
+body,button,.dl-search input{font-family:'Libre Franklin',system-ui,sans-serif!important}
+
+/* masthead, set like the top of a printed menu */
+.dl-mast{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;margin:18px 16px 2px;padding-bottom:14px;border-bottom:3px double var(--accent)}
+.dl-mast small{font-size:10.5px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:var(--ink3)}
+.dl-mast h1{margin:0;font-family:'Fraunces',serif;font-style:italic;font-weight:400;font-size:42px;line-height:1;color:var(--accent);letter-spacing:-.01em}
+.dl-mast p{margin:0;font-family:'Fraunces',serif;font-size:14.5px;color:var(--ink3)}
+
+/* search + sort: a pill and plain-text tabs with an underline */
+.dl-search{border-radius:99px;background:var(--card)}
+.sort-row{background:transparent!important;border:0!important;border-radius:0!important;justify-content:center;gap:18px!important;margin:8px 16px 2px!important}
+.sc{flex:0 0 auto!important;font-family:'Fraunces',serif!important;font-size:16px!important;font-weight:400!important;padding:10px 2px!important;border-radius:0!important;box-shadow:none!important}
+.sc.active{background:transparent!important;color:var(--accent)!important;font-style:italic;font-weight:600!important}
+.sort-row .sx-pill{background:transparent!important;box-shadow:none!important;border-radius:0!important;border-bottom:2px solid var(--accent)}
+
+/* the list reads like a menu: no boxes, rules between entries */
+.rest-list{gap:0!important}
+.rest-card{background:transparent!important;border:0!important;border-bottom:1px solid var(--border)!important;border-radius:0!important;box-shadow:none!important}
+.rest-card.sel{background:var(--accent-light)!important;box-shadow:none!important}
+.rest-swatch{border-radius:50%!important;width:56px!important;height:56px;margin:12px 0 12px 2px!important}
+.rest-name{font-weight:600!important;font-size:21px!important}
+.rest-meta{font-size:12.5px!important}
+.rest-btns{border-left:1px dotted var(--border2)!important}
+.rb{background:transparent!important}
+.bar{border-radius:99px!important;border:1.5px solid var(--accent)!important;background:transparent!important;color:var(--accent)!important;font-weight:600!important;margin-top:14px!important}
+.bar:hover{background:var(--accent)!important;color:var(--card)!important}
+
+/* buttons pick up plum and softer pills */
+.bp,.bk,.bx,.bem,.bai,.bca{background:var(--accent)!important}
+.bp,.bs,.bi,.bem,.bai,.bca,.bf{border-radius:99px!important}
+.cc.chosen{background:var(--accent)!important;border-color:var(--accent)!important}
+.tab.active{color:var(--accent)!important;border-bottom-color:var(--accent)!important}
+.rest-hero-name{font-weight:600!important}
+.stat-n{font-family:'Fraunces',serif!important;font-weight:600!important;font-size:20px!important}
+@media (prefers-color-scheme:dark){
+  .bp,.bk,.bx,.bem,.bai,.bca,.cc.chosen{color:#1A1316!important}
+}
+</style>
+
 
 <h2 class="sr-only">DishLog v18.3 — history, search, same-as-last-time, quick add, backup</h2>
 <div class="frame" id="app">
@@ -1101,6 +1162,7 @@ body{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidd
       <div><div class="logo-title">DishLog</div><div class="logo-sub">Your personal food memory</div></div>
     </div>
   </div>
+  <div class="dl-mast"><small>Est. 2026 · Provo</small><h1>The Menu</h1><p>Every place you've eaten, and what to order again</p></div>
   <label class="dl-search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg><input id="dl-q" type="search" placeholder="Search dishes and restaurants" autocomplete="off" oninput="dlSearch()"></label>
   <div class="sort-row">
     <button class="sc active" onclick="setSort('recent',this)">Recent</button>
