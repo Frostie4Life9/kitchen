@@ -1,0 +1,12 @@
+// Deploy config for the ideas-sync Worker. Builds deploy command:
+//   npx wrangler deploy -c wrangler.ideas.jsonc
+// Secret WRITE_KEY stays in the dashboard; never put it here.
+{
+  "name": "ideas-sync",
+  "main": "tools/ideas-worker.js",
+  "compatibility_date": "2026-10-24",
+  "d1_databases": [
+    { "binding": "DB", "database_name": "app-ideas", "database_id": "92b290cc-dfd1-4519-921e-32f61460a591" }
+  ],
+  "keep_vars": true
+}

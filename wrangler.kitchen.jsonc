@@ -1,0 +1,12 @@
+// Deploy config for the kitchen-sync Worker. Builds deploy command:
+//   npx wrangler deploy -c wrangler.kitchen.jsonc
+// Secret SYNC_TOKEN stays in the dashboard; never put it here.
+{
+  "name": "kitchen-sync",
+  "main": "worker/kitchen-sync.js",
+  "compatibility_date": "2026-09-30",
+  "kv_namespaces": [
+    { "binding": "KITCHEN", "id": "2bfef87dfe23436ebadcf2fb867d5929" }
+  ],
+  "keep_vars": true
+}
