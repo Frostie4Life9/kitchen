@@ -579,6 +579,13 @@
   .v3-stat b { display: block; white-space: nowrap; font-size: 19px; font-weight: 800; color: var(--ink); font-variant-numeric: tabular-nums; }
   .v3-stat span { font-size: 12px; color: var(--ink-faded); line-height: 1.35; display: block; }
   .v3-week .foot { font-size: 12.5px; color: var(--ink-faded); margin: 12px 2px 0; line-height: 1.45; }
+  .v3-review .v3-days { grid-template-columns: repeat(3, 1fr); max-width: 320px; }
+  .v3-review .v3-day { font-size: 12px; }
+  .v3-review .v3-headline { margin: 4px 0 14px; }
+  .v3-rv-h { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-faded); font-weight: 700; margin: 14px 2px 6px; }
+  .v3-rv-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .v3-review .v3-chip { cursor: default; }
+  .v3-review .foot a { color: var(--ink); font-weight: 700; }
 
   /* Dark mode follows the phone's setting. Same warm identity, turned down
      for night: the paper becomes a warm charcoal rather than pure black,
@@ -1594,6 +1601,7 @@
   </div>
 
   <div id="v3-week"></div>
+  <div id="v3-review"></div>
 
   <div class="k-calmain">
   <div class="cal-header">
@@ -6980,6 +6988,102 @@ function renderWeek(){
     '</div>'+
     '<p class="foot">'+(tr?'Weight moves around day to day; the trend over a few weeks is what counts.':'Log your weight two or three times a week and a trend will show up here.')+
     ' Averages only count days you logged something.</p></section>';
+  if(typeof renderReview==="function") renderReview();
+}
+
+/* ===== WEEKLY REVIEW: Lift + eating in one card =====
+   Reads the Lift sessions that Lift saves under this same origin
+   (lift_s_v1_<day>|<week>, kept in step by kitchen-sync) plus the logged days
+   above. Nothing new to log. LIFT_PARAMS mirrors LIB in workout.html (sets,
+   top reps "aim", floor reps "mn", step "inc"); if an exercise changes there,
+   change it here too. READY / HEAVY is the same rule Lift's statusOf uses;
+   stalls are left to Lift's own screen. A lift day counts as done once
+   LIFT_DONE_MIN exercises have sets logged. */
+const LIFT_PARAMS={"Barbell Bench Press":{"s":4,"aim":8,"mn":5,"inc":5},"Seated DB Shoulder Press":{"s":3,"aim":10,"mn":6,"inc":5},"Incline DB Press":{"s":3,"aim":12,"mn":8,"inc":5},"Pec Deck (Chest Fly Machine)":{"s":3,"aim":15,"mn":10,"inc":10},"DB Lateral Raise":{"s":3,"aim":15,"mn":12,"inc":2.5},"Rope Overhead Triceps Extension":{"s":3,"aim":12,"mn":10,"inc":10},"Barbell Deadlift":{"s":3,"aim":5,"mn":5,"inc":10},"Lat Pulldown":{"s":4,"aim":10,"mn":8,"inc":10},"Seated Cable Row":{"s":3,"aim":12,"mn":8,"inc":10},"1-Arm DB Row":{"s":3,"aim":12,"mn":10,"inc":5,"bil":1},"Rear Delt Machine":{"s":3,"aim":15,"mn":12,"inc":10},"EZ-Bar Biceps Curl":{"s":3,"aim":12,"mn":8,"inc":5},"DB Hammer Curl":{"s":3,"aim":12,"mn":8,"inc":5},"EZ-Bar Wrist Curl":{"s":2,"aim":15,"mn":12,"inc":5},"EZ-Bar Reverse Wrist Curl":{"s":2,"aim":15,"mn":12,"inc":5},"Hack Squat":{"s":3,"aim":12,"mn":8,"inc":10},"Leg Press":{"s":3,"aim":15,"mn":10,"inc":20},"Seated Leg Curl":{"s":3,"aim":12,"mn":10,"inc":10},"Hip Thrust (machine or barbell)":{"s":3,"aim":12,"mn":10,"inc":10},"Leg Extension":{"s":3,"aim":15,"mn":12,"inc":10},"Calf Raise Machine":{"s":3,"aim":15,"mn":12,"inc":10},"Cable Crunch":{"s":3,"aim":15,"mn":12,"inc":10},"Chest Press Machine":{"s":4,"aim":10,"mn":6,"inc":10},"Incline Chest Press Machine":{"s":3,"aim":12,"mn":8,"inc":10},"Shoulder Press Machine":{"s":4,"aim":10,"mn":6,"inc":10},"Lateral Raise Machine":{"s":3,"aim":15,"mn":12,"inc":5},"Chest-Supported Row Machine":{"s":4,"aim":12,"mn":8,"inc":10},"Single-Arm Machine Row":{"s":3,"aim":12,"mn":10,"inc":5,"bil":1},"Back Extension (45°)":{"s":3,"aim":15,"mn":12,"inc":5},"Machine Preacher Curl":{"s":3,"aim":12,"mn":8,"inc":10},"Cable Rope Hammer Curl":{"s":3,"aim":12,"mn":8,"inc":5},"Cable Wrist Curl":{"s":2,"aim":15,"mn":12,"inc":5},"Cable Reverse Wrist Curl":{"s":2,"aim":15,"mn":12,"inc":5},"Hip Thrust Machine":{"s":3,"aim":12,"mn":10,"inc":10},"Triceps Pressdown":{"s":3,"aim":15,"mn":10,"inc":10}};
+const LIFT_DAYS={A:"Tue",B:"Thu",C:"Sat"}, LIFT_ORDER=["A","B","C"], LIFT_DONE_MIN=4;
+function liftSessions(){
+  const now=new Date(), y=now.getFullYear(), mo=now.getMonth(), d=now.getDate();
+  const start=new Date(y,mo,d-6).getTime(), end=new Date(y,mo,d+1).getTime(), out=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i); if(!k||k.indexOf("lift_s_v1_")!==0) continue;
+    let o=null; try{ o=JSON.parse(localStorage.getItem(k)); }catch(e){ continue; }
+    if(!o||!o.log) continue;
+    const sk=k.slice(10).split("|"), day=sk[0], week=+sk[1];
+    if(LIFT_ORDER.indexOf(day)<0||!(week>0)) continue;
+    let when=0, logged=0;
+    Object.keys(o.log).forEach(function(ex){
+      const r=o.log[ex]||{};
+      const any=["s","L","R"].some(function(f){ return (r[f]||[]).some(function(v){ return typeof v==="number"; }); });
+      if(any) logged++;
+      if(typeof r.u==="number" && r.u>when) when=r.u;
+    });
+    const m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(o.date||"");
+    if(m) when=new Date(+m[1],+m[2]-1,+m[3],12).getTime();
+    if(logged>0) out.push({day:day,week:week,when:when,logged:logged,log:o.log,inWindow:when>=start&&when<end});
+  }
+  return out;
+}
+function liftStatus(ex,r){
+  const P=LIFT_PARAMS[ex]; if(!P||!r) return null;
+  const n=P.s, sides=P.bil?[r.L||[],r.R||[]]:[r.s||[]];
+  const filled=function(a){ let c=0; for(let i=0;i<n;i++) if(typeof a[i]==="number") c++; return c; };
+  const atLeast=function(a,min){ let c=0; for(let i=0;i<n;i++) if(typeof a[i]==="number"&&a[i]>=min) c++; return c; };
+  if(sides.some(function(a){ return filled(a)<n; })) return null;
+  const cAim=Math.min.apply(null,sides.map(function(a){ return atLeast(a,P.aim); }));
+  const cMin=Math.min.apply(null,sides.map(function(a){ return atLeast(a,P.mn); }));
+  return cAim>=n?"READY":(n-cMin>=2?"HEAVY":"ON");
+}
+function reviewData(){
+  const all=liftSessions(), byDay={}, up=[], back=[];
+  all.filter(function(s){ return s.inWindow; }).forEach(function(s){ if(!byDay[s.day]||s.logged>byDay[s.day].logged) byDay[s.day]=s; });
+  const done=LIFT_ORDER.filter(function(dd){ return byDay[dd]&&byDay[dd].logged>=LIFT_DONE_MIN; }).length;
+  Object.keys(byDay).forEach(function(dd){
+    const s=byDay[dd];
+    Object.keys(s.log).forEach(function(ex){
+      const st=liftStatus(ex,s.log[ex]), P=LIFT_PARAMS[ex];
+      if(st==="READY") up.push({ex:ex,inc:P.inc});
+      else if(st==="HEAVY"){ const wt=+s.log[ex].w; back.push({ex:ex,less:wt>0?Math.max(P.inc,P.inc*Math.round(wt*0.1/P.inc)):null}); }
+    });
+  });
+  all.sort(function(a,b){ return b.when-a.when; });
+  let next=null;
+  if(all.length){ const i=LIFT_ORDER.indexOf(all[0].day); next=(i===2)?{day:"A",week:all[0].week+1}:{day:LIFT_ORDER[i+1],week:all[0].week}; }
+  const days=weekData(), pt=(typeof PROTEIN_TARGET_G!=="undefined"?PROTEIN_TARGET_G:184), floor=(typeof CAL_FLOOR!=="undefined"?CAL_FLOOR:1900);
+  const fin=days.filter(function(x){ return x.logged&&x.ds<todayStr; });
+  const onPro=fin.filter(function(x){ return x.pro>=pt*0.9; }).length;
+  const avgPro=fin.length?fin.reduce(function(a,x){ return a+x.pro; },0)/fin.length:0;
+  const lowCal=fin.filter(function(x){ return x.cal<floor; }).length;
+  let tip;
+  if(!all.length && fin.length<3) tip="Not enough logged yet to read the week. A few more days and this fills in.";
+  else if(fin.length>=3 && lowCal>=3) tip="Add a snack on the lighter days. A PB-honey tortilla or a yogurt cup gets you up to your "+floor.toLocaleString("en-US")+" floor.";
+  else if(fin.length>=3 && avgPro<pt*0.9) tip="Add one protein piece where it's easiest. A Greek yogurt, beef stick or protein bar at lunch is an easy add.";
+  else if(done<3 && next) tip="Next lift is Day "+next.day+" ("+LIFT_DAYS[next.day]+", week "+next.week+"). That's the one to line up.";
+  else if(up.length) tip="Eating looks steady. Next time, start the "+up.length+" lift"+(up.length===1?"":"s")+" below at the new weight.";
+  else tip="Steady week. Keep the same plan.";
+  return {byDay:byDay,done:done,up:up,back:back,fin:fin.length,onPro:onPro,pt:pt,tip:tip,any:all.length>0};
+}
+function renderReview(){
+  const host=$("v3-review"); if(!host) return;
+  const R=reviewData();
+  const dots=LIFT_ORDER.map(function(dd,di){
+    const s=R.byDay[dd], cls=s?(s.logged>=LIFT_DONE_MIN?" all":" some"):"";
+    return '<div class="v3-day" style="--i:'+di+'"><div class="v3-dot'+cls+'" title="Day '+dd+': '+(s?s.logged:0)+' exercises logged"></div>Day '+dd+' · '+LIFT_DAYS[dd]+'</div>';
+  }).join('');
+  const chip=function(label,small){ return '<span class="v3-chip">'+esc(label)+'<small>'+esc(small)+'</small></span>'; };
+  const upHTML=R.up.length?'<div class="v3-rv-h">Going up next time</div><div class="v3-rv-list">'+R.up.map(function(x){ return chip(x.ex,"+"+x.inc+" lb"); }).join('')+'</div>':'';
+  const backHTML=R.back.length?'<div class="v3-rv-h">Ease back a little</div><div class="v3-rv-list">'+R.back.map(function(x){ return chip(x.ex,x.less?"−"+x.less+" lb":"lighter"); }).join('')+'</div>':'';
+  host.innerHTML='<section class="v3-week v3-review" aria-label="Week in review">'+
+    '<h2>Week in review</h2><div class="when">Lifting and eating together, last 7 days</div>'+
+    '<div class="v3-days">'+dots+'</div>'+
+    '<div class="v3-rv-h">One thing for next week</div>'+
+    '<div class="v3-headline">'+esc(R.tip)+'</div>'+
+    '<div class="v3-stats">'+
+      '<div class="v3-stat"><b>'+R.done+' of 3</b><span>lifts logged<br>Tue / Thu / Sat</span></div>'+
+      '<div class="v3-stat"><b>'+(R.fin?R.onPro+' of '+R.fin:"—")+'</b><span>days near protein<br>within 10% of '+R.pt+' g</span></div>'+
+      '<div class="v3-stat"><b>'+R.up.length+'</b><span>lifts ready<br>to go up</span></div>'+
+      '<div class="v3-stat"><b>'+R.back.length+'</b><span>lifts to<br>ease back</span></div>'+
+    '</div>'+upHTML+backHTML+
+    '<p class="foot">'+(R.any?'Lift numbers come from your Lift sessions on this device and its sync. A lift day counts once '+LIFT_DONE_MIN+' exercises have sets logged. Protein days count finished days only.':'No lifts logged in the last 7 days. <a href="workout.html">Open Lift</a> and this fills in.')+'</p></section>';
 }
 
 /* ---- Calendar: what was actually eaten ---- */
@@ -8411,7 +8515,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.11.03-a";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.11.05-a";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
@@ -8768,12 +8872,13 @@ if ("serviceWorker" in navigator && /^https?:$/.test(location.protocol)) {
 
   /* Calendar: month on the left, the week and the picked day on the right */
   #screen-calendar.active{ display:grid; grid-template-columns:minmax(0,1fr) minmax(320px,380px); column-gap:32px;
-    grid-template-rows:auto auto 1fr; align-items:start; }
+    grid-template-rows:auto auto auto 1fr; align-items:start; }
   #screen-calendar > *{ grid-column:1 / -1; min-width:0; }
   #screen-calendar > .masthead{ grid-row:1; }
-  #screen-calendar > .k-calmain{ grid-column:1; grid-row:2 / span 2; }
+  #screen-calendar > .k-calmain{ grid-column:1; grid-row:2 / span 3; }
   #screen-calendar > #v3-week{ grid-column:2; grid-row:2; }
-  #screen-calendar > .detail-panel{ grid-column:2; grid-row:3; margin-top:0; }
+  #screen-calendar > #v3-review{ grid-column:2; grid-row:3; }
+  #screen-calendar > .detail-panel{ grid-column:2; grid-row:4; margin-top:0; }
   #screen-calendar > .footer-note{ grid-column:1; }
   #screen-calendar .cal-grid{ gap:5px; }
 
