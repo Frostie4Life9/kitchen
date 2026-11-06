@@ -1164,6 +1164,8 @@ body,button,.dl-search input{font-family:'Libre Franklin',system-ui,sans-serif!i
 .lk-name{font-weight:700;font-size:14px;color:var(--ink);line-height:1.3}
 .lk-desc{font-size:12.5px;color:var(--ink2);line-height:1.4;margin-top:2px}
 .lk-meta{font-size:11.5px;color:var(--ink3);margin-top:4px}
+.lk-attr{font-size:11px;color:var(--ink3);padding:0 2px 8px;margin-top:-2px}
+.lk-attr a{color:var(--ink2);font-weight:600;text-decoration:underline;text-decoration-color:var(--border2)}
 .lk-meta a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 .lk-acts{display:flex;flex-direction:column;gap:5px;flex:0 0 auto}
 .lk-acts .bp,.lk-acts .bs{padding:7px 12px;font-size:12px;white-space:nowrap}
@@ -1421,7 +1423,7 @@ body,button,.dl-search input{font-family:'Libre Franklin',system-ui,sans-serif!i
         <div class="field-label">Claude API key</div>
         <div class="api-key-row"><input type="password" id="lk-key-in2" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"><button class="bs" onclick="dlSaveLookupKey(2)" style="flex:0 0 auto">Save</button><button class="bs" onclick="clearApiKey();dlPaintLookupSources()" style="flex:0 0 auto">Clear</button></div>
         <div class="field-label">Nutritionix (optional, for chains)</div>
-        <div class="lk-keytxt">If you have a Nutritionix developer account, chain lookups try it first (instant, with official nutrition) and fall back to Claude.</div>
+        <div class="lk-keytxt">Free “Business Trial” key from nutritionix.com/business/api (up to 2 users). Chain lookups try it first, with official nutrition, and fall back to Claude. Its terms only let DishLog keep nutrition for dishes you log, so “Try later” saves the dish without numbers and fills them in when you rate it.</div>
         <div class="api-key-row"><input type="text" id="lk-nix-id" placeholder="App ID" autocomplete="off" spellcheck="false"><input type="password" id="lk-nix-key" placeholder="App key" autocomplete="off" spellcheck="false"></div>
         <div class="btn-row" style="margin-top:0"><button class="bs" onclick="dlSaveNix()">Save Nutritionix</button><button class="bs" onclick="dlClearNix()">Clear</button></div>
       </details>
@@ -3104,7 +3106,7 @@ function buildRow(item,isExpired,nameTags){
     }
     if(item.wantTry&&!currentRat)tags.push(`<span class="tag tag-try">To try</span>`);
     let kc=item.nutrition&&item.nutrition.calories;
-    if(kc)tags.push(`<span class="tag-kcal">${Math.round(kc)} cal</span>`);
+    if(kc)tags.push(`<span class="tag-kcal"${item.nutrition.source==='nutritionix'?' title="Nutrition: Powered by Nutritionix"':''}>${Math.round(kc)} cal</span>`);
   }else{
     tags.push(`<span class="tag-unavail">No longer available</span>`);
   }
@@ -4040,11 +4042,15 @@ function dlKeepDish(r,mode){
   let rid=currentRestId,name=String(r.name||'').trim();if(!rid||!name)return;
   let k=name.toLowerCase();
   let same=db.items.filter(i=>i.restId===rid&&i.name.trim().toLowerCase()===k);
-  let nut=null;
+  let nut=null,nix=r.source==='nutritionix';
   if(r.calories!=null||r.protein_g!=null||r.carbs_g!=null||r.fat_g!=null){
     nut={calories:r.calories??null,protein:r.protein_g??null,carbs:r.carbs_g??null,fat:r.fat_g??null,
       serving:r.serving||'',source:r.source||'claude',url:r.source_url||'',at:Date.now()};
+    if(nix&&r.nix_item_id)nut.nixId=r.nix_item_id;
   }
+  // Nutritionix only pre-approves keeping its data as a record of food you logged. A try-list
+  // save keeps the dish and its Nutritionix ID, and the numbers are fetched when you rate it.
+  if(nix&&mode!=='rate')nut=null;
   let target;
   if(same.length){
     same.forEach(i=>{
@@ -4053,6 +4059,7 @@ function dlKeepDish(r,mode){
       if(i.expired&&mode==='rate')i.expired=false;   // you're eating it, so it's back
       if(!i.desc&&r.description)i.desc=r.description;
       if(nut&&!i.nutrition)i.nutrition=nut;
+      if(nix&&r.nix_item_id&&!i.nixId)i.nixId=r.nix_item_id;
     });
     target=same.find(i=>!i.expired)||same[0];
   }else{
@@ -4062,6 +4069,7 @@ function dlKeepDish(r,mode){
       specialty:r.specialty||null,expired:false,mine:true,wantTry:mode==='try'};
     if(r.limited&&!r.specialty)target.pageTags=['lto'];
     if(nut)target.nutrition=nut;
+    if(nix&&r.nix_item_id)target.nixId=r.nix_item_id;
     if(r.source_url)target.sourceUrl=r.source_url;
     db.items.push(target);
   }
@@ -4128,7 +4136,9 @@ function dlRenderResults(list,label,emptyMsg){
   dlLkResults=list;
   let box=document.getElementById('lk-results');
   if(!list.length){box.innerHTML='<div class="lk-none">'+dlEsc(emptyMsg)+'</div>';dlOfferManual();return;}
-  box.innerHTML='<div class="lk-label">'+dlEsc(label)+'</div>'+list.map((r,ix)=>{
+  // Nutritionix requires attribution visible without scrolling wherever its API is used
+  let attr=list.some(r=>r.source==='nutritionix')?DL_NIX_ATTR:'';
+  box.innerHTML='<div class="lk-label">'+dlEsc(label)+'</div>'+attr+list.map((r,ix)=>{
     let meta=[];
     if(r.calories!=null)meta.push(Math.round(r.calories)+' cal');
     if(r.protein_g!=null)meta.push(Math.round(r.protein_g)+'g protein');
@@ -4188,6 +4198,7 @@ async function dlNixLookup(rest,q){
   try{res=await fetch('https://trackapi.nutritionix.com/v2/search/instant?'+qs,{headers:{'x-app-id':c.id,'x-app-key':c.key}});}
   catch(e){throw new Error('Couldn’t reach Nutritionix.');}
   if(res.status===401||res.status===403)throw new Error('Nutritionix rejected the App ID/key.');
+  if(res.status===429)throw new Error('Nutritionix’s free plan limit was hit for now.');
   if(!res.ok)throw new Error('Nutritionix returned '+res.status+'.');
   let d=await res.json(),rn=dlNorm(rest.name);
   let br=(d.branded||[]).filter(b=>{let bn=dlNorm(b.brand_name);return bn&&(bn.includes(rn)||rn.includes(bn));});
@@ -4197,6 +4208,26 @@ async function dlNixLookup(rest,q){
       protein_g:fn(203),carbs_g:fn(205),fat_g:fn(204),serving:(b.serving_qty&&b.serving_unit)?(b.serving_qty+' '+b.serving_unit):'',
       source:'nutritionix',nix_item_id:b.nix_item_id};
   });
+}
+const DL_NIX_ATTR='<div class="lk-attr">Nutrition data <a href="https://www.nutritionix.com" target="_blank" rel="noopener">Powered by Nutritionix</a></div>';
+// One branded item's nutrition, fetched when a try-list dish gets rated (the log moment)
+async function dlNixItem(nixId){
+  let c=dlNix();if(!c||!nixId)return null;
+  let res=await fetch('https://trackapi.nutritionix.com/v2/search/item?nix_item_id='+encodeURIComponent(nixId),{headers:{'x-app-id':c.id,'x-app-key':c.key}});
+  if(!res.ok)return null;
+  let f=((await res.json()).foods||[])[0];if(!f)return null;
+  let num=v=>Number.isFinite(+v)&&v!==null?+v:null;
+  return {calories:num(f.nf_calories),protein:num(f.nf_protein),carbs:num(f.nf_total_carbohydrate),fat:num(f.nf_total_fat),
+    serving:(f.serving_qty&&f.serving_unit)?(f.serving_qty+' '+f.serving_unit):'',source:'nutritionix',url:'',nixId,at:Date.now()};
+}
+function dlNixFill(it){
+  if(!it||it.nutrition||!it.nixId||!dlNix())return;
+  let rk=dlRk(it);
+  dlNixItem(it.nixId).then(n=>{
+    if(!n)return;
+    db.items.forEach(i=>{if(i.restId===it.restId&&dlRk(i)===rk&&!i.nutrition)i.nutrition=n;});
+    save();if(currentRestId===it.restId)renderMenu(it.restId);
+  }).catch(()=>{});
 }
 function dlWhere(rest){return '"'+rest.name+'"'+(rest.address?' ('+rest.address+')':'')+(rest.cuisine?' — '+rest.cuisine:'');}
 const DL_JSON_SHAPE='{"results":[{"name":"official item name","description":"one short sentence: what is in it","category":"menu section","calories":number or null,"protein_g":number or null,"carbs_g":number or null,"fat_g":number or null,"limited":true or false,"source_url":"page you got it from"}]}';
@@ -4247,7 +4278,8 @@ async function dlLookup(){
       list=await dlClaudeResults(dlLookupPrompt(rest,q));label='Found by Claude';err='';
     }
     st.textContent=err;
-    if(list.length)dlLkCache[ck]={list,label};
+    // Nutritionix results are never reused: their terms want a fresh API call for every lookup
+    if(list.length&&!list.some(r=>r.source==='nutritionix'))dlLkCache[ck]={list,label};
     dlRenderResults(list,label,'Couldn’t find “'+q+'” at '+rest.name+'. Add it as typed below.');
   }catch(e){
     st.textContent=(e&&e.message)||'Lookup failed.';dlOfferManual(true);
@@ -4306,9 +4338,20 @@ saveRating=function(){
   if(it&&getItemRatings(dlRk(it)).length){
     let rk=dlRk(it);db.items.forEach(i=>{if(i.restId===it.restId&&dlRk(i)===rk){i.wantTry=false;}});
     it.mine=true;save();
+    dlNixFill(it);
   }
   return r;
 };
+/* One-time tidy for the Nutritionix terms: nutrition it supplied for a dish you never logged
+   or rated is dropped (the ID stays, so rating it later fetches the numbers fresh). */
+(function(){
+  let rated=dlRatedKeys(),ch=false;
+  db.items.forEach(i=>{
+    let n=i.nutrition;
+    if(n&&n.source==='nutritionix'&&!i.mine&&!rated.has(dlRk(i))){if(n.nixId&&!i.nixId)i.nixId=n.nixId;delete i.nutrition;ch=true;}
+  });
+  if(ch)save();
+})();
 </script>
 <script>
 /* offline support: lets the kitchen apps open with no signal (see sw.js) */
