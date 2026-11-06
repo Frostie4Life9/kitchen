@@ -417,6 +417,47 @@ dialog{border-radius:6px}
 .dlg .acts button,.pri,.sec{border-radius:4px;font:700 15px var(--cond);letter-spacing:.08em;text-transform:uppercase}
 @media (min-width:900px){ .timer{border-radius:6px} }
 </style>
+<style id="progress">
+/* Progress & PRs sheet */
+.tools.prog{margin:16px 0 0}
+.tools.prog + .tools{margin-top:8px}
+.tools.prog button{background:var(--accent);color:#191714;border-color:var(--accent);font:800 16px var(--cond);letter-spacing:.12em}
+@media (hover:hover){.tools.prog button:hover{border-color:var(--ink)}}
+#pdlg{width:620px;max-height:88vh;overflow:hidden}
+#pdlg .pg{display:flex;flex-direction:column;max-height:88vh;padding:17px 17px 15px}
+.pgh{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.pgh h3{margin:0}
+.pgx{border:1px solid var(--line);background:var(--soft2);color:var(--mute);width:34px;height:34px;border-radius:4px;font-size:15px;cursor:pointer}
+#pgBody{overflow-y:auto;min-height:0;flex:1;margin:0 -6px;padding:0 6px;overscroll-behavior:contain}
+.pg .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:6px 0 4px}
+.pg .tile{background:var(--soft2);border:1px solid var(--line);border-radius:4px;padding:9px 10px}
+.pg .tile b{display:block;font:800 28px/1 var(--cond)}
+.pg .tile span{font:700 11px var(--cond);letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.pg h4{font:700 13px var(--cond);letter-spacing:.16em;text-transform:uppercase;color:var(--mute);margin:18px 0 8px}
+.pg .vol{display:flex;align-items:flex-end;justify-content:flex-start;gap:6px;height:92px;padding-top:4px}
+.pg .vol .bar{flex:1 1 0;max-width:44px;min-width:0;height:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:3px}
+.pg .vol .bar i{display:block;width:100%;background:var(--accent);border-radius:2px 2px 0 0;min-height:2px;opacity:.55}
+.pg .vol .bar.now i{opacity:1}
+.pg .vol .bar small{font:700 11px var(--cond);color:var(--mute);letter-spacing:.04em}
+.pg .vnote{font-size:12px;color:var(--mute);margin-top:6px}
+.pg .seg{display:flex;gap:6px;margin:0 0 4px}
+.pg .seg button{flex:1;padding:9px 6px;border:1px solid var(--line);background:var(--card);color:var(--mute);border-radius:4px;font:700 13px var(--cond);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.pg .seg button.on{background:var(--ink);color:var(--onink);border-color:var(--ink)}
+.pg .pr{display:grid;grid-template-columns:1fr auto;gap:3px 12px;padding:12px 0;border-top:1px solid var(--line)}
+.pg .pr:first-of-type{border-top:none}
+.pg .pr .nm{font:700 17px/1.15 var(--cond);letter-spacing:.03em;text-transform:uppercase;display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.pg .pr .big{font:800 26px/1 var(--cond);text-align:right;white-space:nowrap}
+.pg .pr .big small{font:700 12px var(--cond);letter-spacing:.08em;color:var(--mute);margin-left:3px}
+.pg .pr .d2{font-size:12.5px;color:var(--mute);line-height:1.45}
+.pg .pr .d2 b{color:var(--ink);font-weight:600}
+.pg .pr .spark{color:var(--accent);justify-self:end;align-self:end}
+.pg .chip2{font:800 10.5px var(--cond);letter-spacing:.12em;border-radius:2px;padding:2px 6px;color:#191714}
+.pg .chip2.new{background:var(--green)}
+.pg .chip2.ready{background:var(--amber)}
+.pg .chip2.stall{background:var(--red)}
+.pg .none{color:var(--mute);font-size:14px;padding:14px 0 6px}
+#pdlg .acts{flex:none}
+</style>
 </head>
 <body>
 <!-- suite:bar -->
@@ -772,6 +813,7 @@ dialog{border-radius:6px}
   </div>
   <div class="dateline"><span>Date</span><input type="date" id="dt"></div>
   <div id="list"></div>
+  <div class="tools prog"><button id="bProg" type="button">Progress &amp; PRs</button></div>
   <div class="tools">
     <button id="bCopy">Copy for Excel</button>
     <button id="bClaude">Copy for Claude</button>
@@ -806,6 +848,14 @@ dialog{border-radius:6px}
     <button class="sec" type="submit" id="sK">Close</button>
   </div>
 </form></dialog>
+<dialog id="pdlg"><div class="dlg pg">
+  <div class="pgh"><h3>Progress</h3><button class="pgx" id="pgX" type="button" aria-label="Close">✕</button></div>
+  <div id="pgBody"></div>
+  <div class="acts">
+    <button class="pri" id="pgCopy" type="button" title="Copy a text summary to paste to Claude">Copy</button>
+    <button class="sec" id="pgDone" type="button">Close</button>
+  </div>
+</div></dialog>
 <dialog id="dlg"><div class="dlg">
   <h3 id="dlgT">Export</h3>
   <textarea id="dlgX" readonly></textarea>
@@ -1042,7 +1092,7 @@ const LIB={"Barbell Bench Press": {"equip": "Barbell \u2014 total incl. 45 lb ba
 const PROG={"A": {"dow": "Tuesday", "ex": [{"ex": "Chest Press Machine", "pair": "1a", "core": true}, {"ex": "Chest-Supported Row Machine", "pair": "1b", "core": true}, {"ex": "Hack Squat", "pair": "2a", "core": true}, {"ex": "Seated Leg Curl", "pair": "2b", "core": true}, {"ex": "Rope Overhead Triceps Extension", "pair": "3a", "core": false}, {"ex": "Machine Preacher Curl", "pair": "3b", "core": false}, {"ex": "Cable Crunch", "pair": "4a", "core": false}, {"ex": "Back Extension (45\u00b0)", "pair": "4b", "core": false}, {"ex": "Cable Wrist Curl", "pair": "5a", "core": false}, {"ex": "Cable Reverse Wrist Curl", "pair": "5b", "core": false}]}, "B": {"dow": "Thursday", "ex": [{"ex": "Shoulder Press Machine", "pair": "1a", "core": true}, {"ex": "Lat Pulldown", "pair": "1b", "core": true}, {"ex": "Leg Press", "pair": "2a", "core": true}, {"ex": "Seated Leg Curl", "pair": "2b", "core": true}, {"ex": "Lateral Raise Machine", "pair": "3a", "core": false}, {"ex": "Single-Arm Machine Row", "pair": "3b", "core": false}, {"ex": "Triceps Pressdown", "pair": "4a", "core": false}, {"ex": "Cable Rope Hammer Curl", "pair": "4b", "core": false}, {"ex": "Calf Raise Machine", "pair": "5", "core": false}]}, "C": {"dow": "Saturday", "ex": [{"ex": "Incline Chest Press Machine", "pair": "1a", "core": true}, {"ex": "Seated Cable Row", "pair": "1b", "core": true}, {"ex": "Leg Extension", "pair": "2a", "core": true}, {"ex": "Hip Thrust Machine", "pair": "2b", "core": true}, {"ex": "Pec Deck (Chest Fly Machine)", "pair": "3a", "core": false}, {"ex": "Rear Delt Machine", "pair": "3b", "core": false}, {"ex": "Cable Wrist Curl", "pair": "4a", "core": false}, {"ex": "Cable Reverse Wrist Curl", "pair": "4b", "core": false}, {"ex": "Calf Raise Machine", "pair": "5", "core": false}]}};
 const SEED={"A|1|Chest Press Machine": {"w": 100, "s": [7, 7, 3, 4]}, "A|1|Chest-Supported Row Machine": {"w": 85, "s": [12, 12, 12, 7]}, "A|1|Hack Squat": {"w": 90, "s": [null, null, null, null]}, "A|1|Seated Leg Curl": {"w": 90, "s": [12, 12, 12, null]}, "A|1|Rope Overhead Triceps Extension": {"w": 40, "s": [12, 10, 5, null]}, "A|1|Machine Preacher Curl": {"w": 50, "s": [12, 12, 10, null]}, "A|1|Cable Crunch": {"w": 60, "s": [null, null, null, null]}, "A|1|Back Extension (45\u00b0)": {"w": 10, "s": [null, null, null, null]}, "A|1|Cable Wrist Curl": {"w": 30, "s": [null, null, null, null]}, "A|1|Cable Reverse Wrist Curl": {"w": 20, "s": [null, null, null, null]}, "B|1|Shoulder Press Machine": {"w": 50, "s": [7, 7, 5, 5]}, "B|1|Lat Pulldown": {"w": 85, "s": [10, 10, 10, 10]}, "B|1|Leg Press": {"w": 145, "s": [15, 15, 13, null]}, "B|1|Seated Leg Curl": {"w": 80, "s": [12, 12, 12, null]}, "B|1|Lateral Raise Machine": {"w": 15, "s": [15, 15, 12, null]}, "B|1|Single-Arm Machine Row": {"w": 50, "L": [null, null, null, null], "R": [null, null, null, null]}, "B|1|Triceps Pressdown": {"w": 35, "s": [12, 6, 4, null]}, "B|1|Cable Rope Hammer Curl": {"w": 35, "s": [12, 12, 10, null]}, "B|1|Calf Raise Machine": {"w": 130, "s": [15, null, null, null]}, "C|1|Incline Chest Press Machine": {"w": 80, "s": [null, null, null, null]}, "C|1|Seated Cable Row": {"w": 80, "s": [null, null, null, null]}, "C|1|Leg Extension": {"w": 70, "s": [null, null, null, null]}, "C|1|Hip Thrust Machine": {"w": 90, "s": [null, null, null, null]}, "C|1|Pec Deck (Chest Fly Machine)": {"w": 70, "s": [null, null, null, null]}, "C|1|Rear Delt Machine": {"w": 40, "s": [null, null, null, null]}, "C|1|Cable Wrist Curl": {"w": 30, "s": [null, null, null, null]}, "C|1|Cable Reverse Wrist Curl": {"w": 20, "s": [null, null, null, null]}, "C|1|Calf Raise Machine": {"w": 100, "s": [null, null, null, null]}};
 const DATES={"A|1": "2026-09-15"};
-const APP_VERSION = "2026.11.03-a";
+const APP_VERSION = "2026.11.06-a";
 const K = "eos_lift_v1";          // this device only: which day/week is open, rest lengths
 const SK = "lift_s_v1_";          // one synced key per session: lift_s_v1_A|3 = {log:{exercise:{w,s|L,R,u}}, date, du}
 const BK = "eos_lift_v1_backup";  // the pre-sync copy, kept untouched on this device
@@ -1422,6 +1472,175 @@ $("#bClaude").onclick=()=>{
   show("Copy for Claude", s);
 };
 $("#bBackup").onclick=()=>show("Full backup (JSON)", JSON.stringify({log:S.log, dates:S.dates, ui:S.ui, rest:S.rest}));
+
+/* ---------- progress & PRs ----------
+   Reads the same log the rest of the page uses (S.log), so nothing new is stored.
+   Best weight = heaviest weight where a set reached the exercise's minimum reps
+   (ties go to more reps). Est. max = Epley (w × (1 + reps/30)), reps capped at 12
+   so high-rep sets don't inflate it. One-sided sets of a left/right lift are
+   skipped; both sides count at the weaker side's reps, like the status tags. */
+const DAYIDX = {A:0,B:1,C:2};
+const e1rm = (w,r) => w*(1+Math.min(r,12)/30);
+function setsOf(d,w,ex){
+  const L=LIB[ex], r=rec(d,w,ex); if(!r) return [];
+  const wt = (r.w!=null && r.w!=="") ? +r.w : weightOf(d,w,ex);
+  if(!(wt>0)) return [];
+  const out=[];
+  for(let i=0;i<L.sets;i++){
+    let reps;
+    if(L.bil){ const a=(r.L||[])[i], b=(r.R||[])[i]; if(typeof a==="number" && typeof b==="number") reps=Math.min(a,b); }
+    else { const v=(r.s||[])[i]; if(typeof v==="number") reps=v; }
+    if(typeof reps==="number" && reps>=1) out.push({wt:wt, reps:reps});
+  }
+  return out;
+}
+function whenOf(s){
+  const t=S.dates[s.d+"|"+s.w];
+  const m=/^(\d{4})-(\d\d)-(\d\d)$/.exec(t||"");
+  if(m) return new Date(+m[1],+m[2]-1,+m[3]).toLocaleDateString(undefined,{month:"short",day:"numeric"});
+  return "Week "+s.w+" · Day "+s.d;
+}
+function progressData(){
+  clearMemo();
+  const names=[], seen={};
+  ["A","B","C"].forEach(d=>PROG[d].ex.forEach(e=>{ if(!seen[e.ex]){ seen[e.ex]=1; names.push(e.ex); } }));
+  const sessions={}, vol={}, rows=[];
+  names.forEach((ex,idx)=>{
+    const L=LIB[ex], sess=[];
+    ["A","B","C"].filter(d=>PROG[d].ex.some(e=>e.ex===ex)).forEach(d=>{
+      for(let w=1; w<=24; w++){
+        const sets=setsOf(d,w,ex); if(!sets.length) continue;
+        let bw=null, be=null;
+        sets.forEach(s=>{
+          if(s.reps>=L.mn && (!bw || s.wt>bw.wt || (s.wt===bw.wt && s.reps>bw.reps))) bw=s;
+          const e=e1rm(s.wt,s.reps); if(!be || e>be.e) be={wt:s.wt, reps:s.reps, e:e};
+          vol[w]=(vol[w]||0)+s.wt*s.reps;
+        });
+        sessions[d+"|"+w]=1;
+        sess.push({d:d, w:w, ord:w*10+DAYIDX[d], top:Math.max.apply(null,sets.map(s=>s.wt)), bw:bw, be:be});
+      }
+    });
+    if(!sess.length) return;
+    sess.sort((a,b)=>a.ord-b.ord);
+    let bestW=null, bestE=null;
+    sess.forEach(s=>{
+      s.prW=false; s.prE=false;
+      if(s.bw && (!bestW || s.bw.wt>bestW.wt || (s.bw.wt===bestW.wt && s.bw.reps>bestW.reps))){ s.prW=!!bestW; bestW={wt:s.bw.wt, reps:s.bw.reps, sess:s}; }
+      if(s.be && (!bestE || s.be.e>bestE.e+1e-9)){ s.prE=!!bestE; bestE={e:s.be.e, wt:s.be.wt, reps:s.be.reps, sess:s}; }
+    });
+    const last=sess[sess.length-1], byWeek={};
+    sess.forEach(s=>{ byWeek[s.w]=Math.max(byWeek[s.w]||0, s.top); });
+    const trend=Object.keys(byWeek).map(Number).sort((a,b)=>a-b).map(w=>byWeek[w]);
+    const st=statusOf(last.d,last.w,ex);
+    rows.push({
+      ex:ex, idx:idx, bestW:bestW, bestE:bestE, trend:trend, last:last,
+      isNew: sess.length>1 && (last.prW || last.prE),
+      status:st, stalled: !!st && stalledOf(last.d,last.w,ex),
+      next: st ? weightOf(last.d,last.w,ex)+deltaOf(last.d,last.w,ex) : null,
+      days: ["A","B","C"].filter(d=>PROG[d].ex.some(e=>e.ex===ex)).join("·")
+    });
+  });
+  return {rows:rows, sessions:Object.keys(sessions).length, vol:vol};
+}
+function spark(vals){
+  const ns="http://www.w3.org/2000/svg", W=84, H=26, p=3;
+  const svg=document.createElementNS(ns,"svg");
+  svg.setAttribute("viewBox","0 0 "+W+" "+H); svg.setAttribute("width",W); svg.setAttribute("height",H); svg.setAttribute("aria-hidden","true");
+  const lo=Math.min.apply(null,vals), hi=Math.max.apply(null,vals), span=(hi-lo)||1;
+  const pts=vals.map((v,i)=>[ vals.length===1 ? W/2 : p+i*(W-2*p)/(vals.length-1), hi===lo ? H/2 : H-p-(v-lo)/span*(H-2*p) ]);
+  if(pts.length>1){
+    const pl=document.createElementNS(ns,"polyline");
+    pl.setAttribute("points", pts.map(q=>q[0].toFixed(1)+","+q[1].toFixed(1)).join(" "));
+    pl.setAttribute("fill","none"); pl.setAttribute("stroke","currentColor"); pl.setAttribute("stroke-width","2");
+    pl.setAttribute("stroke-linejoin","round"); pl.setAttribute("stroke-linecap","round");
+    svg.appendChild(pl);
+  }
+  const q=pts[pts.length-1], c=document.createElementNS(ns,"circle");
+  c.setAttribute("cx",q[0].toFixed(1)); c.setAttribute("cy",q[1].toFixed(1)); c.setAttribute("r","3"); c.setAttribute("fill","currentColor");
+  svg.appendChild(c);
+  const sv=el("div","spark"); sv.appendChild(svg); return sv;
+}
+let pgSort="pr", pgData=null;
+function sortedRows(){
+  const r=pgData.rows.slice();
+  if(pgSort==="pr") r.sort((a,b)=> (b.isNew-a.isNew) || (b.last.ord-a.last.ord) || (a.idx-b.idx));
+  else r.sort((a,b)=>a.idx-b.idx);
+  return r;
+}
+function prRow(r){
+  const row=el("div","pr");
+  const nm=el("div","nm",r.ex);
+  if(r.isNew) nm.appendChild(el("span","chip2 new","NEW PR"));
+  if(r.stalled) nm.appendChild(el("span","chip2 stall","STALLED"));
+  else if(r.status==="READY") nm.appendChild(el("span","chip2 ready","READY ↑"));
+  row.appendChild(nm);
+  const big=el("div","big", r.bestW ? fmt(r.bestW.wt)+" × "+r.bestW.reps : "—");
+  big.appendChild(el("small",null,"LB"));
+  row.appendChild(big);
+  const d2=el("div","d2");
+  const line=(a,b)=>{ const s=document.createElement("div"); if(a){ const x=document.createElement("b"); x.textContent=a; s.appendChild(x); } s.appendChild(document.createTextNode(b)); d2.appendChild(s); };
+  if(r.bestW) line("Best set ", fmt(r.bestW.wt)+" lb × "+r.bestW.reps+" · "+whenOf(r.bestW.sess));
+  else line("", "No set at "+LIB[r.ex].mn+"+ reps yet");
+  if(r.bestE) line("Est. max ", Math.round(r.bestE.e)+" lb · "+whenOf(r.bestE.sess));
+  if(r.next!=null) line("Next time ", fmt(r.next)+" lb"+(r.days.length>1 ? " (Day "+r.last.d+")" : ""));
+  row.appendChild(d2);
+  row.appendChild(spark(r.trend));
+  return row;
+}
+function paintProgress(){
+  const body=$("#pgBody"); body.innerHTML="";
+  const D=pgData, rows=D.rows;
+  if(!rows.length){ body.appendChild(el("div","none","Log a session and your records, trends and next targets show up here.")); return; }
+  const tiles=el("div","tiles");
+  [[D.sessions,"Sessions"],[rows.filter(r=>r.isNew).length,"New PRs"],[rows.filter(r=>r.stalled).length,"Stalled"]].forEach(t=>{
+    const x=el("div","tile"); x.appendChild(el("b",null,String(t[0]))); x.appendChild(el("span",null,t[1])); tiles.appendChild(x);
+  });
+  body.appendChild(tiles);
+
+  const wks=Object.keys(D.vol).map(Number).sort((a,b)=>a-b).slice(-10);
+  if(wks.length){
+    body.appendChild(el("h4",null,"Volume by week"));
+    const mx=Math.max.apply(null,wks.map(w=>D.vol[w])), vb=el("div","vol");
+    wks.forEach((w,i)=>{
+      const b=el("div","bar"+(i===wks.length-1?" now":"")), bar=document.createElement("i");
+      bar.style.height=Math.max(3, D.vol[w]/mx*100)+"%";
+      b.appendChild(bar); b.appendChild(el("small",null,"W"+w)); vb.appendChild(b);
+    });
+    body.appendChild(vb);
+    body.appendChild(el("div","vnote","Weight × reps, all lifts. The newest week is bright and may still be filling in."));
+  }
+
+  body.appendChild(el("h4",null,"Lifts"));
+  const seg=el("div","seg");
+  [["pr","Newest first"],["prog","Program order"]].forEach(o=>{
+    const b=el("button",pgSort===o[0]?"on":"",o[1]); b.type="button";
+    b.onclick=()=>{ pgSort=o[0]; paintProgress(); };
+    seg.appendChild(b);
+  });
+  body.appendChild(seg);
+  sortedRows().forEach(r=>body.appendChild(prRow(r)));
+}
+function progressText(){
+  const D=pgData; if(!D||!D.rows.length) return "No sets logged yet.";
+  let s="Lift progress ("+D.sessions+" sessions logged)\n";
+  D.rows.sort((a,b)=>a.idx-b.idx).forEach(r=>{
+    s+="- "+r.ex+": "+(r.bestW?"best "+fmt(r.bestW.wt)+" lb × "+r.bestW.reps+" ("+whenOf(r.bestW.sess)+")":"no set at min reps")
+      +(r.bestE?", est. max "+Math.round(r.bestE.e)+" lb":"")
+      +", weekly top weight "+r.trend.map(fmt).join(" → ")
+      +(r.next!=null?", next "+fmt(r.next)+" lb":"")
+      +(r.isNew?" [new PR]":"")+(r.stalled?" [stalled]":"")+"\n";
+  });
+  return s;
+}
+function openProgress(){ pgData=progressData(); paintProgress(); $("#pdlg").showModal(); $("#pgBody").scrollTop=0; }
+$("#bProg").onclick=openProgress;
+$("#pgX").onclick=$("#pgDone").onclick=()=>$("#pdlg").close();
+$("#pdlg").addEventListener("click",e=>{ if(e.target===$("#pdlg")) $("#pdlg").close(); });
+$("#pgCopy").onclick=async()=>{
+  const t=progressText();
+  try{ await navigator.clipboard.writeText(t); toast("Copied"); }
+  catch(e){ const x=document.createElement("textarea"); x.value=t; document.body.appendChild(x); x.select(); try{ document.execCommand("copy"); toast("Copied"); }catch(_){ toast("Couldn't copy"); } x.remove(); }
+};
 
 /* ---------- wiring ---------- */
 function weekTo(w,dir){ S.ui.week=w; save(); render(); SXo.enter(".wk .lbl",null,dir,{step:0,dur:260}); SXo.enter("#list",".group",dir); }
