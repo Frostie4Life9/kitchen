@@ -1166,6 +1166,8 @@ body,button,.dl-search input{font-family:'Libre Franklin',system-ui,sans-serif!i
 .lk-meta{font-size:11.5px;color:var(--ink3);margin-top:4px}
 .lk-attr{font-size:11px;color:var(--ink3);padding:0 2px 8px;margin-top:-2px}
 .lk-attr a{color:var(--ink2);font-weight:600;text-decoration:underline;text-decoration-color:var(--border2)}
+.dl-menu-attr{padding:12px 16px 24px}
+.dl-menu-attr .lk-attr{padding-bottom:2px}
 .lk-meta a{color:inherit;text-decoration:underline;text-underline-offset:2px}
 .lk-acts{display:flex;flex-direction:column;gap:5px;flex:0 0 auto}
 .lk-acts .bp,.lk-acts .bs{padding:7px 12px;font-size:12px;white-space:nowrap}
@@ -1422,8 +1424,11 @@ body,button,.dl-search input{font-family:'Libre Franklin',system-ui,sans-serif!i
         <div class="lk-keytxt" id="lk-src-note"></div>
         <div class="field-label">Claude API key</div>
         <div class="api-key-row"><input type="password" id="lk-key-in2" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"><button class="bs" onclick="dlSaveLookupKey(2)" style="flex:0 0 auto">Save</button><button class="bs" onclick="clearApiKey();dlPaintLookupSources()" style="flex:0 0 auto">Clear</button></div>
+        <div class="field-label">FatSecret (free, for chains)</div>
+        <div class="lk-keytxt">Chain lookups try this first. It runs through your fatsecret-proxy Worker, so paste the Worker’s PROXY_TOKEN here (kept on this device only). Its numbers are saved only for dishes you log; “Try later” keeps just the dish and fills the numbers in when you rate it.</div>
+        <div class="api-key-row"><input type="password" id="lk-fs-token" placeholder="Proxy password" autocomplete="off" spellcheck="false"><button class="bs" onclick="dlSaveFs()" style="flex:0 0 auto">Save</button><button class="bs" onclick="dlClearFs()" style="flex:0 0 auto">Clear</button></div>
         <div class="field-label">Nutritionix (optional, for chains)</div>
-        <div class="lk-keytxt">Free “Business Trial” key from nutritionix.com/business/api (up to 2 users). Chain lookups try it first, with official nutrition, and fall back to Claude. Its terms only let DishLog keep nutrition for dishes you log, so “Try later” saves the dish without numbers and fills them in when you rate it.</div>
+        <div class="lk-keytxt">Only if you already have a Nutritionix developer key; they now give new ones only to commercial, research and enterprise users. Tried after FatSecret and before Claude, with the same save-only-when-logged rule.</div>
         <div class="api-key-row"><input type="text" id="lk-nix-id" placeholder="App ID" autocomplete="off" spellcheck="false"><input type="password" id="lk-nix-key" placeholder="App key" autocomplete="off" spellcheck="false"></div>
         <div class="btn-row" style="margin-top:0"><button class="bs" onclick="dlSaveNix()">Save Nutritionix</button><button class="bs" onclick="dlClearNix()">Clear</button></div>
       </details>
@@ -3995,6 +4000,8 @@ dlPaintBackup();
    Imported full menus still live in the data; "Full menu" shows them. */
 const DL_LOOKUP_MODEL="claude-haiku-5-5";  // fast + cheap for at-the-table lookups; falls back to DL_SYNC_MODEL
 const DL_NIX_SLOT="dishlog_nutritionix";
+const DL_FS_SLOT="dishlog_fatsecret";   // {token}: the password for your fatsecret-proxy Worker, kept on this device only
+const DL_FS_URL="https://fatsecret-proxy.skyfro04.workers.dev";
 let dlFullMenu=false,dlLkResults=[],dlLkBusy=false;
 const dlLkCache={};
 
@@ -4042,15 +4049,16 @@ function dlKeepDish(r,mode){
   let rid=currentRestId,name=String(r.name||'').trim();if(!rid||!name)return;
   let k=name.toLowerCase();
   let same=db.items.filter(i=>i.restId===rid&&i.name.trim().toLowerCase()===k);
-  let nut=null,nix=r.source==='nutritionix';
+  let nut=null,nix=r.source==='nutritionix',fsd=r.source==='fatsecret',lic=nix||fsd;
   if(r.calories!=null||r.protein_g!=null||r.carbs_g!=null||r.fat_g!=null){
     nut={calories:r.calories??null,protein:r.protein_g??null,carbs:r.carbs_g??null,fat:r.fat_g??null,
       serving:r.serving||'',source:r.source||'claude',url:r.source_url||'',at:Date.now()};
     if(nix&&r.nix_item_id)nut.nixId=r.nix_item_id;
+    if(fsd&&r.fs_food_id)nut.fsId=r.fs_food_id;
   }
-  // Nutritionix only pre-approves keeping its data as a record of food you logged. A try-list
-  // save keeps the dish and its Nutritionix ID, and the numbers are fetched when you rate it.
-  if(nix&&mode!=='rate')nut=null;
+  // Nutritionix and FatSecret only let this app keep their data as a record of food you logged.
+  // A try-list save keeps the dish and the provider's ID, and the numbers are fetched when you rate it.
+  if(lic&&mode!=='rate')nut=null;
   let target;
   if(same.length){
     same.forEach(i=>{
@@ -4060,6 +4068,7 @@ function dlKeepDish(r,mode){
       if(!i.desc&&r.description)i.desc=r.description;
       if(nut&&!i.nutrition)i.nutrition=nut;
       if(nix&&r.nix_item_id&&!i.nixId)i.nixId=r.nix_item_id;
+      if(fsd&&r.fs_food_id&&!i.fsId)i.fsId=r.fs_food_id;
     });
     target=same.find(i=>!i.expired)||same[0];
   }else{
@@ -4070,6 +4079,7 @@ function dlKeepDish(r,mode){
     if(r.limited&&!r.specialty)target.pageTags=['lto'];
     if(nut)target.nutrition=nut;
     if(nix&&r.nix_item_id)target.nixId=r.nix_item_id;
+    if(fsd&&r.fs_food_id)target.fsId=r.fs_food_id;
     if(r.source_url)target.sourceUrl=r.source_url;
     db.items.push(target);
   }
@@ -4137,14 +4147,14 @@ function dlRenderResults(list,label,emptyMsg){
   let box=document.getElementById('lk-results');
   if(!list.length){box.innerHTML='<div class="lk-none">'+dlEsc(emptyMsg)+'</div>';dlOfferManual();return;}
   // Nutritionix requires attribution visible without scrolling wherever its API is used
-  let attr=list.some(r=>r.source==='nutritionix')?DL_NIX_ATTR:'';
+  let attr=(list.some(r=>r.source==='fatsecret')?DL_FS_ATTR:'')+(list.some(r=>r.source==='nutritionix')?DL_NIX_ATTR:'');
   box.innerHTML='<div class="lk-label">'+dlEsc(label)+'</div>'+attr+list.map((r,ix)=>{
     let meta=[];
     if(r.calories!=null)meta.push(Math.round(r.calories)+' cal');
     if(r.protein_g!=null)meta.push(Math.round(r.protein_g)+'g protein');
     if(r.serving)meta.push(r.serving);
     if(r.limited)meta.push('Limited time');
-    let src=r.source==='nutritionix'?'Nutritionix':(r.source_url?dlHost(r.source_url):'');
+    let src=r.source==='nutritionix'?'Nutritionix':r.source==='fatsecret'?'fatsecret':(r.source_url?dlHost(r.source_url):'');
     let have=db.items.some(i=>i.restId===currentRestId&&i.name.trim().toLowerCase()===String(r.name).trim().toLowerCase());
     return '<div class="lk-card"><div class="lk-main"><div class="lk-name">'+dlEsc(r.name)+'</div>'
       +(r.description?'<div class="lk-desc">'+dlEsc(r.description)+'</div>':'')
@@ -4163,14 +4173,17 @@ function dlOfferManual(open){
 /* ── sources ── */
 function dlNix(){try{let c=JSON.parse(localStorage.getItem(DL_NIX_SLOT)||'null');return c&&c.id&&c.key?c:null;}catch(_){return null;}}
 function dlSourceLabel(){
-  let k=!!getApiKey(),n=!!dlNix();
-  return n&&k?'Nutritionix, then Claude web search':n?'Nutritionix':k?'Claude web search · a cent or two':'needs a Claude API key';
+  let parts=[];
+  if(dlFs())parts.push('FatSecret');
+  if(dlNix())parts.push('Nutritionix');
+  if(getApiKey())parts.push('Claude web search · a cent or two');
+  return parts.length?parts.join(', then '):'add a lookup source below';
 }
 function dlPaintLookupSources(){
   let el=document.getElementById('lk-src-note');if(!el)return;
-  let k=getApiKey(),n=dlNix();
-  el.textContent='Claude: '+(k?'key saved (…'+k.slice(-4)+')':'no key yet')+' · Nutritionix: '+(n?'saved':'not set up')+'.';
-  ['lk-key-in','lk-key-in2','lk-nix-key'].forEach(id=>{let i=document.getElementById(id);if(i)i.value='';});
+  let k=getApiKey(),n=dlNix(),f=dlFs();
+  el.textContent='FatSecret: '+(f?'saved':'not set up')+' · Claude: '+(k?'key saved (…'+k.slice(-4)+')':'no key yet')+' · Nutritionix: '+(n?'saved':'not set up')+'.';
+  ['lk-key-in','lk-key-in2','lk-nix-key','lk-fs-token'].forEach(id=>{let i=document.getElementById(id);if(i)i.value='';});
   let ni=document.getElementById('lk-nix-id');if(ni)ni.value=n?n.id:'';
 }
 function dlSaveLookupKey(which){
@@ -4209,6 +4222,47 @@ async function dlNixLookup(rest,q){
       source:'nutritionix',nix_item_id:b.nix_item_id};
   });
 }
+/* ── FatSecret (through your fatsecret-proxy Worker, which holds the secret and stores nothing) ──
+   Their terms allow this device to keep nutrition for dishes you log; a try-list save keeps only
+   the FatSecret food ID, and the numbers are fetched when you rate it. */
+function dlFs(){try{let c=JSON.parse(localStorage.getItem(DL_FS_SLOT)||'null');return c&&c.token?c:null;}catch(_){return null;}}
+function dlSaveFs(){
+  let t=(document.getElementById('lk-fs-token').value||'').trim(),st=document.getElementById('lk-status');
+  if(!t){st.textContent='Paste the proxy password first (the PROXY_TOKEN you set on the Worker).';return;}
+  try{localStorage.setItem(DL_FS_SLOT,JSON.stringify({token:t}));}catch(_){}
+  dlPaintLookupSources();st.textContent='FatSecret saved — chain lookups try it first.';
+}
+function dlClearFs(){try{localStorage.removeItem(DL_FS_SLOT);}catch(_){}dlPaintLookupSources();}
+async function dlFsCall(path,params){
+  let c=dlFs();if(!c)throw new Error('FatSecret isn’t set up.');
+  let res;
+  try{res=await fetch(DL_FS_URL+path+'?'+new URLSearchParams(params),{headers:{Authorization:'Bearer '+c.token}});}
+  catch(e){throw new Error('Couldn’t reach the FatSecret proxy.');}
+  if(res.status===401)throw new Error('The FatSecret proxy rejected the password.');
+  let d=await res.json().catch(()=>null);
+  if(res.status===502&&d&&d.error==='token')throw new Error('FatSecret refused the proxy’s sign-in'+(d.detail?' ('+d.detail+')':'')+'. Check the API key and its allowed IPs.');
+  if(!res.ok)throw new Error('FatSecret lookup failed ('+res.status+').');
+  return d;
+}
+async function dlFsLookup(rest,q){
+  let d=await dlFsCall('/search',{q,brand:rest.name});
+  return ((d&&d.results)||[]).map(r=>({name:r.name,description:'',category:'',calories:r.calories,protein_g:r.protein_g,
+    carbs_g:r.carbs_g,fat_g:r.fat_g,serving:r.serving||'',source:'fatsecret',fs_food_id:r.id}));
+}
+async function dlFsItem(fsId){
+  let f=await dlFsCall('/food',{id:fsId});
+  return {calories:f.calories,protein:f.protein_g,carbs:f.carbs_g,fat:f.fat_g,serving:f.serving||'',source:'fatsecret',url:'',fsId,at:Date.now()};
+}
+function dlFsFill(it){
+  if(!it||it.nutrition||!it.fsId||!dlFs())return;
+  let rk=dlRk(it);
+  dlFsItem(it.fsId).then(n=>{
+    db.items.forEach(i=>{if(i.restId===it.restId&&dlRk(i)===rk&&!i.nutrition)i.nutrition=n;});
+    save();if(currentRestId===it.restId)renderMenu(it.restId);
+  }).catch(()=>{});
+}
+// FatSecret: attribution wherever its content is shown (link text and URL as on their attribution page)
+const DL_FS_ATTR='<div class="lk-attr">Nutrition data <a href="https://platform.fatsecret.com" target="_blank" rel="noopener">Powered by fatsecret Platform API</a></div>';
 const DL_NIX_ATTR='<div class="lk-attr">Nutrition data <a href="https://www.nutritionix.com" target="_blank" rel="noopener">Powered by Nutritionix</a></div>';
 // One branded item's nutrition, fetched when a try-list dish gets rated (the log moment)
 async function dlNixItem(nixId){
@@ -4262,24 +4316,28 @@ async function dlLookup(){
   if(dlLkBusy||!rest)return;
   let ck=rest.id+'|'+dlNorm(q);
   if(dlLkCache[ck]){st.textContent='';dlRenderResults(dlLkCache[ck].list,dlLkCache[ck].label,'');return;}
-  let nix=dlNix(),key=getApiKey();
-  if(!nix&&!key){
+  let fs=dlFs(),nix=dlNix(),key=getApiKey();
+  if(!fs&&!nix&&!key){
     st.textContent='';document.getElementById('lk-keybox').style.display='block';dlOfferManual(true);return;
   }
   dlLkBusy=true;let btn=document.getElementById('lk-go');btn.disabled=true;
   let list=[],label='',err='';
   try{
-    if(nix){
+    if(fs){
+      st.innerHTML='<span class="sync-spinner"></span>Checking FatSecret…';
+      try{list=await dlFsLookup(rest,q);label='From FatSecret';}catch(e){err=e.message;}
+    }
+    if(!list.length&&nix){
       st.innerHTML='<span class="sync-spinner"></span>Checking Nutritionix…';
-      try{list=await dlNixLookup(rest,q);label='From Nutritionix';}catch(e){err=e.message;}
+      try{list=await dlNixLookup(rest,q);label='From Nutritionix';if(list.length)err='';}catch(e){err=e.message;}
     }
     if(!list.length&&key){
       st.innerHTML='<span class="sync-spinner"></span>Looking up “'+dlEsc(q)+'” at '+dlEsc(rest.name)+'… usually 10–30 seconds.';
       list=await dlClaudeResults(dlLookupPrompt(rest,q));label='Found by Claude';err='';
     }
     st.textContent=err;
-    // Nutritionix results are never reused: their terms want a fresh API call for every lookup
-    if(list.length&&!list.some(r=>r.source==='nutritionix'))dlLkCache[ck]={list,label};
+    // Nutritionix and FatSecret results are never reused: their terms want a fresh call each time
+    if(list.length&&!list.some(r=>r.source==='nutritionix'||r.source==='fatsecret'))dlLkCache[ck]={list,label};
     dlRenderResults(list,label,'Couldn’t find “'+q+'” at '+rest.name+'. Add it as typed below.');
   }catch(e){
     st.textContent=(e&&e.message)||'Lookup failed.';dlOfferManual(true);
@@ -4338,7 +4396,20 @@ saveRating=function(){
   if(it&&getItemRatings(dlRk(it)).length){
     let rk=dlRk(it);db.items.forEach(i=>{if(i.restId===it.restId&&dlRk(i)===rk){i.wantTry=false;}});
     it.mine=true;save();
-    dlNixFill(it);
+    dlNixFill(it);dlFsFill(it);
+  }
+  return r;
+};
+/* Attribution under the list wherever FatSecret or Nutritionix numbers are shown (their terms). */
+const _dlRM3=renderMenu;
+renderMenu=function(rid){
+  let r=_dlRM3.apply(this,arguments);
+  let ml=document.getElementById('menu-list');
+  if(ml&&ml.parentNode){
+    let old=ml.parentNode.querySelector('.dl-menu-attr');if(old)old.remove();
+    let rows=db.items.filter(i=>i.restId===rid&&i.nutrition&&!i.expired);
+    let f=rows.some(i=>i.nutrition.source==='fatsecret'),n=rows.some(i=>i.nutrition.source==='nutritionix');
+    if(f||n)ml.insertAdjacentHTML('afterend','<div class="dl-menu-attr">'+(f?DL_FS_ATTR:'')+(n?DL_NIX_ATTR:'')+'</div>');
   }
   return r;
 };
