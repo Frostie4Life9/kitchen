@@ -5480,7 +5480,7 @@ const INGR={
   marinara:  {n:"Rao's marinara",          u:"1/2 cup",      e:[100,2,6,7],      q:"marinara rao"},
   chunks:    {n:"Breaded chicken chunks",  u:"3 oz",         e:[160,16,8,7],     q:"chunks breaded chicken"},
   mandarin:  {n:"Mandarins",               u:"2 mandarins",  e:[94,1.4,23.6,0.6], q:"mandarin cutie halos"},
-  pear:      {n:"Pears",                   u:"pear",         e:[100,0.6,27,0.2], q:"pear"},
+  pear:      {n:"Canned pears",            u:"1/2 cup",      e:[60,0,15,0],      q:"pear"},
   chia:      {n:"Chia seeds",              u:"tbsp",         e:[60,2,5,4],       q:"chia"},
   watermelon:{n:"Watermelon",              u:"2 cups",       e:[91,1.9,23,0.5],  q:"watermelon"},
   rice:      {n:"Microwave rice pouches",  u:"pouch",        e:[220,4,46,1.5],   q:"rice pouch ready rice minute"},
@@ -5488,9 +5488,9 @@ const INGR={
 };
 /* v3.9 — "which fruit?" Cards with a fruit side ask which one you had, so
    the numbers are that fruit's, not an average. USDA values per portion. */
-const FRUIT_CHOICES=[["apple","Apple"],["pear","Pear"],["strawb","Strawberries","1 cup"],["banana","Banana"],["orange","Orange"],["mandarin","2 mandarins"],
+const FRUIT_CHOICES=[["apple","Apple"],["pear","Canned pears","1/2 cup"],["strawb","Strawberries","1 cup"],["banana","Banana"],["orange","Orange"],["mandarin","2 mandarins"],
   ["watermelon","Watermelon","2 cups"],["pineapple","Pineapple","1 cup"],["grapes","Grapes","1 cup"]];
-const FRUIT_WORD={pear:"pear",banana:"banana",apple:"apple",orange:"orange",mandarin:"mandarins",grapes:"grapes",watermelon:"watermelon",pineapple:"pineapple",strawb:"strawberries"};
+const FRUIT_WORD={pear:"canned pears",banana:"banana",apple:"apple",orange:"orange",mandarin:"mandarins",grapes:"grapes",watermelon:"watermelon",pineapple:"pineapple",strawb:"strawberries"};
 const FRUIT_SWAP={fruit:1,banana:1,apple:1,orange:1,grapes:1};
 /* the part of a card that is a choosable fruit: "any fruit", or an optional side of fruit */
 function fruitSlot(it){
@@ -5773,7 +5773,7 @@ Object.assign(ROT_STEPS,{
     ["Bowl it","Rice in a bowl, chicken on top, then scrape every bit of sauce from the pan over it.",0]]
 });
 /* the veg step rides along at the end of each recipe */
-const VEG_HOT=["Fruit on the side","Whatever you picked under \u201cWhich fruit?\u201d \u2014 slice an apple or pear, peel an orange, or a cup of strawberries. Apples and pears with the skin on carry the most fiber.",0];
+const VEG_HOT=["Fruit on the side","Whatever you picked under \u201cWhich fruit?\u201d \u2014 slice an apple, peel an orange, or a cup of strawberries. Apples with the skin on carry the most fiber.",0];
 const VEG_PACK=["Add crunch (optional)","Baby carrots in a zip bag next to the fruit, if you like them. No cooking, and they survive a backpack.",0];
 ["burger","quesadilla","tacos","pasta","mac","chunks","lburger","tendersbox","pizzatoast","lquesa","melt","gcsoup","chxparm","crispysand","honeybowl"].forEach(function(k){ if(ROT_STEPS[k]) ROT_STEPS[k]=ROT_STEPS[k].concat([VEG_HOT]); });
 ["campus","pouch","snackbox","wrap","caesarwrap","chxsalad","uncrust","sub"].forEach(function(k){ if(ROT_STEPS[k]) ROT_STEPS[k]=ROT_STEPS[k].concat([VEG_PACK]); });
@@ -5819,6 +5819,10 @@ function isLow(key){ return !!loadLow()[key]; }
 /* Ingredients of retired meals: drop any old Running low flags so they don't
    linger in Extras, and keep them off the Shop chips. Same list in grocery.html. */
 const RETIRED_ING=["uncrust","shake","x_uncrustables","x_protein_shakes","x_orgain_shakes","x_orgain"];
+/* Bought every week no matter what: they're always on grocery.html's Fresh
+   sections, so flagging them Running low does nothing. Hidden from the Shop
+   quick-add chips. (strawb and pineapple stay: they also drive the frozen bags.) */
+const WEEKLY_ING=["apple","banana","orange","mandarin","watermelon","lettuce","turkey","provolone","beef","eggs","milk","yoplait","bread","tortilla"];
 (function(){ const o=loadLow(); let ch=false; RETIRED_ING.forEach(function(k){ if(o[k]){ delete o[k]; ch=true; } }); if(ch) saveLow(o); })();
 function toggleRunLow(key){
   const o=loadLow();
@@ -5954,7 +5958,7 @@ const HEALTH={
     "A banana on the side, before or after the lift. Fast carbs plus about 420 mg of potassium, which you lose in sweat.",
     "This is the highest-fat breakfast here, mostly from butter, cheese and the hash brown. It's built for lift days, which is how it's tagged; on other days the scramble does the same job lighter."],
   omelet:["Deli turkey adds lean protein without much fat, and the toast gives you carbs to burn through the morning.",
-    "A pear or an apple with the skin on, the two highest-fiber fruits on your list. Nothing else on this plate has fiber.",
+    "An apple with the skin on, the highest-fiber fruit on your list. Nothing else on this plate has fiber.",
     "The turkey is the salty part. Check the sodium on your label; if there's a lower-sodium version at the same price, it's an easy upgrade."],
   frenchtoast:["The eggs and milk soak into the bread, so even the sweet breakfast carries 32 g of protein. One tablespoon of honey is far less sugar than a pour of syrup.",
     "Sliced strawberries on top. You get sweetness without more sugar, plus fiber and a full day of vitamin C in a cup.",
@@ -5984,7 +5988,7 @@ const HEALTH={
     "Grapes are the classic, but an apple or mandarins carry more fiber and vitamin C. Carrots round it out.",
     "Deli meat, cheese and crackers all add salt. The fruit and carrots carry potassium, which helps balance it."],
   melt:["37 g of protein in a hot, filling lunch, and the cheese adds calcium.",
-    "Apple or pear slices. A crisp, cool side next to a rich, hot sandwich, plus the fiber the bread doesn't give you.",
+    "Apple slices. A crisp, cool side next to a rich, hot sandwich, plus the fiber the bread doesn't give you.",
     "The butter on the outside is about 100 calories of saturated fat. A thin swipe still crisps the bread just as well."],
   wrap:["Lean turkey and provolone give you protein with no cooking, and lettuce adds crunch.",
     "Carrots and an apple; both pack well next to the ice pack.",
@@ -6026,10 +6030,10 @@ const HEALTH={
     "Pineapple (it's great with taco seasoning) or an orange.",
     "Taco seasoning is mostly salt. Start with about half of what you'd normally use; you'll barely notice the difference."],
   pasta:["Cheap, filling carbs with protein and iron from the meat sauce, plus lycopene from the cooked tomato.",
-    "An apple or pear for fiber, since white pasta has little of its own.",
+    "An apple for fiber, since white pasta has little of its own.",
     "Pasta cooked al dente (still a little firm) raises blood sugar more slowly than soft pasta, and it tastes better."],
   mac:["54 g of protein with the chicken, plus calcium from real cheddar. It's a real meal, not boxed mac.",
-    "A crisp apple or pear. The cool crunch is good next to the rich mac and adds fiber.",
+    "A crisp apple. The cool crunch is good next to the rich mac and adds fiber.",
     "This is the biggest dinner (about 885 calories). A slightly smaller bowl plus fruit still fills you up and leaves leftovers for tomorrow."],
   chunks:["Zero prep with solid protein, straight from the freezer.",
     "An orange or watermelon, plus carrots if you want crunch.",
@@ -6046,14 +6050,14 @@ const HEALTH={
 };
 const FRUIT_NOTE={
   apple:"About 4.4 g of fiber with the skin on, most of it soluble pectin, which helps you stay full.",
-  pear:"About 5.5 g of fiber, the most of any fruit on your list. Leave the skin on; that's where much of it is.",
+  pear:"Canned pears are peeled, so expect only about 1\u20132 g of fiber per half cup (check the label), versus about 5.5 g in a fresh pear with the skin on. Pick juice-packed over syrup. For fiber, an apple is the better choice.",
   strawb:"About 3 g of fiber and roughly 85 mg of vitamin C a cup, close to a full day's worth.",
   banana:"About 3 g of fiber and 420 mg of potassium. Fast, easy carbs, which makes it the best pick around a workout.",
   orange:"About 3 g of fiber and 70 mg of vitamin C, which also helps you absorb iron from eggs, bread and cereal.",
   mandarin:"About 3 g of fiber and 50 mg of vitamin C for two, and they peel in seconds.",
-  watermelon:"About 92% water, so it's great for hydration in Provo's dry air. It's light on fiber (about 1 g), so pair it with an apple or pear elsewhere in the day.",
+  watermelon:"About 92% water, so it's great for hydration in Provo's dry air. It's light on fiber (about 1 g), so pair it with an apple elsewhere in the day.",
   pineapple:"About 80 mg of vitamin C and 2 g of fiber a cup. Sweet enough to feel like dessert.",
-  grapes:"Easy and sweet, but only about 1.5 g of fiber a cup. An apple or pear is the higher-fiber swap.",
+  grapes:"Easy and sweet, but only about 1.5 g of fiber a cup. An apple is the higher-fiber swap.",
   none:"No fruit this time. Fruit elsewhere in the day still counts."
 };
 function healthHTML(k){
@@ -6550,7 +6554,7 @@ const TMR_SCAN='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 
 const TMR_PLUS='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
 /* Fresh produce has no barcode and the estimates are USDA values anyway,
    so it never counts against you here. */
-const NO_LABEL={banana:1, apple:1, orange:1, fruit:1, grapes:1, lettuce:1, onion:1, mandarin:1, watermelon:1, pear:1, carrots:1, garlic:1, cinnamon:1, oregano:1, vinegar:1};
+const NO_LABEL={banana:1, apple:1, orange:1, fruit:1, grapes:1, lettuce:1, onion:1, mandarin:1, watermelon:1, carrots:1, garlic:1, cinnamon:1, oregano:1, vinegar:1};
 function ingUse(){
   const use={};
   ROTATION.forEach(function(sec){ sec.items.forEach(function(it){ (it.parts||[]).forEach(function(pt){
@@ -6821,7 +6825,7 @@ window.addEventListener("kitchensync", function(){ const o=$("settingsOverlay");
 function lowPanelHTML(){
   const low=loadLow(), n=Object.keys(low).length;
   const flagged=Object.keys(low).sort(function(a,b){ return (low[a].n||a).localeCompare(low[b].n||b); });
-  const keys=Object.keys(INGR).filter(function(k){ return !low[k] && k!=="fruit" && RETIRED_ING.indexOf(k)<0; }).sort(function(a,b){ return INGR[a].n.localeCompare(INGR[b].n); });
+  const keys=Object.keys(INGR).filter(function(k){ return !low[k] && k!=="fruit" && RETIRED_ING.indexOf(k)<0 && WEEKLY_ING.indexOf(k)<0; }).sort(function(a,b){ return INGR[a].n.localeCompare(INGR[b].n); });
   return '<div class="v3-low-panel"><h3>Running low'+(n?' · '+n:'')+'</h3>'+
     '<p>Out of something, or about to be? Add it here and it goes to the top of your grocery list. Meals that need it will say so.</p>'+
     '<form class="v3-low-add" onsubmit="addLowItem();return false"><input id="lowAddName" type="text" placeholder="Type anything — eggs, ketchup, paper towels" autocomplete="off" enterkeyhint="done" oninput="filterLowChips()"><button type="submit">Add</button></form>'+
@@ -8515,7 +8519,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.11.11-a";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.11.12-a";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
