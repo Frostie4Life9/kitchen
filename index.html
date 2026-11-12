@@ -5821,12 +5821,13 @@ function isLow(key){ return !!loadLow()[key]; }
 const RETIRED_ING=["uncrust","shake","x_uncrustables","x_protein_shakes","x_orgain_shakes","x_orgain"];
 /* Bought every week no matter what: they're always on grocery.html's Fresh
    sections, so flagging them Running low does nothing. Hidden from the Shop
-   quick-add chips. (strawb stays: it also drives the frozen bag.) */
-const WEEKLY_ING=["apple","banana","orange","mandarin","pear","pineapple","watermelon","lettuce","turkey","provolone","beef","eggs","milk","yoplait","bread","tortilla"];
+   quick-add chips. (strawb and pineapple stay, labeled Frozen: the fresh ones are weekly, the Running low flag is for the frozen bags.) */
+const WEEKLY_ING=["apple","banana","orange","mandarin","pear","watermelon","lettuce","turkey","provolone","beef","eggs","milk","yoplait","bread","tortilla"];
 (function(){ const o=loadLow(); let ch=false; RETIRED_ING.forEach(function(k){ if(o[k]){ delete o[k]; ch=true; } }); if(ch) saveLow(o); })();
+const LOW_LABEL={strawb:"Frozen strawberries", pineapple:"Frozen pineapple"};
 function toggleRunLow(key){
   const o=loadLow();
-  if(o[key]) delete o[key]; else o[key]={n:INGR[key]?INGR[key].n:key, at:Date.now()};
+  if(o[key]) delete o[key]; else o[key]={n:LOW_LABEL[key]||(INGR[key]?INGR[key].n:key), at:Date.now()};
   saveLow(o);
 }
 function outParts(it){
@@ -6825,14 +6826,14 @@ window.addEventListener("kitchensync", function(){ const o=$("settingsOverlay");
 function lowPanelHTML(){
   const low=loadLow(), n=Object.keys(low).length;
   const flagged=Object.keys(low).sort(function(a,b){ return (low[a].n||a).localeCompare(low[b].n||b); });
-  const keys=Object.keys(INGR).filter(function(k){ return !low[k] && k!=="fruit" && RETIRED_ING.indexOf(k)<0 && WEEKLY_ING.indexOf(k)<0; }).sort(function(a,b){ return INGR[a].n.localeCompare(INGR[b].n); });
+  const keys=Object.keys(INGR).filter(function(k){ return !low[k] && k!=="fruit" && RETIRED_ING.indexOf(k)<0 && WEEKLY_ING.indexOf(k)<0; }).sort(function(a,b){ return (LOW_LABEL[a]||INGR[a].n).localeCompare(LOW_LABEL[b]||INGR[b].n); });
   return '<div class="v3-low-panel"><h3>Running low'+(n?' · '+n:'')+'</h3>'+
     '<p>Out of something, or about to be? Add it here and it goes to the top of your grocery list. Meals that need it will say so.</p>'+
     '<form class="v3-low-add" onsubmit="addLowItem();return false"><input id="lowAddName" type="text" placeholder="Type anything — eggs, ketchup, paper towels" autocomplete="off" enterkeyhint="done" oninput="filterLowChips()"><button type="submit">Add</button></form>'+
     (flagged.length?'<div class="v3-label" style="margin:14px 2px 7px">On your list</div><div class="v3-chips" style="margin:0">'+
       flagged.map(function(k){ return '<button type="button" class="v3-chip" aria-pressed="true" onclick="toggleRunLow(\''+k+'\');renderShop();renderRotation()" aria-label="Remove '+esc(low[k].n||k)+'">'+esc(low[k].n||k)+' <small>✕</small></button>'; }).join('')+'</div>':'')+
     '<div class="v3-label" style="margin:14px 2px 7px">Or tap one</div><div class="v3-chips" id="lowChips" style="margin:0">'+keys.map(function(k){
-      return '<button type="button" class="v3-chip" data-n="'+esc(INGR[k].n.toLowerCase())+'" aria-pressed="false" onclick="toggleRunLow(\''+k+'\');renderShop();renderRotation()">'+esc(INGR[k].n)+'</button>'; }).join('')+
+      return '<button type="button" class="v3-chip" data-n="'+esc((LOW_LABEL[k]||INGR[k].n).toLowerCase())+'" aria-pressed="false" onclick="toggleRunLow(\''+k+'\');renderShop();renderRotation()">'+esc(LOW_LABEL[k]||INGR[k].n)+'</button>'; }).join('')+
     '</div>'+(n?'<button type="button" class="v3-ghost" onclick="saveLow({});renderShop();renderRotation()">Clear all — I restocked</button>':'')+'</div>';
 }
 function filterLowChips(){
@@ -8519,7 +8520,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.11.12-b";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.11.12-c";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
