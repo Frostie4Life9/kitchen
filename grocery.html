@@ -1113,6 +1113,8 @@ var DATA = [
         {n:"Mandarins or oranges", a:"a bag of Cuties or Halos", u:"pc", q:5, pw:0.45, un:["orange","oranges"], t:"store brand", p:"check shelf",
          w:"Peel without a knife and ride in a backpack fine — good for Wednesday and Friday lunches. Bags before November can run sour; once Cara Cara navels show up in winter, they're the pick for a big orange.",
          pick:"Heavy for their size and firm, with snug skin — not puffy or loose. Color doesn't tell you much."},
+        {n:"Canned pears", a:"1 can, in 100% juice (not syrup)", t:"store brand", p:"check shelf",
+         w:"Fruit side every week. Canned fruit aisle, not produce. Pick juice-packed; heavy syrup adds a lot of sugar. Peeled, so they have much less fiber than a fresh pear."},
         {n:"Strawberries, fresh", a:"1 lb container", t:"store brand", p:"check shelf",
          w:"Sides and snacks. Rinse right before eating, not when you get home — wet berries mold fast.",
          pick:"Red all the way to the stem — they don't ripen after picking. Flip the container and check the bottom for mush or mold."},
@@ -1177,7 +1179,6 @@ var DATA = [
         {k:"soy", n:"Less-sodium soy sauce", a:"1 bottle", t:"store brand", p:"check shelf", w:"Honey-garlic bowls. Less-sodium cuts about a third of the salt and tastes the same in a sauce."},
         {k:"caesar", n:"Caesar dressing", a:"1 bottle", t:"store brand", p:"check shelf", w:"Caesar wraps."},
         {k:"soup", n:"Campbell's Condensed Tomato Soup", a:"2 cans", q:2, un:["can","cans"], t:"store brand", p:"check shelf", w:"Grilled cheese lunches. Each can is two."},
-        {k:"pear", n:"Canned pears", a:"1 can, in 100% juice (not syrup)", t:"store brand", p:"check shelf", w:"Fruit side. Pick juice-packed; heavy syrup adds a lot of sugar. Peeled, so they have much less fiber than a fresh pear."},
         {k:"oil", n:"Olive oil", a:"1 bottle", t:"store brand", p:"check shelf", w:"Broccoli sides and subs."},
         {k:"vinegar", n:"Red wine vinegar", a:"1 bottle", t:"store brand", p:"check shelf", w:"Subs. Lasts months."}
       ]},
@@ -1297,7 +1298,7 @@ function slugN(n){ return "x_"+String(n||"").toLowerCase().replace(/[^a-z0-9]+/g
 /* Fresh items are matched to the app's recipe ingredients by name, so "Low?" on
    eggs in a recipe lands on "Large eggs" here instead of a duplicate in Extras,
    and checking it off clears the flag. ks = extra keys an item answers to. */
-var FRESH_KEYS={"Bananas":["banana"],"Apples":["apple"],"Mandarins or oranges":["mandarin","orange"],
+var FRESH_KEYS={"Bananas":["banana"],"Apples":["apple"],"Mandarins or oranges":["mandarin","orange"],"Canned pears":["pear"],
   "Strawberries, fresh":["strawb"],"Mini watermelon or a whole pineapple":["watermelon","pineapple"],"Shredded lettuce":["lettuce"],
   "Oven-roasted turkey, fresh-sliced":["turkey"],"Provolone, sliced":["provolone"],"85/15 ground beef":["beef"],"Large eggs":["eggs"],
   "Milk":["milk"],"Yoplait Original cups":["yoplait"],"Sourdough loaf, in-store bakery":["bread"],"Guerrero Caseras Burrito Size Flour Tortillas":["tortilla"]};
@@ -1895,7 +1896,7 @@ document.getElementById("resetBtn").addEventListener("click", function(){
 });
 
 /* ---- start ---- */
-var BUILD="2026.11.12-a";   /* date + letter, like Daily Protocol */
+var BUILD="2026.11.12-b";   /* date + letter, like Daily Protocol */
 load();
 document.getElementById("weekLabel").textContent = WEEK_LABEL;
 document.title = "Grocery \u2014 " + WEEK_LABEL;

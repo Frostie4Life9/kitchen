@@ -5821,8 +5821,8 @@ function isLow(key){ return !!loadLow()[key]; }
 const RETIRED_ING=["uncrust","shake","x_uncrustables","x_protein_shakes","x_orgain_shakes","x_orgain"];
 /* Bought every week no matter what: they're always on grocery.html's Fresh
    sections, so flagging them Running low does nothing. Hidden from the Shop
-   quick-add chips. (strawb and pineapple stay: they also drive the frozen bags.) */
-const WEEKLY_ING=["apple","banana","orange","mandarin","watermelon","lettuce","turkey","provolone","beef","eggs","milk","yoplait","bread","tortilla"];
+   quick-add chips. (strawb stays: it also drives the frozen bag.) */
+const WEEKLY_ING=["apple","banana","orange","mandarin","pear","pineapple","watermelon","lettuce","turkey","provolone","beef","eggs","milk","yoplait","bread","tortilla"];
 (function(){ const o=loadLow(); let ch=false; RETIRED_ING.forEach(function(k){ if(o[k]){ delete o[k]; ch=true; } }); if(ch) saveLow(o); })();
 function toggleRunLow(key){
   const o=loadLow();
@@ -8519,7 +8519,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.11.12-a";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.11.12-b";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
