@@ -5421,9 +5421,7 @@ const ROTATION=[
     {k:"chxparm", n:"Chicken parm melt", c:560, p:45, tag:"15 min",
      d:"Saucy chicken and melted provolone on a garlic-butter bun. One bag of chicken, no frying.", r:[]},
     {k:"crispysand", n:"Crispy chicken sandwich + fries", c:695, p:39, tag:"Air fryer",
-     d:"Cane's night as a sandwich: breaded chunks, Cane's-style sauce, toasted bun, fries alongside.", r:[]},
-    {k:"honeybowl", n:"Honey-garlic chicken bowl", c:535, p:34, tag:"15 min",
-     d:"Sweet-savory takeout-style chicken over a rice pouch. A break from cheese and tortillas.", r:[]}
+     d:"Cane's night as a sandwich: breaded chunks, Cane's-style sauce, toasted bun, fries alongside.", r:[]}
   );
 })();
 
@@ -5546,15 +5544,14 @@ Object.assign(CARD_PARTS,{
   uncrust:    [["uncrust",2],["shake",1],["fruit",1,1]],
   mac:        [["pasta",3],["milk",0.33],["cheddar",2],["butter",1],["chicken",4],["broccoli",1,1]],
   chxparm:    [["chicken",5],["marinara",0.5],["provolone",2],["bun",1],["butter",1],["garlic",1]],
-  crispysand: [["chunks",2],["bun",1],["fries",1],["mayo",1],["ketchup",0.5],["garlic",1],["lettuce",1,1]],
-  honeybowl:  [["chicken",5],["rice",1],["honey",1.5],["soy",1],["butter",1],["garlic",1]]
+  crispysand: [["chunks",2],["bun",1],["fries",1],["mayo",1],["ketchup",0.5],["garlic",1],["lettuce",1,1]]
 });
 /* v3.16 — vegetables. Every dinner gets an optional broccoli side and every
    packed lunch optional baby carrots: no recipe changes, just one more thing
    on the plate. Optional parts never block a meal when you're out. */
 /* v3.17: he'd rather have fruit than broccoli, so the side is fruit (picker
    on the recipe), and fiber-rich picks (apple, pear, strawberries) lead the list. */
-["burger","quesadilla","tacos","pasta","mac","lburger","tendersbox","pizzatoast","lquesa","melt","gcsoup","chxparm","crispysand","honeybowl"].forEach(function(k){
+["burger","quesadilla","tacos","pasta","mac","lburger","tendersbox","pizzatoast","lquesa","melt","gcsoup","chxparm","crispysand"].forEach(function(k){
   if(CARD_PARTS[k] && !CARD_PARTS[k].some(function(p){ return p[0]==="fruit" || (p[2] && FRUIT_SWAP[p[0]]); })) CARD_PARTS[k]=CARD_PARTS[k].concat([["fruit",1,1]]); });
 if(CARD_PARTS.smoothie && !CARD_PARTS.smoothie.some(function(p){ return p[0]==="chia"; })) CARD_PARTS.smoothie=CARD_PARTS.smoothie.concat([["chia",1,1]]);
 if(CARD_PARTS.smoothiebar && !CARD_PARTS.smoothiebar.some(function(p){ return p[0]==="chia"; })) CARD_PARTS.smoothiebar=CARD_PARTS.smoothiebar.concat([["chia",1,1]]);
@@ -5765,17 +5762,11 @@ Object.assign(ROT_STEPS,{
     ["Make the sauce","While it cooks: 1 tbsp mayo, ½ tbsp ketchup, a pinch of garlic powder, and lots of black pepper (about 10 turns of the grinder). Stir until it's one color. That's the Cane's sauce.",0],
     ["Toast the bun","For the last minute, lay the bun halves cut-side down on top of the chicken in the basket. Or a dry pan on medium (about 5), cut-side down, 1 minute until golden.",60],
     ["Build","Sauce on both halves. Pile on the chunks and press them down a little so they don't roll off, a handful of shredded lettuce if you have it, top bun. Fries on the side.",0]],
-  honeybowl:[
-    ["Heat the chicken","5 oz cooked chicken (one bag). Frozen strips: air fryer at 350°F for 8 min, or microwave covered about 2 min. Rotisserie chicken from the fridge instead: microwave it covered 1 min, stir, then 30 more seconds, until steaming all the way through. Cut it into bite-size pieces.",480],
-    ["Make the sauce","Small nonstick pan on medium (about 5): 1 tsp butter, 1½ tbsp honey, 1 tbsp soy sauce, and ¼ tsp garlic powder (a good shake). Stir as it bubbles for 1–2 minutes, until it's a little thicker and coats the spoon. Keep stirring — honey burns fast, and if it smells sharp or goes dark, lift the pan off the heat.",90],
-    ["Coat the chicken","Pan off the heat. Add the chicken and stir for 30 seconds, until every piece is glossy.",0],
-    ["Heat the rice","Squeeze the rice pouch to break up clumps, tear open the corner about 2 inches, and microwave 90 seconds.",90],
-    ["Bowl it","Rice in a bowl, chicken on top, then scrape every bit of sauce from the pan over it.",0]]
 });
 /* the veg step rides along at the end of each recipe */
 const VEG_HOT=["Fruit on the side","Whatever you picked under \u201cWhich fruit?\u201d \u2014 slice an apple, peel an orange, or a cup of strawberries. Apples with the skin on carry the most fiber.",0];
 const VEG_PACK=["Add crunch (optional)","Baby carrots in a zip bag next to the fruit, if you like them. No cooking, and they survive a backpack.",0];
-["burger","quesadilla","tacos","pasta","mac","chunks","lburger","tendersbox","pizzatoast","lquesa","melt","gcsoup","chxparm","crispysand","honeybowl"].forEach(function(k){ if(ROT_STEPS[k]) ROT_STEPS[k]=ROT_STEPS[k].concat([VEG_HOT]); });
+["burger","quesadilla","tacos","pasta","mac","chunks","lburger","tendersbox","pizzatoast","lquesa","melt","gcsoup","chxparm","crispysand"].forEach(function(k){ if(ROT_STEPS[k]) ROT_STEPS[k]=ROT_STEPS[k].concat([VEG_HOT]); });
 ["campus","pouch","snackbox","wrap","caesarwrap","chxsalad","uncrust","sub"].forEach(function(k){ if(ROT_STEPS[k]) ROT_STEPS[k]=ROT_STEPS[k].concat([VEG_PACK]); });
 ROTATION.forEach(function(sec){ sec.items.forEach(function(it){
   const S=ROT_STEPS[it.k]; if(!S) return;
@@ -5818,7 +5809,7 @@ function saveLow(o){ try{ localStorage.setItem(LOW_KEY, JSON.stringify(o)); }cat
 function isLow(key){ return !!loadLow()[key]; }
 /* Ingredients of retired meals: drop any old Running low flags so they don't
    linger in Extras, and keep them off the Shop chips. Same list in grocery.html. */
-const RETIRED_ING=["uncrust","shake","x_uncrustables","x_protein_shakes","x_orgain_shakes","x_orgain"];
+const RETIRED_ING=["uncrust","shake","x_uncrustables","x_protein_shakes","x_orgain_shakes","x_orgain","rice","soy"];
 /* Bought every week no matter what: they're always on grocery.html's Fresh
    sections, so flagging them Running low does nothing. Hidden from the Shop
    quick-add chips. (strawb and pineapple stay, labeled Frozen: the fresh ones are weekly, the Running low flag is for the frozen bags.) */
@@ -5949,9 +5940,6 @@ const HEALTH={
   crispysand:["Your Cane's night as a sandwich, air-fried instead of deep-fried, with about 39 g of protein.",
     "An apple or pineapple. Something fresh and crunchy next to a salty plate.",
     "Breading, fries and dip make this one of the saltier dinners. Drink plenty of water with it and keep the sauce to the 1½ tbsp in the recipe."],
-  honeybowl:["One of the lighter dinners, and a sweet-savory change from the cheese-and-tortilla nights.",
-    "Pineapple or an orange. They go with honey-garlic the way they do at a takeout counter, and add vitamin C.",
-    "Soy sauce is where the sodium is. Less-sodium soy keeps the tablespoon around 575 mg instead of about 900."],
   scramble:["Three eggs, cheese and sausage come to about 38 g of protein, enough to carry you to lunch. Egg yolks are one of the best sources of choline, which your brain uses for memory and mood.",
     "An orange or strawberries. Eggs have no fiber or vitamin C, so the fruit adds both, and vitamin C helps you absorb the iron in the eggs.",
     "Most of the salt comes from the turkey sausage. One salty item at breakfast is fine; just go easy on salty snacks later."],
@@ -6199,9 +6187,9 @@ function syncRotTimerDOM(){
 var INV_KEY="inv_v1", GBOUGHT_KEY="grocery_bought_v1";
 var INV_UNIT={eggs:"eggs",bread:"slices",turkey:"oz",provolone:"slices",beef:"oz",milk:"cups",yoplait:"cups",tortilla:"big tortillas",
   smalltort:"tortillas",bun:"buns",hashbrown:"patties",fries:"servings",pb:"servings",pouch:"pouches",pasta:"oz",soup:"cups",cereal:"bowls",
-  chicken:"oz",chunks:"servings",sausage:"links",bar:"bars",marinara:"servings",cheddar:"servings",rice:"pouches"};
+  chicken:"oz",chunks:"servings",sausage:"links",bar:"bars",marinara:"servings",cheddar:"servings"};
 var INV_PACK={eggs:12,bread:15,turkey:16,provolone:10,beef:16,milk:16,yoplait:5,tortilla:8,smalltort:10,bun:8,hashbrown:10,fries:10,pb:14,
-  pouch:5,pasta:16,soup:4,cereal:10,chicken:48,chunks:21,sausage:48,bar:20,marinara:6,cheddar:32,rice:6};
+  pouch:5,pasta:16,soup:4,cereal:10,chicken:48,chunks:21,sausage:48,bar:20,marinara:6,cheddar:32};
 function rjx(k,d){ try{ const v=JSON.parse(localStorage.getItem(k)); return v==null?d:v; }catch(e){ return d; } }
 function wjx(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
 function loadInv(){ const o=rjx(INV_KEY,{}); return (o&&typeof o==="object")?o:{}; }
@@ -8520,7 +8508,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.11.12-c";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.11.12-d";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
