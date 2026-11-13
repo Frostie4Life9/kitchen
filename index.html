@@ -5395,8 +5395,8 @@ const ROTATION=[
      d:"Warm chicken, crunchy lettuce, Caesar dressing, rolled tight.", r:[]},
     {k:"chxsalad", n:"Chicken salad sandwich", c:540, p:38, tag:"Ice pack",
      d:"Two chicken pouches mixed with mayo on sourdough. Make it the night before.", r:[]},
-    {k:"gcsoup", n:"Grilled cheese + tomato soup", c:540, p:22, tag:"Comfort",
-     d:"The cold-day or sick-day lunch. A glass of milk alongside adds 8 g protein.", r:[]},
+    {k:"gcsoup", n:"Grilled cheese + fruit, carrots and milk", c:690, p:29, tag:"Comfort",
+     d:"Crispy, buttery grilled cheese with fruit and carrots for fiber and crunch, and a glass of milk for protein.", r:[]},
     {k:"lburger", n:"Single smash burger", c:555, p:33, tag:"At home",
      d:"Your favorite, lunch-sized: one quarter-pound smashed patty, cheddar, toasted bun.", r:[]},
     {k:"tendersbox", n:"Tenders + fries box", c:550, p:34, tag:"At home",
@@ -5536,7 +5536,7 @@ Object.assign(CARD_PARTS,{
   lquesa:     [["smalltort",2],["cheddar",1.5],["chicken",3],["butter",1]],
   caesarwrap: [["tortilla",1],["chicken",4],["lettuce",1],["caesar",1],["apple",1,1]],
   chxsalad:   [["pouch",2],["mayo",1],["bread",2],["grapes",1,1]],
-  gcsoup:     [["bread",2],["cheddar",2],["butter",2],["soup",1]],
+  gcsoup:     [["bread",2],["cheddar",2],["butter",2],["milk",1],["carrots",1,1]],
   lburger:    [["beef",4],["cheddar",1],["bun",1],["mayo",0.5],["ketchup",0.5],["lettuce",1,1]],
   tendersbox: [["chunks",2],["fries",1],["mayo",1],["ketchup",0.5]],
   pizzatoast: [["bread",2],["marinara",0.5],["provolone",3],["pepperoni",1,1]],
@@ -5738,11 +5738,10 @@ Object.assign(ROT_STEPS,{
     ["Build","Spread it between 2 slices of sourdough. Wrap in foil or a zip bag.",0],
     ["Pack","Grapes on the side, ice pack in the bag. Made with mayo, it shouldn't sit out more than 2 hours.",0]],
   gcsoup:[
-    ["Start the soup","Empty a can of condensed tomato soup into a microwave-safe bowl with 1 can of water (or milk, for creamier soup and more protein). Stir. You'll eat half and save half.",0],
     ["Build the sandwich","Butter one side of 2 slices of bread. Put the buttered sides down on a plate, then ½ cup shredded cheddar on one slice, and close it, butter sides out.",0],
     ["Cook it covered","Nonstick pan on medium-low (3–4). Cover the pan with a lid or foil — it melts the cheese before the bread burns. 3½ minutes until golden.",210],
-    ["Flip, and heat the soup","Flip the sandwich, cover again, 3 more minutes. While it cooks, microwave the soup 2–3 minutes, stirring halfway, until steaming.",180],
-    ["Eat","Cut the sandwich in half and dip it. Put the other half of the soup in the fridge — good for 3–4 days."  ,0]],
+    ["Flip it","Flip the sandwich, cover again, 3 more minutes until the cheese is fully melted.",180],
+    ["Plate it","Cut the sandwich in half. Pour a glass of milk and add a handful of baby carrots (about 3 oz) on the side.",0]],
   mac:[
     ["Boil the water","About 8 cups of water and 1 tsp salt in a pot, lid on, high heat. 8–10 minutes to boil.",540],
     ["Start the chicken","While the water heats: 4 oz cooked chicken. Frozen strips go in the air fryer at 350°F for 8 min; rotisserie chicken from the fridge just needs chopping, since the hot pasta and sauce warm it. Chop it into bite-size pieces.",480],
@@ -5809,7 +5808,7 @@ function saveLow(o){ try{ localStorage.setItem(LOW_KEY, JSON.stringify(o)); }cat
 function isLow(key){ return !!loadLow()[key]; }
 /* Ingredients of retired meals: drop any old Running low flags so they don't
    linger in Extras, and keep them off the Shop chips. Same list in grocery.html. */
-const RETIRED_ING=["uncrust","shake","x_uncrustables","x_protein_shakes","x_orgain_shakes","x_orgain","rice","soy"];
+const RETIRED_ING=["uncrust","shake","x_uncrustables","x_protein_shakes","x_orgain_shakes","x_orgain","rice","soy","soup"];
 /* Bought every week no matter what: they're always on grocery.html's Fresh
    sections, so flagging them Running low does nothing. Hidden from the Shop
    quick-add chips. (strawb and pineapple stay, labeled Frozen: the fresh ones are weekly, the Running low flag is for the frozen bags.) */
@@ -5991,9 +5990,9 @@ const HEALTH={
   chxsalad:["40 g of protein, among the highest of the packed lunches, and it's ready the night before.",
     "Halved grapes or diced apple stirred right into the chicken salad. It's a classic combination and adds sweetness and fiber.",
     "Mayo is the calorie lever: each tablespoon is about 90 calories. One to two tablespoons for two pouches is plenty."],
-  gcsoup:["Comfort food that still gives you something. Cooked tomato (as in soup) is one of the best sources of lycopene, an antioxidant your body absorbs better from cooked tomatoes than raw.",
-    "A glass of milk (+8 g protein) and an orange. The vitamin C is nice when you're run-down, and the milk lifts the protein, which is the lowest of the lunches.",
-    "Canned tomato soup runs roughly 500 to 700 mg of sodium per cup depending on the brand. A lower-sodium version is worth it if your store has one."],
+  gcsoup:["Comfort food that still gives you something: about 29 g of protein with the milk, plus calcium from the cheese and milk.",
+    "An apple with the skin on and a handful of carrots. The sandwich has almost no fiber, so the fruit and carrots add it, and the crunch is good against something soft and melty.",
+    "Cheese and butter make this one of the higher-fat lunches. A thin swipe of butter on the outside still crisps the bread just as well."],
   lburger:["Beef is one of the best sources of iron, zinc and vitamin B12, and the single patty keeps it lunch-sized.",
     "Pineapple or an orange, the classic cookout pairing. Lettuce on the burger counts too.",
     "Smashing the patty renders out fat. Tilt the pan and pour it off before the cheese goes on."],
@@ -6186,10 +6185,10 @@ function syncRotTimerDOM(){
      that use them. */
 var INV_KEY="inv_v1", GBOUGHT_KEY="grocery_bought_v1";
 var INV_UNIT={eggs:"eggs",bread:"slices",turkey:"oz",provolone:"slices",beef:"oz",milk:"cups",yoplait:"cups",tortilla:"big tortillas",
-  smalltort:"tortillas",bun:"buns",hashbrown:"patties",fries:"servings",pb:"servings",pouch:"pouches",pasta:"oz",soup:"cups",cereal:"bowls",
+  smalltort:"tortillas",bun:"buns",hashbrown:"patties",fries:"servings",pb:"servings",pouch:"pouches",pasta:"oz",cereal:"bowls",
   chicken:"oz",chunks:"servings",sausage:"links",bar:"bars",marinara:"servings",cheddar:"servings"};
 var INV_PACK={eggs:12,bread:15,turkey:16,provolone:10,beef:16,milk:16,yoplait:5,tortilla:8,smalltort:10,bun:8,hashbrown:10,fries:10,pb:14,
-  pouch:5,pasta:16,soup:4,cereal:10,chicken:48,chunks:21,sausage:48,bar:20,marinara:6,cheddar:32};
+  pouch:5,pasta:16,cereal:10,chicken:48,chunks:21,sausage:48,bar:20,marinara:6,cheddar:32};
 function rjx(k,d){ try{ const v=JSON.parse(localStorage.getItem(k)); return v==null?d:v; }catch(e){ return d; } }
 function wjx(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
 function loadInv(){ const o=rjx(INV_KEY,{}); return (o&&typeof o==="object")?o:{}; }
@@ -8508,7 +8507,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.11.12-d";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.11.12-e";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
