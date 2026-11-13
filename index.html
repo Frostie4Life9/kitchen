@@ -5459,7 +5459,7 @@ const INGR={
   cinnamon:  {n:"Ground cinnamon",         u:"pinch",        e:[0,0,0,0],        q:"cinnamon"},
   oregano:   {n:"Dried oregano",           u:"pinch",        e:[0,0,0,0],        q:"oregano"},
   vinegar:   {n:"Red wine vinegar",        u:"tsp",          e:[1,0,0,0],        q:"vinegar"},
-  lettuce:   {n:"Shredded lettuce",        u:"1/2 cup",      e:[4,0.3,1,0],      q:"lettuce"},
+  lettuce:   {n:"Shredded lettuce",        u:"1/2 cup",      e:[4,0.3,1,0],      q:"lettuce iceberg shred"},
   onion:     {n:"Onion",                   u:"1/4 onion",    e:[11,0.3,2.5,0],   q:"onion"},
   beef:      {n:"85/15 ground beef",       u:"oz raw",       e:[60,5.3,0,4.3],   q:"ground beef"},
   bun:       {n:"Burger buns",             u:"bun",          e:[150,5,27,2],     q:"bun"},
@@ -6542,7 +6542,7 @@ const TMR_SCAN='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8V5a1 1 
 const TMR_PLUS='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>';
 /* Fresh produce has no barcode and the estimates are USDA values anyway,
    so it never counts against you here. */
-const NO_LABEL={banana:1, apple:1, orange:1, fruit:1, grapes:1, lettuce:1, onion:1, mandarin:1, watermelon:1, carrots:1, garlic:1, cinnamon:1, oregano:1, vinegar:1};
+const NO_LABEL={banana:1, apple:1, orange:1, fruit:1, grapes:1, onion:1, mandarin:1, watermelon:1, carrots:1, garlic:1, cinnamon:1, oregano:1, vinegar:1};
 function ingUse(){
   const use={};
   ROTATION.forEach(function(sec){ sec.items.forEach(function(it){ (it.parts||[]).forEach(function(pt){
@@ -6552,7 +6552,7 @@ function ingUse(){
   Object.keys(use).forEach(function(k){ use[k].n=Object.keys(use[k].cards).length; });
   return use;
 }
-function linksFor(id){ const L=loadLinks(); return Object.keys(L).filter(function(k){ return L[k].id===id && INGR[k]; }); }
+function linksFor(id){ const L=loadLinks(); return Object.keys(L).filter(function(k){ return L[k].id===id && INGR[k] && RETIRED_ING.indexOf(k)<0; }); }
 /* Whole-word matching, so "Breaded chicken" doesn't suggest bread. Plurals
    count, and long stems (strawberr) match as prefixes. Only the best
    matches are shown. */
@@ -6560,7 +6560,7 @@ function ingSuggest(it){
   const words=(it.name||"").toLowerCase().split(/[^a-z0-9]+/).filter(Boolean);
   const hit=function(h){ return words.some(function(w){ return w===h || w===h+"s" || w===h+"es" || (h.length>=6 && w.indexOf(h)===0); }); };
   const sc={}; let top=0;
-  Object.keys(INGR).forEach(function(k){ if(NO_LABEL[k]) return;
+  Object.keys(INGR).forEach(function(k){ if(NO_LABEL[k] || RETIRED_ING.indexOf(k)>=0) return;
     const n=(INGR[k].q||"").split(" ").filter(function(h){ return h && hit(h); }).length;
     if(n){ sc[k]=n; if(n>top) top=n; } });
   return Object.keys(sc).filter(function(k){ return sc[k]>=Math.max(1,top-1); }).sort(function(a,b){ return sc[b]-sc[a]; });
@@ -6697,7 +6697,7 @@ function renderPantryItem(){
       return '<button type="button" class="v3-chip" aria-pressed="'+on+'" onclick="togglePItemLink(\''+k+'\')">'+esc(INGR[k].n)+
         (other?'<small>replaces '+esc(shortName(fullName(other.item)))+'</small>':(u[k]?'<small>'+u[k].n+'</small>':''))+'</button>';
     };
-    const rest=Object.keys(INGR).filter(function(k){ return !NO_LABEL[k] && sug.indexOf(k)<0; }).sort(function(a,b){ return INGR[a].n.localeCompare(INGR[b].n); });
+    const rest=Object.keys(INGR).filter(function(k){ return !NO_LABEL[k] && RETIRED_ING.indexOf(k)<0 && sug.indexOf(k)<0; }).sort(function(a,b){ return INGR[a].n.localeCompare(INGR[b].n); });
     let h='<div class="v3-pitem-h">What is this in your meals?</div>'+
       '<p class="v3-hint" style="margin:0 2px 10px">Pick the ingredient it stands in for. Every meal using that ingredient switches from the estimate to this label. The number on each chip is how many meals use it.</p>';
     if(sug.length) h+='<div class="v3-label">Looks like</div><div class="v3-chips">'+sug.map(chip).join('')+'</div>';
@@ -8507,7 +8507,7 @@ $("t-notes").addEventListener("input",()=>{ dayState.notes=$("t-notes").value; s
 /* =========================================================
    INIT
    ========================================================= */
-const APP_VERSION="2026.11.12-e";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
+const APP_VERSION="2026.11.12-f";   // date + letter, like Daily Protocol: next change today is -b, first change tomorrow is 2026.10.18-a
 (function init(){
   loadWg();
   dayState=getDay(todayStr);
